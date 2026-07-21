@@ -1,0 +1,38 @@
+{
+  "name": "d06/reject-source-hash-mismatch",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "artifacts": [
+      {
+        "id": "library.h.r",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "H1",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.h.r"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

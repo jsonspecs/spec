@@ -1,0 +1,52 @@
+{
+  "name": "d11/reject-duplicate-check-code",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "8eb8c245529dbae2126dfb09fe6722ba8a4ba10517ea5308538340ca835fd52e",
+    "artifacts": [
+      {
+        "id": "library.x.d1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "DUP",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.x.d2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "DUP",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.d1"
+          },
+          {
+            "rule": "library.x.d2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

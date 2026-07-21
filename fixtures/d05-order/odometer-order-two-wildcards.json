@@ -1,0 +1,87 @@
+{
+  "name": "d05/odometer-order-two-wildcards",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "b7321afb73845d0ea4c4e7f0d422f9da7d9a4523b537d5a25e8a5a2e95bb8402",
+    "artifacts": [
+      {
+        "id": "library.o.odo",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "O2",
+        "message": "failed",
+        "field": "m[*].n[*].v",
+        "value": 10
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.o.odo"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "m[1].n[0].v": 3,
+      "m[0].n[1].v": 2,
+      "m[0].n[0].v": 1
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O2",
+        "message": "failed",
+        "field": "m[0].n[0].v",
+        "ruleId": "library.o.odo",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 1
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O2",
+        "message": "failed",
+        "field": "m[0].n[1].v",
+        "ruleId": "library.o.odo",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 2
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O2",
+        "message": "failed",
+        "field": "m[1].n[0].v",
+        "ruleId": "library.o.odo",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 3
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "b7321afb73845d0ea4c4e7f0d422f9da7d9a4523b537d5a25e8a5a2e95bb8402"
+    }
+  }
+}

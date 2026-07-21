@@ -1,0 +1,63 @@
+{
+  "name": "d02/length-max-exceeded-issue-shape",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "b6b6dc03e9bbf54e5b911f73ed9d791aa8bcde6104945f7524601e1994ece0b2",
+    "artifacts": [
+      {
+        "id": "library.l.max2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "length_max",
+        "level": "ERROR",
+        "code": "L3",
+        "message": "failed",
+        "field": "name",
+        "value": 3
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.l.max2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "name": "Пётр"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "L3",
+        "message": "failed",
+        "field": "name",
+        "ruleId": "library.l.max2",
+        "pipelineId": "checks.main",
+        "expected": 3,
+        "actual": "Пётр"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "b6b6dc03e9bbf54e5b911f73ed9d791aa8bcde6104945f7524601e1994ece0b2"
+    }
+  }
+}

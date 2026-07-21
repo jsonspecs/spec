@@ -1,0 +1,99 @@
+{
+  "name": "sem/dictionary-object-entry-code-or-value",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "7658ef53434ede0f05bec3a187654701fa0901368c2c0d53aa5c8728e2e9902b",
+    "artifacts": [
+      {
+        "id": "library.dict.countries",
+        "type": "dictionary",
+        "description": "fixture dictionary",
+        "entries": [
+          {
+            "code": "RU",
+            "value": "Россия"
+          }
+        ]
+      },
+      {
+        "id": "library.se.di1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "in_dictionary",
+        "level": "ERROR",
+        "code": "SE10",
+        "message": "failed",
+        "field": "a",
+        "dictionary": {
+          "type": "static",
+          "id": "library.dict.countries"
+        }
+      },
+      {
+        "id": "library.se.di2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "in_dictionary",
+        "level": "ERROR",
+        "code": "SE11",
+        "message": "failed",
+        "field": "b",
+        "dictionary": {
+          "type": "static",
+          "id": "library.dict.countries"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.di1"
+          },
+          {
+            "rule": "library.se.di2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "Россия",
+      "b": "DE"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE11",
+        "message": "failed",
+        "field": "b",
+        "ruleId": "library.se.di2",
+        "pipelineId": "checks.main",
+        "expected": {
+          "type": "static",
+          "id": "library.dict.countries"
+        },
+        "actual": "DE"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "7658ef53434ede0f05bec3a187654701fa0901368c2c0d53aa5c8728e2e9902b"
+    }
+  }
+}

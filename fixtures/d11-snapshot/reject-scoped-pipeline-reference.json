@@ -1,0 +1,50 @@
+{
+  "name": "d11/reject-scoped-pipeline-reference",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "5a2c112aebdca8b452e1c6e76709cb261fa6852c4023c62086d76f893c00fab7",
+    "artifacts": [
+      {
+        "id": "library.x.c3",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X9",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "inner"
+          }
+        ]
+      },
+      {
+        "id": "checks.inner",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": false,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.c3"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

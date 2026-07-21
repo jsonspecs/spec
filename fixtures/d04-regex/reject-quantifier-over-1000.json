@@ -1,0 +1,39 @@
+{
+  "name": "d04/reject-quantifier-over-1000",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "e36c0eebea6ae8b244d12394bcd93e974681a29a4aa81e02441c305ce4f4b6c3",
+    "artifacts": [
+      {
+        "id": "library.r.d",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R4",
+        "message": "failed",
+        "field": "a",
+        "value": "a{1001}"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.d"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

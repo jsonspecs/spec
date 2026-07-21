@@ -1,0 +1,61 @@
+{
+  "name": "d13/not-true-fails-only-on-boolean-true",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "46a1d8e838474bcdb9a2d135640a705beb246fa2480060daae7902b3b0c32db9",
+    "artifacts": [
+      {
+        "id": "library.a.nt2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_true",
+        "level": "ERROR",
+        "code": "A5",
+        "message": "failed",
+        "field": "f"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.nt2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "f": true
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "A5",
+        "message": "failed",
+        "field": "f",
+        "ruleId": "library.a.nt2",
+        "pipelineId": "checks.main",
+        "actual": true
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "46a1d8e838474bcdb9a2d135640a705beb246fa2480060daae7902b3b0c32db9"
+    }
+  }
+}

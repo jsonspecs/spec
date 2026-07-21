@@ -1,0 +1,66 @@
+{
+  "name": "d04/preprocessing-collapses-double-backslash",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "906d8c071f1c8e57128550fe0342342fe3e2d5fc2cef6a9f4d6a7acfe1264b8e",
+    "artifacts": [
+      {
+        "id": "library.r.pp1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R7",
+        "message": "failed",
+        "field": "a",
+        "value": "^\\\\d+$"
+      },
+      {
+        "id": "library.r.pp2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R8",
+        "message": "failed",
+        "field": "a",
+        "value": "^\\d+$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.pp1"
+          },
+          {
+            "rule": "library.r.pp2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "123"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "906d8c071f1c8e57128550fe0342342fe3e2d5fc2cef6a9f4d6a7acfe1264b8e"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "d04/reject-backreference",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "a8021f6a1b53c140cd81eaaee516494b2b0bc0081cd458658ce27e286e1f78d2",
+    "artifacts": [
+      {
+        "id": "library.r.b",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R2",
+        "message": "failed",
+        "field": "a",
+        "value": "^(a)\\1$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.b"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

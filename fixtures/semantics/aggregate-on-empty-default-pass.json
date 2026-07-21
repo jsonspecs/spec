@@ -1,0 +1,49 @@
+{
+  "name": "sem/aggregate-on-empty-default-pass",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "7694dc539d15bef1e457e3d16d48d20f6551e600932c45ca32ae0a0c70fe60e1",
+    "artifacts": [
+      {
+        "id": "library.se.oe1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "SE16",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.oe1"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "7694dc539d15bef1e457e3d16d48d20f6551e600932c45ca32ae0a0c70fe60e1"
+    }
+  }
+}

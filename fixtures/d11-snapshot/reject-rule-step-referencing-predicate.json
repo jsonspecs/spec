@@ -1,0 +1,35 @@
+{
+  "name": "d11/reject-rule-step-referencing-predicate",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "e1ffb47e7b531f7f55efff7faf2085d820f2ae059e308dad5b13bbe99195a70b",
+    "artifacts": [
+      {
+        "id": "library.x.pp",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "not_empty",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.pp"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

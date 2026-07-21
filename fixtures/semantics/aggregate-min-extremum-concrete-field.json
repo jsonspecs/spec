@@ -1,0 +1,70 @@
+{
+  "name": "sem/aggregate-min-extremum-concrete-field",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "9c6cdc43a337b47d029e5e43db19ff7f6a16ab4c35d8a8b28d72f01ce20477aa",
+    "artifacts": [
+      {
+        "id": "library.se.min",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "SE15",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10,
+        "aggregate": {
+          "mode": "MIN"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.min"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "x[0].v": 5,
+      "x[1].v": 20
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE15",
+        "message": "failed",
+        "field": "x[0].v",
+        "ruleId": "library.se.min",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 5,
+        "details": {
+          "mode": "MIN"
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "9c6cdc43a337b47d029e5e43db19ff7f6a16ab4c35d8a8b28d72f01ce20477aa"
+    }
+  }
+}

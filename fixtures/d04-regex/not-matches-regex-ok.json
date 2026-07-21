@@ -1,0 +1,51 @@
+{
+  "name": "d04/not-matches-regex-ok",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "138ede2bfcb88756ad1c43ac4d352666d2d0de6426cfae500f7a696412958747",
+    "artifacts": [
+      {
+        "id": "library.r.nm",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_matches_regex",
+        "level": "ERROR",
+        "code": "R13",
+        "message": "failed",
+        "field": "a",
+        "value": "USA|США"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.nm"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "город Москва"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "138ede2bfcb88756ad1c43ac4d352666d2d0de6426cfae500f7a696412958747"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "d11/reject-when-leaf-referencing-check",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "a36fce2966a488bd94660ccec54eb59bc493b6ab61cdc022e751cff3f38c69d2",
+    "artifacts": [
+      {
+        "id": "library.x.c1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X7",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.cond.bad",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": "library.x.c1",
+        "steps": [
+          {
+            "rule": "library.x.c1"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.cond.bad"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "d11/payload-context-key-has-no-special-meaning",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "2532c06de3f2b9573d1554b4dce17d1169f8ed40b6b0d2a9e887c0f212c93ed6",
+    "artifacts": [
+      {
+        "id": "library.x.ctx",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "EXCEPTION",
+        "code": "CTX.CURRENT_DATE.REQUIRED",
+        "message": "failed",
+        "field": "$context.currentDate"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.ctx"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "__context": {
+        "currentDate": "2026-01-01"
+      }
+    }
+  },
+  "expected": {
+    "status": "EXCEPTION",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "EXCEPTION",
+        "code": "CTX.CURRENT_DATE.REQUIRED",
+        "message": "failed",
+        "field": "$context.currentDate",
+        "ruleId": "library.x.ctx",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "2532c06de3f2b9573d1554b4dce17d1169f8ed40b6b0d2a9e887c0f212c93ed6"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "d11/reject-dictionary-null-entry",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "8a5150c069d85c4fd1bb044231b007c89a4b0fb7612f418d9cbb45570eb11d6e",
+    "artifacts": [
+      {
+        "id": "library.dict.bad",
+        "type": "dictionary",
+        "description": "fixture dictionary",
+        "entries": [
+          "X",
+          null
+        ]
+      },
+      {
+        "id": "library.x.di",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "in_dictionary",
+        "level": "ERROR",
+        "code": "X10",
+        "message": "failed",
+        "field": "a",
+        "dictionary": {
+          "type": "static",
+          "id": "library.dict.bad"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.di"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

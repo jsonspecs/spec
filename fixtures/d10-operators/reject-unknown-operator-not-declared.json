@@ -1,0 +1,38 @@
+{
+  "name": "d10/reject-unknown-operator-not-declared",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "73a74dfc20adb3aa2f748b973298720589a4c839314b766738e25dab9b3fe5ba",
+    "artifacts": [
+      {
+        "id": "library.c.u",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "custom_x",
+        "level": "ERROR",
+        "code": "C1",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.c.u"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

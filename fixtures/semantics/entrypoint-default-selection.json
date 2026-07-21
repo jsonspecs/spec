@@ -1,0 +1,49 @@
+{
+  "name": "sem/entrypoint-default-selection",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "db90b7db5e13bba3599860c6454eacf344897184ec1ca404584265e1be7f7621",
+    "artifacts": [
+      {
+        "id": "library.se.def",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE21",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.def"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "db90b7db5e13bba3599860c6454eacf344897184ec1ca404584265e1be7f7621"
+    }
+  }
+}

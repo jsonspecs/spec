@@ -1,0 +1,38 @@
+{
+  "name": "d11/reject-unsupported-spec-version",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "999.0.0",
+    "sourceHash": "93a901aaaaf59db9264f27de4074a024eb06e591c318cd609eb7e479a40b64fe",
+    "artifacts": [
+      {
+        "id": "library.x.s",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X5",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.s"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

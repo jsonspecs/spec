@@ -1,0 +1,47 @@
+{
+  "name": "d11/reject-predicate-with-code",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "2df8df95d06df9ceea0be7adc4cd668c3dab82f853eb7149622407410e609775",
+    "artifacts": [
+      {
+        "id": "library.x.p",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "not_empty",
+        "field": "a",
+        "code": "NOPE"
+      },
+      {
+        "id": "library.x.ok",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X6",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.ok"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

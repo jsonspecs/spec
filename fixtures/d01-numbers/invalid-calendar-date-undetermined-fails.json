@@ -1,0 +1,63 @@
+{
+  "name": "d01/invalid-calendar-date-undetermined-fails",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "aba34b6f713f6a161ea0f752b07a6ce8d0fc335d6e628579fb539158907e28f4",
+    "artifacts": [
+      {
+        "id": "library.n.gt3",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "N5",
+        "message": "failed",
+        "field": "a",
+        "value": "2026-01-01"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.n.gt3"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "2026-02-30"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "N5",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.n.gt3",
+        "pipelineId": "checks.main",
+        "expected": "2026-01-01",
+        "actual": "2026-02-30"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "aba34b6f713f6a161ea0f752b07a6ce8d0fc335d6e628579fb539158907e28f4"
+    }
+  }
+}

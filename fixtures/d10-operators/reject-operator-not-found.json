@@ -1,0 +1,44 @@
+{
+  "name": "d10/reject-operator-not-found",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "requires": {
+      "operators": [
+        "valid_inn"
+      ]
+    },
+    "sourceHash": "05fa79bfaca676b572090e8530cf93d841dd88880a7ed72cbf8ffae6b9c10e2b",
+    "artifacts": [
+      {
+        "id": "library.c.i",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "valid_inn",
+        "level": "ERROR",
+        "code": "C2",
+        "message": "failed",
+        "field": "inn"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.c.i"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject",
+    "identifier": "OPERATOR_NOT_FOUND"
+  }
+}

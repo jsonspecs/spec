@@ -1,0 +1,97 @@
+{
+  "name": "sem/when-all-not-composition",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "1c6e7e95a8145ceb4aefc75c551d5d8543836244a71d188eebdadc9b7425784e",
+    "artifacts": [
+      {
+        "id": "library.se.pa",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "equals",
+        "field": "type",
+        "value": "FL"
+      },
+      {
+        "id": "library.se.pb",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "equals",
+        "field": "resident",
+        "value": true
+      },
+      {
+        "id": "library.se.c2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE2",
+        "message": "failed",
+        "field": "passport"
+      },
+      {
+        "id": "library.cond.w",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": {
+          "all": [
+            "library.se.pa",
+            {
+              "not": "library.se.pb"
+            }
+          ]
+        },
+        "steps": [
+          {
+            "rule": "library.se.c2"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.cond.w"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "type": "FL",
+      "resident": false
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE2",
+        "message": "failed",
+        "field": "passport",
+        "ruleId": "library.se.c2",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "1c6e7e95a8145ceb4aefc75c551d5d8543836244a71d188eebdadc9b7425784e"
+    }
+  }
+}

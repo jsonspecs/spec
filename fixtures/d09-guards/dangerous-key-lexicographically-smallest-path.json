@@ -1,0 +1,63 @@
+{
+  "name": "d09/dangerous-key-lexicographically-smallest-path",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "8b79a9be8ebff692b2fc47e4fe98e6320063bd40872553a8519ce427d9cc1c8b",
+    "artifacts": [
+      {
+        "id": "library.g.r",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "G1",
+        "message": "failed",
+        "field": "ok"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.g.r"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "z": {
+        "constructor": 1
+      },
+      "a": {
+        "constructor": 2
+      },
+      "ok": 1
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "DANGEROUS_PAYLOAD_KEY",
+      "details": {
+        "path": "a.constructor",
+        "key": "constructor"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "8b79a9be8ebff692b2fc47e4fe98e6320063bd40872553a8519ce427d9cc1c8b"
+    }
+  }
+}

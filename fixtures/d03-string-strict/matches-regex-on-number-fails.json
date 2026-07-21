@@ -1,0 +1,63 @@
+{
+  "name": "d03/matches-regex-on-number-fails",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "9b73072f3102cde51bf56ac6da332e4f8141688b5121d0d5ce4c7e3fdcf71dda",
+    "artifacts": [
+      {
+        "id": "library.s.rx",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "S1",
+        "message": "failed",
+        "field": "a",
+        "value": "^\\d+$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.s.rx"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 123
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "S1",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.s.rx",
+        "pipelineId": "checks.main",
+        "expected": "^\\d+$",
+        "actual": 123
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "9b73072f3102cde51bf56ac6da332e4f8141688b5121d0d5ce4c7e3fdcf71dda"
+    }
+  }
+}

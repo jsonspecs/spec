@@ -1,0 +1,54 @@
+{
+  "name": "d13/context-dependent-check-skips-without-guard",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "078cc310e9b38be89eaf8f8d0ccff5a1392954a03cd74811979f72bbfe61d775",
+    "artifacts": [
+      {
+        "id": "library.a.cd2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "field_less_or_equal_than_field",
+        "level": "ERROR",
+        "code": "A9",
+        "message": "failed",
+        "field": "doc.issueDate",
+        "value_field": "$context.currentDate"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.cd2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "doc": {
+        "issueDate": "2027-01-01"
+      }
+    },
+    "context": {}
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "078cc310e9b38be89eaf8f8d0ccff5a1392954a03cd74811979f72bbfe61d775"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "d11/reject-pipeline-cycle",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "8a569960d7ece272c96e25bdbbc837222333d1276dbe2ebf0afe7490fe799554",
+    "artifacts": [
+      {
+        "id": "library.x.c2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X8",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.a",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "checks.b"
+          }
+        ]
+      },
+      {
+        "id": "checks.b",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": false,
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "checks.a"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "name": "sem/exception-in-subpipeline-stops-everything",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "94778ac85d8e429a65ef248addee8521a763febde94e04bb757abf3cfb051fda",
+    "artifacts": [
+      {
+        "id": "library.se.x",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "EXCEPTION",
+        "code": "SE5",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.se.after",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE6",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "checks.inner",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": false,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.x"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "checks.inner"
+          },
+          {
+            "rule": "library.se.after"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "EXCEPTION",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "EXCEPTION",
+        "code": "SE5",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.se.x",
+        "pipelineId": "checks.inner"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "94778ac85d8e429a65ef248addee8521a763febde94e04bb757abf3cfb051fda"
+    }
+  }
+}

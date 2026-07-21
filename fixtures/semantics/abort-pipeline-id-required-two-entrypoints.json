@@ -1,0 +1,67 @@
+{
+  "name": "sem/abort-pipeline-id-required-two-entrypoints",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "6f989704d633b30fd99d6943ee8815daded63475e2cde50fbf6af70d0a27e49a",
+    "artifacts": [
+      {
+        "id": "library.se.ab2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE20",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.one",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.ab2"
+          }
+        ]
+      },
+      {
+        "id": "checks.two",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.ab2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "PIPELINE_ID_REQUIRED",
+      "details": {
+        "entrypointCount": 2
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "6f989704d633b30fd99d6943ee8815daded63475e2cde50fbf6af70d0a27e49a"
+    }
+  }
+}

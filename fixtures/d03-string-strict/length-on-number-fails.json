@@ -1,0 +1,63 @@
+{
+  "name": "d03/length-on-number-fails",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "60edbb1a5cf7beb63956a3e60cf320e4758342201b6cace1aa828c296e8bebf7",
+    "artifacts": [
+      {
+        "id": "library.s.len",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "length_max",
+        "level": "ERROR",
+        "code": "S2",
+        "message": "failed",
+        "field": "a",
+        "value": 3
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.s.len"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 12
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "S2",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.s.len",
+        "pipelineId": "checks.main",
+        "expected": 3,
+        "actual": 12
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "60edbb1a5cf7beb63956a3e60cf320e4758342201b6cace1aa828c296e8bebf7"
+    }
+  }
+}

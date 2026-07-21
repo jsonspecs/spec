@@ -1,0 +1,82 @@
+{
+  "name": "d13/context-guard-idiom-and-comparand-in-expected",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "fba21b4adca4c3b90d720be70625d41980bbbeec42dd79abb0eb3c788dd082ac",
+    "artifacts": [
+      {
+        "id": "library.a.cg",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "EXCEPTION",
+        "code": "A7",
+        "message": "failed",
+        "field": "$context.currentDate"
+      },
+      {
+        "id": "library.a.cd",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "field_less_or_equal_than_field",
+        "level": "ERROR",
+        "code": "A8",
+        "message": "failed",
+        "field": "doc.issueDate",
+        "value_field": "$context.currentDate"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.cg"
+          },
+          {
+            "rule": "library.a.cd"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "doc": {
+        "issueDate": "2027-01-01"
+      }
+    },
+    "context": {
+      "currentDate": "2026-07-21"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "A8",
+        "message": "failed",
+        "field": "doc.issueDate",
+        "ruleId": "library.a.cd",
+        "pipelineId": "checks.main",
+        "expected": "2026-07-21",
+        "actual": "2027-01-01"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "fba21b4adca4c3b90d720be70625d41980bbbeec42dd79abb0eb3c788dd082ac"
+    }
+  }
+}

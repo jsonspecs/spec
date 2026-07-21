@@ -1,0 +1,63 @@
+{
+  "name": "d04/digit-class-is-ascii-only",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "feffdedca823dbe32dce0a8d78095a3e02e3eb2b6874b718f9e9024e1e2bee27",
+    "artifacts": [
+      {
+        "id": "library.r.d2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R11",
+        "message": "failed",
+        "field": "a",
+        "value": "^\\d+$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.d2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "٣"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "R11",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.r.d2",
+        "pipelineId": "checks.main",
+        "expected": "^\\d+$",
+        "actual": "٣"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "feffdedca823dbe32dce0a8d78095a3e02e3eb2b6874b718f9e9024e1e2bee27"
+    }
+  }
+}

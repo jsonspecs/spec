@@ -1,0 +1,51 @@
+{
+  "name": "d13/field-op-skips-if-either-operand-absent",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "35fe1807a3bd9a9b7b1b22638689ebe9a85a4fe51318d7cbee92591b890ef5cd",
+    "artifacts": [
+      {
+        "id": "library.a.fef",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "field_equals_field",
+        "level": "ERROR",
+        "code": "A6",
+        "message": "failed",
+        "field": "a",
+        "value_field": "b"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.fef"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "35fe1807a3bd9a9b7b1b22638689ebe9a85a4fe51318d7cbee92591b890ef5cd"
+    }
+  }
+}

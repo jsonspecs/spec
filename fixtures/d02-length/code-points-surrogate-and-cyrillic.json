@@ -1,0 +1,67 @@
+{
+  "name": "d02/code-points-surrogate-and-cyrillic",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "2f5fbd8ad66b0a37b8e49f9bfb65d97ed855418b456a0c0e6c5b0cdb2b42bf59",
+    "artifacts": [
+      {
+        "id": "library.l.max",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "length_max",
+        "level": "ERROR",
+        "code": "L1",
+        "message": "failed",
+        "field": "emoji",
+        "value": 1
+      },
+      {
+        "id": "library.l.eq",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "length_equals",
+        "level": "ERROR",
+        "code": "L2",
+        "message": "failed",
+        "field": "name",
+        "value": 4
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.l.max"
+          },
+          {
+            "rule": "library.l.eq"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "emoji": "😀",
+      "name": "Пётр"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "2f5fbd8ad66b0a37b8e49f9bfb65d97ed855418b456a0c0e6c5b0cdb2b42bf59"
+    }
+  }
+}

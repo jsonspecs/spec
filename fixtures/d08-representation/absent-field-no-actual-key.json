@@ -1,0 +1,58 @@
+{
+  "name": "d08/absent-field-no-actual-key",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "fe9aa4c3cf4de7cab014b08a567144bcc8a733bbf2e5f18728319d9f9e7e1869",
+    "artifacts": [
+      {
+        "id": "library.p.req",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "P1",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.p.req"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "P1",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.p.req",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "fe9aa4c3cf4de7cab014b08a567144bcc8a733bbf2e5f18728319d9f9e7e1869"
+    }
+  }
+}

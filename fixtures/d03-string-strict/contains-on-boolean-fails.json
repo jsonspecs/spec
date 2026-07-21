@@ -1,0 +1,63 @@
+{
+  "name": "d03/contains-on-boolean-fails",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "521de355eed40c93a564c4eb1f4e4f4a55a294240c10a679434d2c867363361c",
+    "artifacts": [
+      {
+        "id": "library.s.ct",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "contains",
+        "level": "ERROR",
+        "code": "S3",
+        "message": "failed",
+        "field": "a",
+        "value": "ru"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.s.ct"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": true
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "S3",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.s.ct",
+        "pipelineId": "checks.main",
+        "expected": "ru",
+        "actual": true
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "521de355eed40c93a564c4eb1f4e4f4a55a294240c10a679434d2c867363361c"
+    }
+  }
+}

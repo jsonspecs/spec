@@ -1,0 +1,63 @@
+{
+  "name": "d01/greater-than-numeric-strings",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "dae1676348cf9874357ca8b6566315040b9d7bb1a1d3a403d2882cc61d7f994f",
+    "artifacts": [
+      {
+        "id": "library.n.gt",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "N2",
+        "message": "failed",
+        "field": "a",
+        "value": "10"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.n.gt"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "9.5"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "N2",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.n.gt",
+        "pipelineId": "checks.main",
+        "expected": "10",
+        "actual": "9.5"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "dae1676348cf9874357ca8b6566315040b9d7bb1a1d3a403d2882cc61d7f994f"
+    }
+  }
+}

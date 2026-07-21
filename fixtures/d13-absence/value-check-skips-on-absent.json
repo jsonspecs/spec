@@ -1,0 +1,49 @@
+{
+  "name": "d13/value-check-skips-on-absent",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "3c84430cabbca362d32123dd309c2152aef5f57712b9166f2f08d99dc4d09896",
+    "artifacts": [
+      {
+        "id": "library.a.eq",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "equals",
+        "level": "ERROR",
+        "code": "A1",
+        "message": "failed",
+        "field": "a",
+        "value": 5
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.eq"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "3c84430cabbca362d32123dd309c2152aef5f57712b9166f2f08d99dc4d09896"
+    }
+  }
+}

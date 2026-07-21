@@ -1,0 +1,73 @@
+{
+  "name": "d13/required-idiom-single-issue-on-absent",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "579a6bde724082cba98ccd3f3f62b951e586ae130295dc61e4a6492f89733794",
+    "artifacts": [
+      {
+        "id": "library.a.req",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "A2",
+        "message": "failed",
+        "field": "inn"
+      },
+      {
+        "id": "library.a.fmt",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "A3",
+        "message": "failed",
+        "field": "inn",
+        "value": "^\\d{12}$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.req"
+          },
+          {
+            "rule": "library.a.fmt"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "A2",
+        "message": "failed",
+        "field": "inn",
+        "ruleId": "library.a.req",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "579a6bde724082cba98ccd3f3f62b951e586ae130295dc61e4a6492f89733794"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "name": "sem/author-meta-passthrough-verbatim",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "94a5e060c4ede8b3c1a30996b8e3a08cc0ce23bfe5b01f63b94bb45b962dba32",
+    "artifacts": [
+      {
+        "id": "library.se.meta",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE18",
+        "message": "failed",
+        "field": "a",
+        "meta": {
+          "ui": "form1",
+          "docLink": "https://intra/reg/17"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.meta"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE18",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.se.meta",
+        "pipelineId": "checks.main",
+        "meta": {
+          "ui": "form1",
+          "docLink": "https://intra/reg/17"
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "94a5e060c4ede8b3c1a30996b8e3a08cc0ce23bfe5b01f63b94bb45b962dba32"
+    }
+  }
+}

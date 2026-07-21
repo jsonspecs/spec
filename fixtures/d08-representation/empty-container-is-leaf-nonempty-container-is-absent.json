@@ -1,0 +1,77 @@
+{
+  "name": "d08/empty-container-is-leaf-nonempty-container-is-absent",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "e89ed066885fee2ed9418a6328a7c6b859aad97ce68a7cec25eb74eb349b4a2f",
+    "artifacts": [
+      {
+        "id": "library.p.ec",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "P5",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.p.cc",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "P6",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.p.ec"
+          },
+          {
+            "rule": "library.p.cc"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": [],
+      "b": [
+        1
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "P6",
+        "message": "failed",
+        "field": "b",
+        "ruleId": "library.p.cc",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "e89ed066885fee2ed9418a6328a7c6b859aad97ce68a7cec25eb74eb349b4a2f"
+    }
+  }
+}

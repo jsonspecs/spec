@@ -1,0 +1,71 @@
+{
+  "name": "sem/aggregate-all-summary-details-shape",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "22ae7905664e00ac731728edffd13a491620696c9c0890cab7b86351aaafd8ec",
+    "artifacts": [
+      {
+        "id": "library.se.all",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "SE13",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10,
+        "aggregate": {
+          "mode": "ALL",
+          "summaryIssue": true
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.all"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "x[0].v": 1,
+      "x[1].v": 2
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE13",
+        "message": "failed",
+        "field": "x[*].v",
+        "ruleId": "library.se.all",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "ALL",
+          "total": 2,
+          "failed": 2
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "22ae7905664e00ac731728edffd13a491620696c9c0890cab7b86351aaafd8ec"
+    }
+  }
+}

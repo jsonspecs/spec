@@ -1,0 +1,87 @@
+{
+  "name": "d05/wildcard-gaps-ascending-numeric",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "cb59d7b4d1c08c4f89ab0bc1095f1fd5a4205ec79b47fd67a5158676e567bb6d",
+    "artifacts": [
+      {
+        "id": "library.o.each",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "O1",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.o.each"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "x[5].v": 1,
+      "x[0].v": 2,
+      "x[2].v": 3
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O1",
+        "message": "failed",
+        "field": "x[0].v",
+        "ruleId": "library.o.each",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 2
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O1",
+        "message": "failed",
+        "field": "x[2].v",
+        "ruleId": "library.o.each",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 3
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "O1",
+        "message": "failed",
+        "field": "x[5].v",
+        "ruleId": "library.o.each",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 1
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "cb59d7b4d1c08c4f89ab0bc1095f1fd5a4205ec79b47fd67a5158676e567bb6d"
+    }
+  }
+}

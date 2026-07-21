@@ -1,0 +1,38 @@
+{
+  "name": "d11/reject-format-version-1",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 1,
+    "specVersion": "1.0.0",
+    "sourceHash": "771fbaae14785735778cdf8837677d7f7a417db4a1b1a2615b626c3249cd4bb3",
+    "artifacts": [
+      {
+        "id": "library.x.f",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X4",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.f"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

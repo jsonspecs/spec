@@ -1,0 +1,43 @@
+{
+  "name": "d11/reject-cross-role-on-empty",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "504e72d1a81d975f4499b4a0dff3b285a771dfd21856ccf4cf6df044d685f70c",
+    "artifacts": [
+      {
+        "id": "library.x.oe",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "X11",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 1,
+        "aggregate": {
+          "mode": "EACH",
+          "onEmpty": "TRUE"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.oe"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

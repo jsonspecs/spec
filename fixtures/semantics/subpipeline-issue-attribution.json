@@ -1,0 +1,70 @@
+{
+  "name": "sem/subpipeline-issue-attribution",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "cf8f955dc9bbc0906171d30a6f02ce9dc757e77c7068b7563c509096780ab881",
+    "artifacts": [
+      {
+        "id": "library.se.sub",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE22",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.inner",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": false,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.sub"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "checks.inner"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE22",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.se.sub",
+        "pipelineId": "checks.inner"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "cf8f955dc9bbc0906171d30a6f02ce9dc757e77c7068b7563c509096780ab881"
+    }
+  }
+}

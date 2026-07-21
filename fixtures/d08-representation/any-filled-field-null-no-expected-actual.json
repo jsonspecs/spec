@@ -1,0 +1,63 @@
+{
+  "name": "d08/any-filled-field-null-no-expected-actual",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "3ef3ba41c7d424fa6b9783ed9b2d1fe2c592d85b0c7bab5ffdd19a9c551f04d2",
+    "artifacts": [
+      {
+        "id": "library.p.any",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "any_filled",
+        "level": "ERROR",
+        "code": "P4",
+        "message": "failed",
+        "fields": [
+          "phone",
+          "email"
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.p.any"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "other": 1
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "P4",
+        "message": "failed",
+        "field": null,
+        "ruleId": "library.p.any",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "3ef3ba41c7d424fa6b9783ed9b2d1fe2c592d85b0c7bab5ffdd19a9c551f04d2"
+    }
+  }
+}

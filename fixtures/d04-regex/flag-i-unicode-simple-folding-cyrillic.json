@@ -1,0 +1,52 @@
+{
+  "name": "d04/flag-i-unicode-simple-folding-cyrillic",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "834628eae1fc086362c97ee29853cf2fa539f61586049b62aed73d7a49a0c784",
+    "artifacts": [
+      {
+        "id": "library.r.i",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R9",
+        "message": "failed",
+        "field": "a",
+        "value": "^иван$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.i"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ИВАН"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "834628eae1fc086362c97ee29853cf2fa539f61586049b62aed73d7a49a0c784"
+    }
+  }
+}

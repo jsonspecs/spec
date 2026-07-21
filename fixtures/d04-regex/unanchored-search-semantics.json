@@ -1,0 +1,51 @@
+{
+  "name": "d04/unanchored-search-semantics",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "5598be6c782d55d7c6dd99197ab47d86c4b3053a7da174b415e2d00ab4d4bef7",
+    "artifacts": [
+      {
+        "id": "library.r.s",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R12",
+        "message": "failed",
+        "field": "a",
+        "value": "\\d"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.s"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ab7cd"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "5598be6c782d55d7c6dd99197ab47d86c4b3053a7da174b415e2d00ab4d4bef7"
+    }
+  }
+}

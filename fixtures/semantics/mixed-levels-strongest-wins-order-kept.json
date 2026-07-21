@@ -1,0 +1,81 @@
+{
+  "name": "sem/mixed-levels-strongest-wins-order-kept",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "640d3a269c979ad43c454a6f4f2fe9570595a00462ef05c5e2627033255f54c3",
+    "artifacts": [
+      {
+        "id": "library.se.w2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "WARNING",
+        "code": "SE8",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.se.e3",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE9",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.w2"
+          },
+          {
+            "rule": "library.se.e3"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "WARNING",
+        "code": "SE8",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.se.w2",
+        "pipelineId": "checks.main"
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE9",
+        "message": "failed",
+        "field": "b",
+        "ruleId": "library.se.e3",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "640d3a269c979ad43c454a6f4f2fe9570595a00462ef05c5e2627033255f54c3"
+    }
+  }
+}

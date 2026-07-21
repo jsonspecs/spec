@@ -1,0 +1,41 @@
+{
+  "name": "d11/reject-required-context-field",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "4b8d98bb6044efc63959a2ce28bac2eddb9460477c3a87ac07ee7c16e0e0fbe8",
+    "artifacts": [
+      {
+        "id": "library.x.r",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X2",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "required_context": [
+          "currentDate"
+        ],
+        "flow": [
+          {
+            "rule": "library.x.r"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

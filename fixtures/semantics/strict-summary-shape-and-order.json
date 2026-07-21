@@ -1,0 +1,69 @@
+{
+  "name": "sem/strict-summary-shape-and-order",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "18231d42a2902e038c52b367590f98a878dc23c61827c4d1cbea6dff7de7c8ee",
+    "artifacts": [
+      {
+        "id": "library.se.e1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "SE3",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": true,
+        "message": "Block failed",
+        "strictCode": "BLK",
+        "flow": [
+          {
+            "rule": "library.se.e1"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "EXCEPTION",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE3",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.se.e1",
+        "pipelineId": "checks.main"
+      },
+      {
+        "kind": "ISSUE",
+        "level": "EXCEPTION",
+        "code": "BLK",
+        "message": "Block failed",
+        "field": null,
+        "ruleId": "pipeline:checks.main",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "18231d42a2902e038c52b367590f98a878dc23c61827c4d1cbea6dff7de7c8ee"
+    }
+  }
+}

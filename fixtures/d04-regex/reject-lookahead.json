@@ -1,0 +1,39 @@
+{
+  "name": "d04/reject-lookahead",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "4d02dc40df7c067ffad0e2fd2b7c464d5e3ae3d9ace1160c872468d429a65290",
+    "artifacts": [
+      {
+        "id": "library.r.a",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R1",
+        "message": "failed",
+        "field": "a",
+        "value": "^(?!x).*$"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.a"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

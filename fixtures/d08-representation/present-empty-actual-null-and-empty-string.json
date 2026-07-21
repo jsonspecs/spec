@@ -1,0 +1,86 @@
+{
+  "name": "d08/present-empty-actual-null-and-empty-string",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "945c71bd10963324b8106422318074fd29c77d731a03272ed6ae64fd92e6de0c",
+    "artifacts": [
+      {
+        "id": "library.p.n",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "P2",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "library.p.e",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "P3",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.p.n"
+          },
+          {
+            "rule": "library.p.e"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": null,
+      "b": ""
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "P2",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.p.n",
+        "pipelineId": "checks.main",
+        "actual": null
+      },
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "P3",
+        "message": "failed",
+        "field": "b",
+        "ruleId": "library.p.e",
+        "pipelineId": "checks.main",
+        "actual": ""
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "945c71bd10963324b8106422318074fd29c77d731a03272ed6ae64fd92e6de0c"
+    }
+  }
+}

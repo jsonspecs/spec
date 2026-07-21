@@ -1,0 +1,62 @@
+{
+  "name": "sem/not-in-dictionary-ok",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "c49ddfb5221766f749c30a1c8e140ccbe076f914aeda9cc74c1a766d83a6ed27",
+    "artifacts": [
+      {
+        "id": "library.dict.blocked",
+        "type": "dictionary",
+        "description": "fixture dictionary",
+        "entries": [
+          "RU"
+        ]
+      },
+      {
+        "id": "library.se.ni",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_in_dictionary",
+        "level": "ERROR",
+        "code": "SE12",
+        "message": "failed",
+        "field": "a",
+        "dictionary": {
+          "type": "static",
+          "id": "library.dict.blocked"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.ni"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "DE"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "c49ddfb5221766f749c30a1c8e140ccbe076f914aeda9cc74c1a766d83a6ed27"
+    }
+  }
+}

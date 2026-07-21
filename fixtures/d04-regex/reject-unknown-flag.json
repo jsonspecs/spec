@@ -1,0 +1,40 @@
+{
+  "name": "d04/reject-unknown-flag",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "2faa252821ac0713c33727ef9d8f8a6f1f743d1f0cc409d116c842a980d1b578",
+    "artifacts": [
+      {
+        "id": "library.r.f",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "R6",
+        "message": "failed",
+        "field": "a",
+        "value": "^a$",
+        "flags": "g"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.r.f"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

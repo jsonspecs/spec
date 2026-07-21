@@ -1,0 +1,67 @@
+{
+  "name": "sem/aggregate-on-empty-fail-summary",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "be48e328a1b69bc0fd9a219dd2ec6b6bc766f25f997a37767b5ee8a225a23d69",
+    "artifacts": [
+      {
+        "id": "library.se.oe2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "SE17",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10,
+        "aggregate": {
+          "mode": "EACH",
+          "onEmpty": "FAIL"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.oe2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE17",
+        "message": "failed",
+        "field": "x[*].v",
+        "ruleId": "library.se.oe2",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "EACH",
+          "total": 0
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "be48e328a1b69bc0fd9a219dd2ec6b6bc766f25f997a37767b5ee8a225a23d69"
+    }
+  }
+}

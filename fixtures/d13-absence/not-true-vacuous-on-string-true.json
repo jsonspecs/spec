@@ -1,0 +1,50 @@
+{
+  "name": "d13/not-true-vacuous-on-string-true",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "8d894c1ba6b51c7edbb0907c8b80a05649289a4e01c7ab85c26dc2f863ea478c",
+    "artifacts": [
+      {
+        "id": "library.a.nt",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_true",
+        "level": "ERROR",
+        "code": "A4",
+        "message": "failed",
+        "field": "f"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.a.nt"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "f": "true"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "8d894c1ba6b51c7edbb0907c8b80a05649289a4e01c7ab85c26dc2f863ea478c"
+    }
+  }
+}
