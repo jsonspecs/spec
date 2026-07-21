@@ -3,6 +3,30 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.4] — 2026-07-21
+
+Executable-bundle simplification and cross-runtime semantic closure (D21–D25 and
+addendum [DR-VI]).
+
+- Replaced scopes and relative resolution with globally unique opaque ids and exact
+  references. Retained reusable condition artifacts.
+- Added mandatory direct `exports: [pipelineId, ...]`; removed pipeline `entrypoint`
+  and default selection. Every evaluation now supplies an explicit exported `pipelineId`.
+- Required the final snapshot to contain exactly the transitive closure of its exports;
+  the control-flow DAG now combines pipeline and condition nodes.
+- Removed artifact `description` from the executable graph; authoring metadata belongs
+  outside artifacts or in `snapshot.meta`.
+- Made `when` evaluation left-to-right and short-circuiting. Defined MIN/MAX as raw
+  extremum selection followed by exactly one operator invocation.
+- Closed the numeric model to finite IEEE 754 binary64, including normative rounding
+  and structured payload/context overflow errors.
+- Added custom-operator `params` with compile-time registered closed schemas and closed
+  every nested core object shape.
+- Expanded `sourceHash` to the order-independent projection of `requires`, direct
+  `exports`, and artifacts sorted by id.
+- Fixtures: 128 → **163** (109 evaluation, 54 rejection), including the five RC.4
+  decision groups and `conformance.rule.params`.
+
 ## [1.0.0-rc.3] — 2026-07-21
 
 Final pre-1.0 architectural unification (D19–D20 and addendum [DR-V]).

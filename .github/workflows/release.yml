@@ -8,18 +8,33 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
+      - name: Tag commit must belong to main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::tag is not on main"; exit 1; }
+      - name: Tag version must be present in CHANGELOG
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          grep -q "\[$V\]" CHANGELOG.md || { echo "::error::CHANGELOG has no entry [$V]"; exit 1; }
+          grep -q "\*\*Version:\*\* $V" SPEC.md || { echo "::error::SPEC.md version does not match $V"; exit 1; }
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
-      - name: Build release archive
+      - name: Fixtures exactly match the generator
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          git archive --format=tar.gz --prefix="jsonspecs-spec-${TAG}/" -o "jsonspecs-spec-${TAG}.tar.gz" "${GITHUB_REF_NAME}"
+          rm -rf /tmp/fixgen && mkdir -p /tmp/fixgen/fixtures
+          cp -r tools /tmp/fixgen/
+          node /tmp/fixgen/tools/generate-fixtures.mjs
+          diff -ru --exclude=README.md /tmp/fixgen/fixtures fixtures
+      - name: Build release archive
+        run: git archive --format=tar.gz --prefix="jsonspecs-spec-${GITHUB_REF_NAME}/" -o "jsonspecs-spec-${GITHUB_REF_NAME}.tar.gz" "${GITHUB_REF_NAME}"
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-rc') }}

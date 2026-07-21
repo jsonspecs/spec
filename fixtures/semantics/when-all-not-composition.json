@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "59f0b9d2bdbf3f8e35e804912ec54f109022fa6e3f0d4333f1b97a3b0f917ad5",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "165386883a2415e6924f5e2b49c7d54529cad297163da0eae24875eff4fc8601",
     "artifacts": [
       {
         "id": "library.se.pa",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "equals",
         "field": "type",
         "value": "FL"
@@ -17,7 +19,6 @@
       {
         "id": "library.se.pb",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "equals",
         "field": "resident",
         "value": true
@@ -25,7 +26,6 @@
       {
         "id": "library.se.c2",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "passport",
         "issue": {
@@ -37,7 +37,6 @@
       {
         "id": "library.cond.w",
         "type": "condition",
-        "description": "fixture condition",
         "when": {
           "all": [
             "library.se.pa",
@@ -55,8 +54,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -89,8 +86,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "59f0b9d2bdbf3f8e35e804912ec54f109022fa6e3f0d4333f1b97a3b0f917ad5"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "165386883a2415e6924f5e2b49c7d54529cad297163da0eae24875eff4fc8601"
     }
   }
 }

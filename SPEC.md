@@ -1,6 +1,6 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0-rc.3 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
+**Version:** 1.0.0-rc.4 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
 
 This specification is the canon of runtime behavior for a given version. It states only
@@ -8,8 +8,8 @@ expected behavior. The reasoning behind every decision lives in a separate docum
 `DECISIONS.md` / `DECISIONS_RU.md` — which in turn refers to the prototype
 implementation (`source/`) whose practical experience produced these decisions.
 
-**Notation.** `[D1]`…`[D20]` refer to numbered decisions in `DECISIONS.md`;
-`[DR-I]`…`[DR-V]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
+**Notation.** `[D1]`…`[D25]` refer to numbered decisions in `DECISIONS.md`;
+`[DR-I]`…`[DR-VI]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
 
 ---
 
@@ -53,9 +53,10 @@ A *value* is a JSON value: `null`, boolean, number, string, array, or object. Th
 present versus a key whose value is `null`.
 
 All inputs (artifacts, snapshot, payload, context) and the normative result are JSON
-documents. Structures that cannot round-trip through JSON serialization (cyclic references,
-non-finite numbers, host-specific types) are outside the model; the runtime boundary MUST
-reject them (Part II, input validation).
+documents. Structures that cannot round-trip through JSON serialization (cyclic references
+and host-specific types) are outside the model. JSON number tokens enter the model only
+after the normative conversion in §2.2; overflow to infinity is rejected at the relevant
+boundary (§4.10, §5.1).
 
 **Maximum depth.** Depth is defined algorithmically: a scalar or an empty container has
 depth 1; a non-empty container has depth 1 + the maximum depth of its members. Every
@@ -78,17 +79,22 @@ verdicts across implementations. `[D9]`
 
 ### 2.2 Numbers
 
-Numbers are interpreted as **IEEE 754 binary64** values. `[D1]`
+The number domain is exactly the finite values of **IEEE 754 binary64**. `[D1][D23]`
 
-- Integers in the range ±(2^53 − 1) are represented exactly.
-- A JSON number whose mathematical value is not exactly representable in binary64
-  (an integer outside the safe range, or a decimal fraction such as `0.1` used in a
-  context where its binary64 rounding is observable) is *outside the determinism
-  guarantee*: implementations MUST apply round-to-nearest-even, and IEEE 754-conformant
-  platforms will agree in practice, but rule authors SHOULD NOT rely on comparisons at
-  the edge of binary64 precision.
-- `1` and `1.0` denote the same value. `is_integer` accepts any number whose fractional
-  part is zero; `1.0` passes, `1.5` fails.
+- Every JSON number token MUST be converted to binary64 using round-to-nearest,
+  ties-to-even. This conversion is normative and applies equally to snapshots, payload,
+  context, and custom-operator parameters.
+- If conversion produces `+Infinity` or `-Infinity`, the document is outside the model:
+  the snapshot is rejected and payload/context produce structured `ABORT` (§5.1). An
+  arbitrary-precision implementation, such as Java `BigDecimal`, MUST perform this
+  conversion explicitly before execution.
+- Every finite conversion result is accepted. Thus `0.1` denotes its nearest binary64
+  value, while the token `9007199254740993` denotes `9007199254740992`. There is no
+  "outside the determinism guarantee" category.
+- Overflow is rejected; underflow and subnormal values follow ordinary
+  round-to-nearest-even. `-0` is normalized to `+0` on every normative surface.
+- Integers in ±(2^53 − 1) are represented exactly. `1` and `1.0` denote the same value.
+  `is_integer` accepts any finite binary64 value with zero fractional part.
 
 **Numeric strings.** In ordered comparisons (§2.5) a string is *numeric* if and only if it
 matches:
@@ -97,9 +103,10 @@ matches:
 ^[+-]?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$
 ```
 
-A numeric string is converted to binary64 with round-to-nearest-even. Strings not matching
-this grammar are not numbers for comparison purposes, regardless of what a host language's
-lenient parser would accept (`" 5"`, `"0x10"`, `"5,0"`, `"Infinity"` are not numeric).
+A matching string is numeric only when round-to-nearest-even conversion produces a finite
+binary64 value. Thus `"1e400"` is a valid JSON string but not a numeric string for ordered
+comparison. Strings outside the grammar are likewise non-numeric regardless of what a
+host language's lenient parser accepts (`" 5"`, `"0x10"`, `"5,0"`, `"Infinity"`).
 
 ### 2.3 Strings
 
@@ -244,7 +251,7 @@ from a step or from `when`. A business stop is expressed only by a rule `FAIL` w
 `[D17][D19]`
 
 Operator behavior is a pure function of resolved field values, rule parameters
-(`value`, `value_field`, `fields`, `dictionary`, `flags`), referenced dictionary
+(`value`, `value_field`, `fields`, `dictionary`, `flags`, custom `params`), referenced dictionary
 contents, and context. Operators MUST NOT depend on the use site, evaluation order,
 wall-clock time, locale, or any other ambient state.
 
@@ -444,7 +451,8 @@ wildcard; aligned comparison of two wildcard paths is not defined in version 1.
 `issueMode` is forbidden for `COUNT`, `MIN`, and `MAX`: their failure always creates
 one summary issue. Legacy `EACH` is not a `mode` value.
 
-**Population and `SKIP`.** Evaluation proceeds as follows:
+**Population and `SKIP` for `ALL`/`ANY`/`COUNT`.** These three modes evaluate as
+follows:
 
 1. Resolve the wildcard to a structural match list.
 2. If the list is empty, take the outcome from `onEmpty`.
@@ -461,12 +469,23 @@ Thus `onEmpty` means no structural matches, not no computable outcomes.
 | `ALL` | every evaluated element is `PASS` |
 | `ANY` | at least one evaluated element is `PASS` |
 | `COUNT` | the number of `PASS` outcomes satisfies `op value` |
-| `MIN` | the operator is `PASS` on the minimum value |
-| `MAX` | the operator is `PASS` on the maximum value |
+| `MIN` | the operator is `PASS` on the minimum structural match |
+| `MAX` | the operator is `PASS` on the maximum structural match |
 
-`MIN`/`MAX` use §2.5. An unclassified value or mixed comparison kinds cause `FAIL`;
-ties select the first element in normative order. An operator `SKIP` on the chosen
-extremum propagates as aggregate `SKIP`.
+**`MIN`/`MAX` select before operator evaluation.** `[D22]` The effective-population
+steps above do not apply to these modes. After structural resolution:
+
+1. An empty list uses `onEmpty`.
+2. Classify every raw value under §2.5. Any unclassified value or mixed kinds produce
+   `FAIL` without invoking the operator.
+3. Select the minimum or maximum raw value; ties select the first element in §3.6.1
+   normative order.
+4. Invoke the operator exactly once on the selected element. Its `PASS`, `FAIL`, or
+   `SKIP` is the aggregate outcome.
+
+Unselected elements therefore cannot produce `SKIP`, `OPERATOR_FAULT`, or
+`OPERATOR_CONTRACT_VIOLATION`; a selected-extremum `SKIP` propagates without
+contradicting the effective-population rules.
 
 Issues are possible only for final aggregate `FAIL`: `ALL + EACH` reports each
 `FAIL`; `ANY + EACH` reports each `FAIL` only when no element passed;
@@ -484,45 +503,35 @@ An artifact is a JSON object. Every artifact, regardless of type, MUST have:
 | --- | --- | --- |
 | `id` | string | non-empty; unique across the snapshot |
 | `type` | string | one of `"rule"`, `"condition"`, `"pipeline"`, `"dictionary"` |
-| `description` | string | non-empty |
 
 A snapshot containing an artifact violating these rules, or two artifacts sharing an
 `id`, is **invalid** (§4.10). Unknown top-level fields on an artifact make it invalid
 (closed schemas; this keeps typos loud and reserves the namespace for future spec
-versions). `[DR-II]`
+versions). `description` is not part of the executable format: titles, explanations,
+folders, tags, and ownership belong to the authoring layer or `snapshot.meta` and do
+not affect `sourceHash`. `[DR-II][D21]`
 
-### 4.2 Identifiers, scopes, visibility
+### 4.2 Identifiers
 
-| Artifact id form | Visible from |
-| --- | --- |
-| `library.*` | anywhere: any pipeline, condition, or other library artifact |
-| `{pipelineId}.*` | only the pipeline `{pipelineId}` and its conditions |
-| any pipeline, by full `id` | any other pipeline's `flow` |
-| any dictionary, by `id` | any rule (dictionaries are globally addressable) |
+An `id` is an opaque non-empty string compared by exact, case-sensitive equality of
+its Unicode sequence. Dots, slashes, and other characters create no hierarchy and do
+not affect addressing. There are no reserved prefixes: `library.*`, `internal.*`, and
+`entrypoints.*`, when used by authoring tools, are ordinary id text with no normative
+meaning. `[D21]`
 
-Nested pipelines do not inherit visibility: `a.b.rule_x` is visible from pipeline `a.b`,
-not from pipeline `a`. When pipeline ids overlap as prefixes, an artifact belongs to
-the **longest** pipeline id that prefixes it. Every non-pipeline artifact id MUST be
-either `library.*` or prefixed (followed by `.`) by the id of a pipeline present in
-the snapshot; an orphan scope makes the snapshot invalid. `[DR-IV]`
-
-The *scope* of a pipeline is its own `id`. The *scope* of a condition is inferred from
-its `id`: the prefix up to (not including) the last `.`. A condition `id` containing no
-`.` is invalid.
+All ids are globally unique within a snapshot. Artifact ownership, folders, visibility
+scopes, local names, orphan scopes, and longest-prefix ownership do not exist in the
+executable model.
 
 ### 4.3 Reference resolution
 
-A reference string `r` in a step or `when` expression resolves as:
+Every reference string `r` in a step, a `when` expression, or a dictionary reference
+means exactly the artifact whose `id === r`. There is no relative expansion, import
+alias, or dependency on the use site. A missing reference or one targeting the wrong
+artifact type for its position makes the snapshot invalid.
 
-| Form of `r` | Resolution |
-| --- | --- |
-| starts with `library.` | absolute — used as-is |
-| contains `.` | absolute — used as-is |
-| contains no `.` | scoped — expanded to `{scope}.{r}` |
-
-A reference that resolves to no artifact, to an artifact of the wrong type for its
-position, or to an artifact not visible from the referencing scope (§4.2), makes the
-snapshot invalid.
+Imports, aliases, and id-conflict resolution happen in the builder before snapshot
+creation. The normative snapshot already contains a closed graph of exact references.
 
 ### 4.4 Artifact: `rule`
 
@@ -534,6 +543,7 @@ Fields in addition to §4.1:
 | `field` | per operator | §2.7 path; unused by `any_filled` |
 | `fields` | `any_filled` only | non-empty path array |
 | `value`, `value_field`, `flags`, `dictionary` | per operator | Part I; `value_field` contains no `[*]` |
+| `params` | custom operator only | JSON object valid under the registered operator's closed schema `[D24]` |
 | `aggregate` | when `field` contains `[*]` | §3.6; forbidden without wildcard |
 | `issue` | optional | issue description for `FAIL` at a rule step |
 
@@ -557,6 +567,18 @@ A rule without `issue` is a complete condition and MAY be used in `when`. A rule
 step MUST reference a rule with `issue`, otherwise the snapshot is invalid. A rule
 with `issue` MAY be used both in steps and in `when`; `when` ignores `issue`.
 
+**Custom-operator parameters.** `params` is forbidden for built-ins. A registered
+custom operator declares which standard operand fields (`field`, `fields`, `value`,
+`value_field`, `flags`, `dictionary`) it accepts and registers a closed compile-time
+schema for `params`. A mismatch rejects the snapshot before execution. The concrete
+registration API and schema language are implementation choices; an operator pack
+claiming cross-runtime portability MUST publish one equivalent machine-readable schema
+for every implementation. Core passes accepted `params` to the operator verbatim.
+
+Strings inside `params` are not artifact references and create no snapshot-graph edges.
+A dictionary dependency MUST use the normative `dictionary` field; payload/context
+dependencies, such as additional field paths, are validated by the operator's schema.
+
 ### 4.5 Artifact: `condition`
 
 | Field | Required | Constraint |
@@ -573,6 +595,7 @@ A when expression is one of:
 { "not": <when-expression> }
 ```
 
+An object form is closed and contains exactly one of `all`, `any`, or `not`.
 `all`/`any` arrays MUST be non-empty. Every leaf references any valid `rule`;
 presence and level of `rule.issue` are irrelevant. A reference to a condition,
 pipeline, or dictionary makes the snapshot invalid. Semantics are in §5.4. `[D19]`
@@ -581,30 +604,29 @@ pipeline, or dictionary makes the snapshot invalid. Semantics are in §5.4. `[D1
 
 | Field | Required | Constraint |
 | --- | --- | --- |
-| `entrypoint` | yes | boolean, explicit |
 | `strict` | yes | boolean, explicit |
 | `flow` | yes | non-empty array of steps (§4.8) |
 | `message` | when `strict: true` | non-empty string; the message of the strict summary issue |
 | `strictCode` | optional, only with `strict: true` | non-empty string; default `"STRICT_PIPELINE_FAILED"` |
 
-`entrypoint: true` marks the pipeline as an intended entry point and enables default
-selection (§5.1); it does **not** restrict invocation — any pipeline is invocable by its
-full `id`. `strict` semantics are defined in §5.7. `message` or `strictCode` present on
-a non-strict pipeline is invalid.
+Public entry points are listed centrally in `exports` (§4.9); a pipeline
+artifact has no `entrypoint` field. `strict` semantics are defined in §5.7. `message`
+or `strictCode` on a non-strict pipeline is invalid.
 
 **No context-requirement field.** `[D14]` Pipelines declare no `required_context` (an
 unknown field under closed schemas). Whether the runtime context is complete
 is the analyst's explicit decision, expressed as ordinary rules on `$context.*` paths —
 e.g. a `not_empty` rule on `$context.currentDate` with the `issue` object chosen by
 the analyst — placed where the analyst wants the guarantee (typically
-first in an entrypoint's `flow`). Note the interaction with skip semantics `[D13]`:
+first in an exported pipeline's `flow`). Note the interaction with skip semantics `[D13]`:
 value checks against an absent `$context.*` operand are skipped, so a scenario that
 depends on context MUST guard it explicitly if absence should be an error.
 
-**DAG.** The directed graph whose edges are `{ "pipeline": … }` steps MUST be acyclic.
-A cycle makes the snapshot invalid. (Rule and condition references cannot form cycles by
-construction: conditions reference only rules and conditions/rules cannot reference
-pipelines except through pipeline steps — see §4.8.)
+**Control-flow DAG.** `[D21]` Nodes are all pipeline and condition artifacts. Every
+`{ "pipeline": … }` or `{ "condition": … }` step in `pipeline.flow` or
+`condition.steps` creates an edge. This combined graph MUST be acyclic, forbidding both
+condition → condition and mixed pipeline → condition → pipeline cycles. Rule leaves in
+`when` and dictionary references do not belong to the control-flow DAG.
 
 ### 4.7 Artifact: `dictionary`
 
@@ -614,18 +636,17 @@ pipelines except through pipeline steps — see §4.8.)
 
 Each entry is a scalar (string, number, boolean — `null` is invalid) or an object with
 at least one of `code`, `value`, each of which MUST itself be a scalar (string, number
-or boolean) `[DR-IV]`. Matching semantics: §3.5.
-
+or boolean) `[DR-IV]`. An object entry is closed and has no other fields. Matching
 ### 4.8 Steps
 
-A step is an object with exactly one of `rule`, `condition`, or `pipeline`, plus
+A step is a closed object with exactly one of `rule`, `condition`, or `pipeline`, plus
 optional non-empty `stepId`, which is passed through to issues and trace.
 
 | Key | Must reference | Resolution |
 | --- | --- | --- |
-| `rule` | a `rule` artifact with `issue` | §4.3; scoped references allowed |
-| `condition` | a `condition` artifact | §4.3; scoped references allowed |
-| `pipeline` | a `pipeline` artifact | absolute `id` only |
+| `rule` | a `rule` artifact with `issue` | exact id, §4.3 |
+| `condition` | a `condition` artifact | exact id, §4.3 |
+| `pipeline` | a `pipeline` artifact | exact id, §4.3 |
 
 A rule step referencing a rule without `issue` makes the snapshot invalid: the
 runtime would lack normative data for a `FAIL` issue. `[D19][DR-II]`
@@ -638,9 +659,10 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0-rc.3",
+  "specVersion": "1.0.0-rc.4",
   "sourceHash": "<64 lowercase hex chars>",
   "requires": { "operators": ["valid_inn"] },
+  "exports": ["credit.application"],
   "artifacts": [ … ],
   "meta": {
     "projectId": "…",
@@ -656,10 +678,33 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 | `format` | yes | exactly `"jsonspecs-snapshot"` |
 | `formatVersion` | yes | exactly `2` (integer) |
 | `specVersion` | yes | full SemVer 2.0.0 version of this specification the snapshot targets (prereleases included: an rc-suite pins rc versions) |
-| `sourceHash` | yes | SHA-256, lowercase hex, over the RFC 8785 (JCS) canonicalization of the `artifacts` array `[D6]` |
+| `sourceHash` | yes | SHA-256, lowercase hex, over the normative projection below using RFC 8785 (JCS) `[D6][D25]` |
 | `requires.operators` | optional | non-empty array of unique non-built-in operator names used by the artifacts `[D10]` |
-| `artifacts` | yes | array of artifacts; order is significant only through `sourceHash` |
+| `exports` | yes | non-empty array of unique exact pipeline ids; bundle public API and closure roots `[D21]` |
+| `artifacts` | yes | non-empty artifact array; array order itself is insignificant |
 | `meta` | optional | free-form project metadata; `projectId` and `rulesetVersion`, when present, are carried into the result's `ruleset` (Part III) |
+
+The snapshot envelope is closed: no other top-level fields exist. `requires` is a
+closed object containing only `operators`. `exports` is directly the pipeline-id array;
+no export object or other export kind exists. `meta` is the sole intentionally open
+extension, MUST be a JSON object, and does not participate in acceptance, evaluation,
+or `sourceHash`.
+
+**Normative `sourceHash` projection.** `[D25]` Before JCS hashing, construct:
+
+```json
+{
+  "requires": { "operators": ["<names ascending>"] },
+  "exports": ["<ids ascending>"],
+  "artifacts": ["<artifacts ascending by id>"]
+}
+```
+
+When `requires` is absent, the projection uses an empty `operators` array. String and
+id ordering is lexicographic by code point. Artifact contents are not reordered beyond
+ordinary JCS object-key ordering: `flow`, `steps`, `when` arrays, and dictionary entries
+retain their order. A graph assembled from database rows in different orders therefore
+has one hash, while changing public exports or operator requirements changes the hash.
 
 **Version acceptance.** An implementation declares the exact range of `specVersion`
 values it supports and MUST reject any snapshot whose `specVersion` falls outside that
@@ -674,6 +719,13 @@ is neither is invalid. An implementation that does not provide every operator li
 `requires.operators` MUST reject the snapshot before any evaluation, with
 `OPERATOR_NOT_FOUND` (Part III). `[D10]`
 
+**Complete artifact closure.** `[D21]` Build a reachability graph rooted at every
+`exports` id. Pipeline and condition steps create edges; condition `when`
+leaves create rule edges; a rule's normative `dictionary` field creates a dictionary
+edge. Reachable ids MUST equal the full `artifacts` id set exactly: an unreachable rule,
+condition, pipeline, or dictionary makes the snapshot invalid. An authoring project MAY
+retain unused files; a production snapshot does not.
+
 ### 4.10 The rejection set
 
 A conformant implementation MUST reject — refuse to evaluate any pipeline of — a
@@ -681,20 +733,23 @@ snapshot exhibiting any of the following. *When* rejection happens (load, prepar
 first call) is unobservable and unconstrained `[D12]`; *that* it happens before any
 evaluation is normative.
 
-1. Snapshot envelope violations: wrong `format`/`formatVersion`, malformed or
-   unsupported `specVersion`, missing/malformed `sourceHash`, `sourceHash` not matching
-   the recomputed JCS hash of `artifacts`.
+1. Violations of the closed snapshot envelope or nested `requires`/`exports` schemas:
+   wrong `format`/`formatVersion`, malformed or unsupported `specVersion`,
+   missing/malformed `sourceHash`, empty/duplicate or mistyped exports, or a hash that
+   does not equal §4.9.
 2. Any artifact violating §4.1 (including duplicate `id`), or its type-specific schema
    (§4.4–§4.8), including regex patterns outside the §3.4 grammar or limits, invalid
-   `flags`, and invalid `aggregate`, `issueMode`, or `onEmpty` combinations.
+   `flags`, unclosed nested objects, invalid `aggregate`, `issueMode`, or `onEmpty`
+   combinations, or `params` rejected by the operator schema.
 3. Duplicate `issue.code` among rules with `issue`.
-4. Any unresolved, wrong-typed, or invisible reference (§4.3), including `when` leaves
-   that are not rules, rule steps targeting rules without `issue`, and pipeline steps
-   with scoped references.
-5. A cycle in the pipeline call graph.
+4. Any unresolved or wrong-typed exact reference (§4.3), including `when` leaves that
+   are not rules and rule steps targeting rules without `issue`.
+5. A cycle in the combined pipeline/condition control-flow DAG (§4.6).
 6. An operator name that is neither built-in nor declared in `requires.operators`; or a
    declared required operator the implementation does not provide (`OPERATOR_NOT_FOUND`).
-7. Any artifact exceeding the maximum JSON depth (§2.1).
+7. An artifact, `params`, or `meta` value exceeding maximum JSON depth (§2.1), or any
+   snapshot number token that does not convert to finite binary64 (§2.2).
+8. Any artifact unreachable from `exports` under the complete closure in §4.9.
 
 Two conformant implementations MUST agree on membership in this set for every input.
 Diagnostic *texts* and *granularity* for rejected snapshots are informative; the verdict
@@ -709,20 +764,19 @@ is normative. `[D7]`
 Evaluation is a pure function of the tuple:
 
 ```
-(snapshot, pipelineId?, payload, context?)
+(snapshot, pipelineId, payload, context?)
 ```
 
 Input validation proceeds in the following normative order; the first failure determines
 the outcome (an `ABORT` result, Part III), so implementations agree on *which* error is
 reported when several apply:
 
-1. **Pipeline selection.** If `pipelineId` is given, it MUST name a pipeline artifact —
-   otherwise `ABORT` with `PIPELINE_NOT_FOUND`, `details: { "pipelineId": "<given>" }`.
-   If omitted, exactly one pipeline with `entrypoint: true` MUST exist — otherwise
-   `ABORT` with `PIPELINE_ID_REQUIRED`,
-   `details: { "entrypointCount": <n> }`. `details` carry only the requested id — enumerating the
-   available pipelines to the caller is diagnostic tooling's job, not the runtime
-   error's. `[D7][DR-II]`
+1. **Pipeline selection.** `pipelineId` MUST be a non-empty string; otherwise return
+   `ABORT INVALID_PIPELINE_ID`, `details: {"expected":"non-empty string"}`. It MUST
+   exactly equal an id in `exports`; an unknown id or an existing internal
+   pipeline that is not exported produces `PIPELINE_NOT_FOUND`,
+   `details: {"pipelineId":"<given>"}`. Listing exports is diagnostic tooling's job,
+   not part of the runtime error. `[D7][D21]`
 2. **Container types.** `payload` MUST be a JSON object — otherwise `ABORT` with
    `INVALID_PAYLOAD`, `details: {"expected": "object"}` (this covers `null`, arrays,
    scalars). `context`, when present, MUST be a JSON object — otherwise
@@ -737,7 +791,12 @@ reported when several apply:
    (code-point order, `parentPath` first). Codes: `DANGEROUS_PAYLOAD_KEY`,
    `DANGEROUS_CONTEXT_KEY`, `INVALID_PAYLOAD_KEY`, `INVALID_CONTEXT_KEY`; details:
    `{"parentPath": "…", "key": "…"}`.
-4. **Depth.** §2.1 depth of payload ≤ 256 — otherwise `PAYLOAD_TOO_DEEP`,
+4. **Numbers.** Recursively convert every numeric value to binary64 under §2.2.
+   Overflow in payload produces `INVALID_PAYLOAD_NUMBER`; overflow in context produces
+   `INVALID_CONTEXT_NUMBER`; details are `{"path":"…"}`. Payload precedes context;
+   within one document choose the lexicographically smallest path by code point.
+   Normalize `-0` to `0`.
+5. **Depth.** §2.1 depth of payload ≤ 256 — otherwise `PAYLOAD_TOO_DEEP`,
    `details: {"maxDepth": 256}`; likewise context — `CONTEXT_TOO_DEEP`.
 
 All input-validation failures are `ABORT` (the evaluation could not be performed).
@@ -771,13 +830,19 @@ level, code, or message.
 ### 5.4 Condition steps
 
 A `when` leaf evaluates a rule and maps `PASS` to `true`, and `FAIL`/`SKIP` to
-`false`. `all`, `any`, and `not` combine those booleans.
+`false`. Object expressions evaluate normatively left-to-right with short-circuit
+`[D22]`:
+
+- `all` stops at the first `false`; if none occurs, it returns `true`;
+- `any` stops at the first `true`; if none occurs, it returns `false`;
+- `not` evaluates its single child and negates that boolean.
 
 `when` never creates issues and ignores `rule.issue`, including
-`level: "EXCEPTION"`. Short-circuit versus exhaustive evaluation is therefore not
-observable in the normative result; trace MAY differ. A thrown operator exception or
-contract violation still causes site-independent `ABORT` (§3.1, §6.7).
-`[D7][D12][D19]`
+`level: "EXCEPTION"`. Leaves skipped by short-circuit do not invoke their operators
+and cannot produce `ABORT` or trace. A thrown exception or contract violation in an
+actually evaluated leaf causes site-independent `ABORT` (§3.1, §6.7). Therefore
+`any(PASS, throw) → true`, `all(FAIL, throw) → false`, while `any(FAIL, throw)` and
+`all(PASS, throw)` produce `OPERATOR_FAULT`. `[D7][D19][D22]`
 
 When the guard is true, its steps execute in place; otherwise the condition is a no-op.
 
@@ -785,8 +850,8 @@ When the guard is true, its steps execute in place; otherwise the condition is a
 
 A pipeline step executes the referenced pipeline's `flow` in place. Issues produced
 inside it carry the *inner* pipeline's id as `pipelineId`. The inner pipeline's
-`strict` applies to its own execution subtree (§5.7); its `entrypoint` flag has no
-effect when it is invoked as a step.
+`strict` applies to its own execution subtree (§5.7). Whether that inner pipeline is
+also listed in `exports` has no effect when it is invoked as a step.
 
 ### 5.6 Levels
 
@@ -960,13 +1025,14 @@ The normative code enum and the exact `details` shape per code:
 
 | `code` | When | `details` |
 | --- | --- | --- |
+| `INVALID_PIPELINE_ID` | §5.1 step 1 | `{"expected":"non-empty string"}` |
 | `PIPELINE_NOT_FOUND` | §5.1 step 1 | `{"pipelineId": "<requested>"}` |
-| `PIPELINE_ID_REQUIRED` | §5.1 step 1 | `{"entrypointCount": <n>}` |
 | `INVALID_PAYLOAD` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
 | `INVALID_CONTEXT` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
 | `DANGEROUS_PAYLOAD_KEY` / `DANGEROUS_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — the smallest visible `(parentPath, key)` per §5.1; determinism under any traversal order `[DR-III][D15]` |
 | `INVALID_PAYLOAD_KEY` / `INVALID_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — same selection rule `[D15]` |
-| `PAYLOAD_TOO_DEEP` / `CONTEXT_TOO_DEEP` | §5.1 step 4 | `{"maxDepth": 256}` — and nothing else: *which* path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
+| `INVALID_PAYLOAD_NUMBER` / `INVALID_CONTEXT_NUMBER` | §5.1 step 4 | `{"path":"…"}` — lexicographically smallest overflowing path `[D23]` |
+| `PAYLOAD_TOO_DEEP` / `CONTEXT_TOO_DEEP` | §5.1 step 5 | `{"maxDepth": 256}` — and nothing else: *which* path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
 | `OPERATOR_FAULT` | an operator implementation threw/panicked during evaluation | `{"ruleId": "…", "operator": "…"}` |
 | `OPERATOR_CONTRACT_VIOLATION` | an operator returned a value outside its declared result shape (Part I §3.1) | `{"ruleId": "…", "operator": "…"}` |
 
@@ -978,7 +1044,7 @@ exercised portably through the reserved conformance operators of §7.3.
 
 ```json
 "ruleset": {
-  "specVersion": "1.0.0-rc.3",
+  "specVersion": "1.0.0-rc.4",
   "sourceHash": "…",
   "projectId": "…",
   "rulesetVersion": "…",
@@ -1069,7 +1135,7 @@ condition** of a conformance claim for X — not a sufficient one: the suite sam
 behavior space, the text defines it. `[DR-IV]` If a fixture contradicts the text, the
 text prevails; the fixture is corrected through an erratum and a new suite version —
 fixtures never silently redefine the text. Fixtures are organized by the decision or
-section they pin; every decision D1–D20 MUST be covered by at least one fixture.
+section they pin; every decision D1–D25 MUST be covered by at least one fixture.
 
 **Reserved conformance operators.** `[DR-IV]` The following operator names are
 reserved. They are registered **only by conformance runners** as part of the test
@@ -1081,6 +1147,7 @@ own registration API. Their pinned behavior when invoked:
 | `conformance.rule.throw` | throws a host exception | `ABORT OPERATOR_FAULT` at either site |
 | `conformance.rule.invalid_result` | returns `EXCEPTION`, outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site |
 | `conformance.rule.tri` | maps values `"PASS"`, `"SKIP"`, `"FAIL"` to the same-named outcomes | §3.1 outcome; used for mixed aggregate populations |
+| `conformance.rule.params` | accepts no standard operands; requires the closed params object `{ "outcome": "PASS" | "FAIL" | "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation and verbatim delivery |
 
 ### 7.4 Requirements summary
 

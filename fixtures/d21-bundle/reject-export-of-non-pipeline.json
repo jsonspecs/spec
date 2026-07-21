@@ -1,0 +1,39 @@
+{
+  "name": "d21/reject-export-of-non-pipeline",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "library.d21.rule-export"
+    ],
+    "sourceHash": "1a075458914cb6087a288962ebb2f77cd83543cd78bb517ef3fac8b9262d9b68",
+    "artifacts": [
+      {
+        "id": "library.d21.rule-export",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D21.X4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d21.rule-export"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

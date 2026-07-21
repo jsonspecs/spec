@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "83d007d22e7f8425461d2048bfd907d6dd66562b92c6ba6f9a4d318a92073ecd",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "3a8611aa5ef1f2e60511118a2b924c38397db6c42531c0adec1a1de2dbebb46b",
     "artifacts": [
       {
         "id": "library.x.u",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -22,8 +24,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {

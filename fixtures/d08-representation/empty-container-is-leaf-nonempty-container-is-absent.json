@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "cd902ead893843317ca96d8e6b1e820c36c084278bc6ab4f7477a752f7ee5f5e",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "90134d31deecbd91602a5774cffeab93c280a1c4fb085b4eca1c862ec5ef3441",
     "artifacts": [
       {
         "id": "library.p.ec",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,7 +23,6 @@
       {
         "id": "library.p.cc",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "b",
         "issue": {
@@ -33,8 +34,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -72,8 +71,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "cd902ead893843317ca96d8e6b1e820c36c084278bc6ab4f7477a752f7ee5f5e"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "90134d31deecbd91602a5774cffeab93c280a1c4fb085b4eca1c862ec5ef3441"
     }
   }
 }

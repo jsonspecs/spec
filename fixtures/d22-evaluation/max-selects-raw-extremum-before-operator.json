@@ -1,0 +1,84 @@
+{
+  "name": "d22/max-selects-raw-extremum-before-operator",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "75e2375d447426d5b98f9b919ed084e1f94a60b74886fdcf4abe5c6640021772",
+    "artifacts": [
+      {
+        "id": "library.d22.max",
+        "type": "rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "MAX"
+        }
+      },
+      {
+        "id": "library.d22.max.target",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D22.MAX",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "condition.max",
+        "type": "condition",
+        "when": "library.d22.max",
+        "steps": [
+          {
+            "rule": "library.d22.max.target"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "condition": "condition.max"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "PASS"
+        },
+        {
+          "result": "SKIP"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "75e2375d447426d5b98f9b919ed084e1f94a60b74886fdcf4abe5c6640021772"
+    }
+  }
+}

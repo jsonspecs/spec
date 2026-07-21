@@ -3,25 +3,26 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
+    "specVersion": "1.0.0-rc.4",
     "requires": {
       "operators": [
         "conformance.rule.invalid_result"
       ]
     },
-    "sourceHash": "029a2f332c78893e802fbda655b63620b5f9cdd61b7bfc45e274b70ad241b668",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "37e433a9f88b9da04f5e97531d0b417bc910e335cbc25ea8fd058420b7e22bdc",
     "artifacts": [
       {
         "id": "library.co.r",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "conformance.rule.invalid_result",
         "field": "a"
       },
       {
         "id": "library.co.after",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "b",
         "issue": {
@@ -33,7 +34,6 @@
       {
         "id": "library.co.cond",
         "type": "condition",
-        "description": "fixture condition",
         "when": "library.co.r",
         "steps": [
           {
@@ -44,8 +44,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -76,8 +74,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "029a2f332c78893e802fbda655b63620b5f9cdd61b7bfc45e274b70ad241b668"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "37e433a9f88b9da04f5e97531d0b417bc910e335cbc25ea8fd058420b7e22bdc"
     }
   }
 }

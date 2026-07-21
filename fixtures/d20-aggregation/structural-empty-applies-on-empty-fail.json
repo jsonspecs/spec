@@ -3,18 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
+    "specVersion": "1.0.0-rc.4",
     "requires": {
       "operators": [
         "conformance.rule.tri"
       ]
     },
-    "sourceHash": "7923ed8b5b100d3746c56335a760bf7b99a5b13fa1ff9db8cd8b8fee8e9a8fde",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "eeba4ead1fbb4d9cac524d9f12032250a3378da6e1b68bce01e6e7efb8b925bf",
     "artifacts": [
       {
         "id": "library.d20.empty",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "conformance.rule.tri",
         "field": "items[*].result",
         "aggregate": {
@@ -31,8 +33,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -72,8 +72,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "7923ed8b5b100d3746c56335a760bf7b99a5b13fa1ff9db8cd8b8fee8e9a8fde"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "eeba4ead1fbb4d9cac524d9f12032250a3378da6e1b68bce01e6e7efb8b925bf"
     }
   }
 }

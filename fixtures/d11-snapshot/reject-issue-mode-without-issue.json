@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "0d914808f7013421b91167063a491371a39c9d2944bab2eb7dd8700036a10060",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "9f8d2cab8a278a2ebf5d9850b01b395d5b2086fc607aad0de65c95841c0f4358",
     "artifacts": [
       {
         "id": "library.d20.bad3",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "greater_than",
         "field": "x[*].v",
         "value": 1,
@@ -21,7 +23,6 @@
       {
         "id": "library.d20.ok",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -33,8 +34,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {

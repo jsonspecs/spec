@@ -1,0 +1,40 @@
+{
+  "name": "d21/reject-duplicate-export",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main",
+      "checks.main"
+    ],
+    "sourceHash": "1a2eb8fdbe95b0cfcd7e185ef23aa08fde0a0ba03359c676c9ee6f68f637ec3a",
+    "artifacts": [
+      {
+        "id": "library.d21.dup",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D21.X3",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d21.dup"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

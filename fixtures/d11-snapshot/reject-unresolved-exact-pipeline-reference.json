@@ -1,15 +1,17 @@
 {
-  "name": "d11/reject-scoped-pipeline-reference",
+  "name": "d11/reject-unresolved-exact-pipeline-reference",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "438d714923bdf590fc39d93efeeb58639ceaae024c1409ee67f40b6ae265017b",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "cb95b2020d60b048e69f27a288891c0e5ec063f272bd87dc44eae1e649302574",
     "artifacts": [
       {
         "id": "library.x.c3",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,8 +23,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -33,8 +33,6 @@
       {
         "id": "checks.inner",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": false,
         "strict": false,
         "flow": [
           {

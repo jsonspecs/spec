@@ -3,20 +3,21 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "4d6de6709ebd99dac6f4989dad87cfd6a62e32a56ade948b26525d48494e02bc",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "4306dd53c1e38509aa35bfe69ff5d4fde8f722c19b4d9a55d8f13b80c76b0444",
     "artifacts": [
       {
         "id": "library.se.p1",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "trigger"
       },
       {
         "id": "library.se.c1",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -28,7 +29,6 @@
       {
         "id": "library.cond.g",
         "type": "condition",
-        "description": "fixture condition",
         "when": "library.se.p1",
         "steps": [
           {
@@ -39,8 +39,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -60,8 +58,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "4d6de6709ebd99dac6f4989dad87cfd6a62e32a56ade948b26525d48494e02bc"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "4306dd53c1e38509aa35bfe69ff5d4fde8f722c19b4d9a55d8f13b80c76b0444"
     }
   }
 }

@@ -1,15 +1,17 @@
 {
-  "name": "d11/reject-orphan-scope",
+  "name": "d11/reject-unreachable-artifact",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "6aa7c70b488d86719d0803fa4e1b10979f01f5e9ec1b33da11244d0962356778",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "a791a71eb0dcfd8f23355bfda0313fc8b514a4e0fd3cf97013b3edc15c2ea3af",
     "artifacts": [
       {
         "id": "library.x.ok2",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,7 +23,6 @@
       {
         "id": "ghost.rule",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -33,8 +34,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {

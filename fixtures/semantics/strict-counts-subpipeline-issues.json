@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "cbcbc263e7529aa8fc7646bdc8d43a4a92c3c310addfc1f8ef722b89c173960c",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.outer"
+    ],
+    "sourceHash": "5ac0494a2078aff51ca067cda2c82a34cad9d492009c8a7ad5a2202e7f264847",
     "artifacts": [
       {
         "id": "library.se.e2",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,8 +23,6 @@
       {
         "id": "checks.inner",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": false,
         "strict": false,
         "flow": [
           {
@@ -33,8 +33,6 @@
       {
         "id": "checks.outer",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": true,
         "message": "Outer failed",
         "strictCode": "OUT",
@@ -75,8 +73,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "cbcbc263e7529aa8fc7646bdc8d43a4a92c3c310addfc1f8ef722b89c173960c"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "5ac0494a2078aff51ca067cda2c82a34cad9d492009c8a7ad5a2202e7f264847"
     }
   }
 }

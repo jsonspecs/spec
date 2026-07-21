@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "0f87f3529c4ec95dcca45e5665d2043d59301af488d41f059f14824d1245ae20",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "36b399ee75552e3181dfa82a7fb900c1286f5dd568bc205ce1628041e0e5f7cf",
     "artifacts": [
       {
         "id": "library.se.e1",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,8 +23,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": true,
         "message": "Block failed",
         "strictCode": "BLK",
@@ -63,8 +63,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "0f87f3529c4ec95dcca45e5665d2043d59301af488d41f059f14824d1245ae20"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "36b399ee75552e3181dfa82a7fb900c1286f5dd568bc205ce1628041e0e5f7cf"
     }
   }
 }

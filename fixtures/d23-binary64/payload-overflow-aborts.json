@@ -1,0 +1,57 @@
+{
+  "name": "d23/payload-overflow-aborts",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "dcad0f55cc9fe4db102f7397da28da58c159838626c546dfa4b009ba8a251a56",
+    "artifacts": [
+      {
+        "id": "library.d23.payload",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D23.4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d23.payload"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1e400
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "INVALID_PAYLOAD_NUMBER",
+      "details": {
+        "path": "a"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "dcad0f55cc9fe4db102f7397da28da58c159838626c546dfa4b009ba8a251a56"
+    }
+  }
+}

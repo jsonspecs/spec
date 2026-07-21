@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "51e76cd143b352d1e2f69822f92317349fa6928a7ac633a9cae72f7fdcd22e50",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "7f86390f24058e13acb4479bf352c6844908a434f916525f5b23aa5cf5691085",
     "artifacts": [
       {
         "id": "library.n.gt",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "greater_than",
         "field": "a",
         "value": "10",
@@ -22,8 +24,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -57,8 +57,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "51e76cd143b352d1e2f69822f92317349fa6928a7ac633a9cae72f7fdcd22e50"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "7f86390f24058e13acb4479bf352c6844908a434f916525f5b23aa5cf5691085"
     }
   }
 }

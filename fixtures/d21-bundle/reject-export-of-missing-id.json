@@ -1,0 +1,39 @@
+{
+  "name": "d21/reject-export-of-missing-id",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.nope"
+    ],
+    "sourceHash": "cbce28aceb11d2db31ff6fd94563618f9ae64d23dc6a3c061f903d99a68899fd",
+    "artifacts": [
+      {
+        "id": "library.d21.missing-export",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D21.X5",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d21.missing-export"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

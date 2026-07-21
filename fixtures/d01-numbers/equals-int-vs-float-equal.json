@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "e4727597d17973d36b5e35a3e6bc27c3652cf46c877314483e39e60a5c9dbab3",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "bf6cabc5ee87995eda408c3988b7268f7e48a43f81e292f7c84fffec65a9f288",
     "artifacts": [
       {
         "id": "library.n.eq",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "equals",
         "field": "a",
         "value": 1,
@@ -22,8 +24,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -45,8 +45,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "e4727597d17973d36b5e35a3e6bc27c3652cf46c877314483e39e60a5c9dbab3"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "bf6cabc5ee87995eda408c3988b7268f7e48a43f81e292f7c84fffec65a9f288"
     }
   }
 }

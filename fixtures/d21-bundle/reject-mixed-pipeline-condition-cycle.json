@@ -1,0 +1,44 @@
+{
+  "name": "d21/reject-mixed-pipeline-condition-cycle",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "65c29390e2ee21801712008bcaefe5d3efe5eafb8402f0ddaa0a223cc7930486",
+    "artifacts": [
+      {
+        "id": "library.d21.mixed.guard",
+        "type": "rule",
+        "operator": "is_true",
+        "field": "go"
+      },
+      {
+        "id": "mixed.condition",
+        "type": "condition",
+        "when": "library.d21.mixed.guard",
+        "steps": [
+          {
+            "pipeline": "checks.main"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "condition": "mixed.condition"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

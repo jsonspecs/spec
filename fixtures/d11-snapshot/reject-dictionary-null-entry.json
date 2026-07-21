@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "908fa46ac7aca112940c51ae30cf17a5581eb72dc854d4633a879ebea3f40b24",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "bea8b114e6fc25492d80acd0b3b6a102634116322c4868acb3230f88fceb5b5a",
     "artifacts": [
       {
         "id": "library.dict.bad",
         "type": "dictionary",
-        "description": "fixture dictionary",
         "entries": [
           "X",
           null
@@ -18,7 +20,6 @@
       {
         "id": "library.x.di",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "in_dictionary",
         "field": "a",
         "dictionary": {
@@ -34,8 +35,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {

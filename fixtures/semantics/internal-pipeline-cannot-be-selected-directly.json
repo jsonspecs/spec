@@ -1,0 +1,65 @@
+{
+  "name": "sem/internal-pipeline-cannot-be-selected-directly",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "3089fc0706e82e67386f15df255da2f8382a94b1f0943ab2a164949ca8329fd3",
+    "artifacts": [
+      {
+        "id": "library.se.sub",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "SE22",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.inner",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.sub"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "pipeline": "checks.inner"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.inner",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "PIPELINE_NOT_FOUND",
+      "details": {
+        "pipelineId": "checks.inner"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "3089fc0706e82e67386f15df255da2f8382a94b1f0943ab2a164949ca8329fd3"
+    }
+  }
+}

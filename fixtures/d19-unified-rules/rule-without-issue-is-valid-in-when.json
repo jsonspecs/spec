@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "4d7c17c0d4ac87bd73a71bf5e670a93d75bc8bf5d87e4c7fba39f50b5f9417b1",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "afc1b94f71ba59353a7d501e6b45ba8515d41f4fd24af164aba192141284e58e",
     "artifacts": [
       {
         "id": "library.d19.noissue",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "length_equals",
         "field": "kind",
         "value": 2
@@ -17,7 +19,6 @@
       {
         "id": "library.d19.hit",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "required",
         "issue": {
@@ -29,7 +30,6 @@
       {
         "id": "library.d19.noissue.condition",
         "type": "condition",
-        "description": "fixture condition",
         "when": "library.d19.noissue",
         "steps": [
           {
@@ -40,8 +40,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -73,8 +71,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "4d7c17c0d4ac87bd73a71bf5e670a93d75bc8bf5d87e4c7fba39f50b5f9417b1"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "afc1b94f71ba59353a7d501e6b45ba8515d41f4fd24af164aba192141284e58e"
     }
   }
 }

@@ -1,0 +1,40 @@
+{
+  "name": "d23/reject-snapshot-number-overflow",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "f7a5cb79b4be1c514d8bab818d144eb113b7fa3048c147e8d0440c59c8725628",
+    "artifacts": [
+      {
+        "id": "library.d23.snapshot",
+        "type": "rule",
+        "operator": "equals",
+        "field": "a",
+        "value": 1e400,
+        "issue": {
+          "level": "ERROR",
+          "code": "D23.X1",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d23.snapshot"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -1,15 +1,18 @@
 {
-  "name": "sem/abort-pipeline-id-required-two-entrypoints",
+  "name": "sem/abort-invalid-pipeline-id-missing",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "2c58e80c31b918cdb50a49c1cf4f0fb8837cf308786cf76c33f85d1618940689",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.one",
+      "checks.two"
+    ],
+    "sourceHash": "720e93a7404346708091e5f9bb5b0e57e3e24560abc2de102fd9794e466d9cf2",
     "artifacts": [
       {
         "id": "library.se.ab2",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
         "issue": {
@@ -21,8 +24,6 @@
       {
         "id": "checks.one",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -33,8 +34,6 @@
       {
         "id": "checks.two",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -55,14 +54,14 @@
     "control": "STOP",
     "issues": [],
     "error": {
-      "code": "PIPELINE_ID_REQUIRED",
+      "code": "INVALID_PIPELINE_ID",
       "details": {
-        "entrypointCount": 2
+        "expected": "non-empty string"
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "2c58e80c31b918cdb50a49c1cf4f0fb8837cf308786cf76c33f85d1618940689"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "720e93a7404346708091e5f9bb5b0e57e3e24560abc2de102fd9794e466d9cf2"
     }
   }
 }

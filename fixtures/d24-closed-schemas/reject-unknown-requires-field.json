@@ -1,0 +1,49 @@
+{
+  "name": "d24/reject-unknown-requires-field",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "requires": {
+      "operators": [
+        "conformance.rule.params"
+      ],
+      "unknown": true
+    },
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "e6e07c9676b6043cff3ad3c2ce967416e95d8332d6f713f404f5a6dbbe4e1359",
+    "artifacts": [
+      {
+        "id": "library.d24.requires",
+        "type": "rule",
+        "operator": "conformance.rule.params",
+        "params": {
+          "outcome": "PASS"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D24.X4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d24.requires"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.params"
+  ],
+  "expected": {
+    "verdict": "reject"
+  }
+}

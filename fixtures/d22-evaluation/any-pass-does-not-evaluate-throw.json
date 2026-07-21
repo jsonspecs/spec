@@ -1,0 +1,86 @@
+{
+  "name": "d22/any-pass-does-not-evaluate-throw",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "requires": {
+      "operators": [
+        "conformance.rule.throw"
+      ]
+    },
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "38ce8b32c761aa830a1d0d6f319b79306b24534ca50fe57925aca344435f6378",
+    "artifacts": [
+      {
+        "id": "library.d22.any-pass-does-not-evaluate-throw.first",
+        "type": "rule",
+        "operator": "is_true",
+        "field": "first"
+      },
+      {
+        "id": "library.d22.any-pass-does-not-evaluate-throw.throw",
+        "type": "rule",
+        "operator": "conformance.rule.throw",
+        "field": "unused"
+      },
+      {
+        "id": "library.d22.any-pass-does-not-evaluate-throw.target",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D22.any-pass-does-not-evaluate-throw",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "condition.any-pass-does-not-evaluate-throw",
+        "type": "condition",
+        "when": {
+          "any": [
+            "library.d22.any-pass-does-not-evaluate-throw.first",
+            "library.d22.any-pass-does-not-evaluate-throw.throw"
+          ]
+        },
+        "steps": [
+          {
+            "rule": "library.d22.any-pass-does-not-evaluate-throw.target"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "condition": "condition.any-pass-does-not-evaluate-throw"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.throw"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "first": true,
+      "required": "ok"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "38ce8b32c761aa830a1d0d6f319b79306b24534ca50fe57925aca344435f6378"
+    }
+  }
+}

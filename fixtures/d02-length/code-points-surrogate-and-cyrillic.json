@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "e071776a09f33dc76425fb008c0bf439aca9f52710369eb0d652202ba13d1633",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "7e2db6a7dfdeb3ea58831894b8398a637dad6bb549402ee9f27445fd99c28691",
     "artifacts": [
       {
         "id": "library.l.max",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "length_max",
         "field": "emoji",
         "value": 1,
@@ -22,7 +24,6 @@
       {
         "id": "library.l.eq",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "length_equals",
         "field": "name",
         "value": 4,
@@ -35,8 +36,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -62,8 +61,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "e071776a09f33dc76425fb008c0bf439aca9f52710369eb0d652202ba13d1633"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "7e2db6a7dfdeb3ea58831894b8398a637dad6bb549402ee9f27445fd99c28691"
     }
   }
 }

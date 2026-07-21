@@ -1,0 +1,60 @@
+{
+  "name": "d23/context-overflow-aborts",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "ed59aa2635b4a523f2564f12025e2f824c893b018f41a9e29be9e6e60b201246",
+    "artifacts": [
+      {
+        "id": "library.d23.context",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D23.5",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d23.context"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1
+    },
+    "context": {
+      "rate": -1e400
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "INVALID_CONTEXT_NUMBER",
+      "details": {
+        "path": "rate"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "ed59aa2635b4a523f2564f12025e2f824c893b018f41a9e29be9e6e60b201246"
+    }
+  }
+}

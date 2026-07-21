@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "8bf1f8c91e73a4a2b6ea5d16e693b74c143bafe1a4d03af6a5b1b93a30d1c1c3",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "d621b62fa5fd5133f77ed27897ecb028262f8bf0f09e8187ffeeb85f0cf067cd",
     "artifacts": [
       {
         "id": "library.o.odo",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "greater_than",
         "field": "m[*].n[*].v",
         "value": 10,
@@ -26,8 +28,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -101,8 +101,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "8bf1f8c91e73a4a2b6ea5d16e693b74c143bafe1a4d03af6a5b1b93a30d1c1c3"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "d621b62fa5fd5133f77ed27897ecb028262f8bf0f09e8187ffeeb85f0cf067cd"
     }
   }
 }

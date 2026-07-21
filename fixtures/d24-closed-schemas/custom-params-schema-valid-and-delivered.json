@@ -1,0 +1,58 @@
+{
+  "name": "d24/custom-params-schema-valid-and-delivered",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "requires": {
+      "operators": [
+        "conformance.rule.params"
+      ]
+    },
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "ca9ad022cd99bcb21b5998066d06abb9ea94d0940870c3f1a42f85606f37d2bf",
+    "artifacts": [
+      {
+        "id": "library.d24.params",
+        "type": "rule",
+        "operator": "conformance.rule.params",
+        "params": {
+          "outcome": "PASS"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D24.1",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d24.params"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.params"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "ca9ad022cd99bcb21b5998066d06abb9ea94d0940870c3f1a42f85606f37d2bf"
+    }
+  }
+}

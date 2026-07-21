@@ -1,0 +1,93 @@
+{
+  "name": "d22/any-fail-evaluates-throw",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "requires": {
+      "operators": [
+        "conformance.rule.throw"
+      ]
+    },
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "243ff10365e9307482961057eef2e98c6a789b0aa770d2eeed43262a306480f5",
+    "artifacts": [
+      {
+        "id": "library.d22.any-fail-evaluates-throw.first",
+        "type": "rule",
+        "operator": "is_true",
+        "field": "first"
+      },
+      {
+        "id": "library.d22.any-fail-evaluates-throw.throw",
+        "type": "rule",
+        "operator": "conformance.rule.throw",
+        "field": "unused"
+      },
+      {
+        "id": "library.d22.any-fail-evaluates-throw.target",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D22.any-fail-evaluates-throw",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "condition.any-fail-evaluates-throw",
+        "type": "condition",
+        "when": {
+          "any": [
+            "library.d22.any-fail-evaluates-throw.first",
+            "library.d22.any-fail-evaluates-throw.throw"
+          ]
+        },
+        "steps": [
+          {
+            "rule": "library.d22.any-fail-evaluates-throw.target"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "flow": [
+          {
+            "condition": "condition.any-fail-evaluates-throw"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.throw"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "first": false,
+      "required": "ok"
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "OPERATOR_FAULT",
+      "details": {
+        "ruleId": "library.d22.any-fail-evaluates-throw.throw",
+        "operator": "conformance.rule.throw"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "243ff10365e9307482961057eef2e98c6a789b0aa770d2eeed43262a306480f5"
+    }
+  }
+}

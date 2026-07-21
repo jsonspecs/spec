@@ -3,18 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
+    "specVersion": "1.0.0-rc.4",
     "requires": {
       "operators": [
         "valid_inn"
       ]
     },
-    "sourceHash": "6d5c70225cf14c5a9c1c532c959b0b827532b8e3b8ea4f25acbadab347fa929e",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "07466505c07b043adcb1fec62adc194f69173388466cfb9d559d26f8268f6236",
     "artifacts": [
       {
         "id": "library.c.i",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "valid_inn",
         "field": "inn",
         "issue": {
@@ -26,8 +28,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {

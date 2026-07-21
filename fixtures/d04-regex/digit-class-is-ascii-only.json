@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "1f1843d8b403ad8fa1b6ef3101a587641ab4c513a8a8722eec6ac09150eefd5d",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "98a34443be653c0c9e23e95ae2f4e285435da6ebe0490b86f60ec91cb89e489f",
     "artifacts": [
       {
         "id": "library.r.d2",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "matches_regex",
         "field": "a",
         "value": "^\\d+$",
@@ -22,8 +24,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -57,8 +57,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "1f1843d8b403ad8fa1b6ef3101a587641ab4c513a8a8722eec6ac09150eefd5d"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "98a34443be653c0c9e23e95ae2f4e285435da6ebe0490b86f60ec91cb89e489f"
     }
   }
 }

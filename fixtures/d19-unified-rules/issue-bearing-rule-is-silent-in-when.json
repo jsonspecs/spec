@@ -3,13 +3,16 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "48d2eb0340662418a94ce2b0bf0cacb1575451d152c1f16a7cc25d5dbc354eca",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.guard",
+      "checks.hard"
+    ],
+    "sourceHash": "883a09612356310b38723f1534b58953b837f871235fb7dc0f3bdd07f60c438f",
     "artifacts": [
       {
         "id": "library.d19.reusable",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "trigger",
         "issue": {
@@ -21,7 +24,6 @@
       {
         "id": "library.d19.target",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "required",
         "issue": {
@@ -33,7 +35,6 @@
       {
         "id": "library.d19.condition",
         "type": "condition",
-        "description": "fixture condition",
         "when": "library.d19.reusable",
         "steps": [
           {
@@ -44,8 +45,6 @@
       {
         "id": "checks.guard",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -56,8 +55,6 @@
       {
         "id": "checks.hard",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": false,
         "strict": false,
         "flow": [
           {
@@ -77,8 +74,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "48d2eb0340662418a94ce2b0bf0cacb1575451d152c1f16a7cc25d5dbc354eca"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "883a09612356310b38723f1534b58953b837f871235fb7dc0f3bdd07f60c438f"
     }
   }
 }

@@ -3,18 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
+    "specVersion": "1.0.0-rc.4",
     "requires": {
       "operators": [
         "conformance.rule.tri"
       ]
     },
-    "sourceHash": "d05c1bc7ec7b3d236c9036c51686ec91adad93d497cf1503738687df6148f2a6",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "1e891b3c692d85f8f8cf89ba2b240490eb6b50654e7c8d86e3189228846d8297",
     "artifacts": [
       {
         "id": "library.d20.any.pass",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "conformance.rule.tri",
         "field": "items[*].result",
         "aggregate": {
@@ -30,8 +32,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -65,8 +65,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "d05c1bc7ec7b3d236c9036c51686ec91adad93d497cf1503738687df6148f2a6"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "1e891b3c692d85f8f8cf89ba2b240490eb6b50654e7c8d86e3189228846d8297"
     }
   }
 }

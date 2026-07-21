@@ -1,0 +1,40 @@
+{
+  "name": "d21/reject-legacy-pipeline-entrypoint",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "bfd97a3a89284789b6e4377457e2334129857a11c90d1cd88915c3f8cac04920",
+    "artifacts": [
+      {
+        "id": "library.d21.ep",
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D21.X7",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "strict": false,
+        "entrypoint": true,
+        "flow": [
+          {
+            "rule": "library.d21.ep"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "f4ce105e5d0c8aea5ca7a8cddee1b84d2fd977834f228921bc441a03e749f38c",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "e1e76800d520c61ec27ade2ba7d6705c62e12710134d93145154b263f75a5df3",
     "artifacts": [
       {
         "id": "library.p.any",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "any_filled",
         "fields": [
           "phone",
@@ -24,8 +26,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -57,8 +57,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "f4ce105e5d0c8aea5ca7a8cddee1b84d2fd977834f228921bc441a03e749f38c"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "e1e76800d520c61ec27ade2ba7d6705c62e12710134d93145154b263f75a5df3"
     }
   }
 }

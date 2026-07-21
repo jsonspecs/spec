@@ -3,13 +3,15 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.3",
-    "sourceHash": "7fdb72f550259b3bf966b302db0a8e76bd133c1521dd195011016d3e0c573449",
+    "specVersion": "1.0.0-rc.4",
+    "exports": [
+      "checks.main"
+    ],
+    "sourceHash": "65bb100df034c8f20e61eb6231b27b2327a62792073c42b330d1d0be9ea6a050",
     "artifacts": [
       {
         "id": "library.d19.any",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "any_filled",
         "fields": [
           "email",
@@ -19,14 +21,12 @@
       {
         "id": "library.d19.nottrue",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_true",
         "field": "blocked"
       },
       {
         "id": "library.d19.allowed",
         "type": "rule",
-        "description": "fixture rule",
         "operator": "not_empty",
         "field": "required",
         "issue": {
@@ -38,7 +38,6 @@
       {
         "id": "library.d19.formerly-blocked",
         "type": "condition",
-        "description": "fixture condition",
         "when": {
           "all": [
             "library.d19.any",
@@ -54,8 +53,6 @@
       {
         "id": "checks.main",
         "type": "pipeline",
-        "description": "fixture pipeline",
-        "entrypoint": true,
         "strict": false,
         "flow": [
           {
@@ -87,8 +84,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.3",
-      "sourceHash": "7fdb72f550259b3bf966b302db0a8e76bd133c1521dd195011016d3e0c573449"
+      "specVersion": "1.0.0-rc.4",
+      "sourceHash": "65bb100df034c8f20e61eb6231b27b2327a62792073c42b330d1d0be9ea6a050"
     }
   }
 }

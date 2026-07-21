@@ -1,14 +1,14 @@
 # JSONSpecs Contract Spec — decision register
 
-Русская версия (первоисточник): [DECISIONS_RU.md](DECISIONS_RU.md). Where the two
-disagree, the Russian original wins.
+Russian translation: [DECISIONS_RU.md](DECISIONS_RU.md). Where the two disagree,
+this English register is normative.
 
 Goal of the contract: any two conformant implementations MUST produce the same
 normative result for the same snapshot and payload. Each decision below is a point
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 20 decisions (D1–D20) and addenda [DR-I]–[DR-V] are **APPROVED** by the
+Status: all 25 decisions (D1–D25) and addenda [DR-I]–[DR-VI] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -487,8 +487,90 @@ mixed populations.
 
 ## [DR-V] Addendum: unification rc.2 → rc.3 — APPROVED
 
-rc.3 is the final architectural redesign before `1.0.0`. After publication, only
-errata clarifying approved semantics and fixtures pinning them are accepted before
-the final tag. New operators and compatible extensions follow `1.0.0` as minor
-decisions; scalar `greater_or_equal`/`less_or_equal` remain a D21 candidate, not part
-of rc.3.
+rc.3 was intended to be the final architectural redesign before `1.0.0`. Review of
+the production beneficiaries corpus and database-backed authoring requirements exposed
+remaining authoring/runtime coupling and semantic ambiguities. That process decision is
+superseded by the explicitly approved rc.4 package D21–D25 below. Scalar
+`greater_or_equal`/`less_or_equal` remain backlog candidates without an assigned
+decision number.
+
+## D21. Exact ids, explicit exports, and a closed executable bundle — APPROVED
+
+**Approved for rc.4.** Artifact ids are opaque globally unique strings. Every reference
+is an exact id; scopes, visibility, relative expansion, orphan scopes, longest-prefix
+ownership, and special `library.*` semantics are removed. Imports, aliases, folders, and
+taxonomy belong to authoring/build tooling.
+
+Artifact `description` is removed because it is non-executable authoring metadata. The
+pipeline `entrypoint` flag and default pipeline selection are removed; every call supplies
+`pipelineId`. The snapshot instead carries a mandatory non-empty `exports` list of
+pipeline ids: it is the bundle's public API and the root set for reachability,
+not a default-selection mechanism. Missing/ill-typed ids produce
+`INVALID_PIPELINE_ID`; unknown or non-exported ids produce `PIPELINE_NOT_FOUND`.
+
+The transitive closure from exports MUST equal the artifact set exactly. Source projects
+may retain unused files, but production snapshots do not. The closure follows steps,
+condition `when` leaves, and normative dictionary references. The control-flow DAG is
+also corrected to include both pipeline and condition nodes, closing the latent
+condition→condition and pipeline→condition→pipeline cycle hole.
+
+The separate condition artifact is intentionally retained. The production corpus has 96
+conditions, 40 reused by more than one caller, and control paths reaching pipeline plus
+three nested condition artifacts. Inlining would optimize the runtime schema at the cost
+of authoring deeply nested JSON control trees, contrary to the DSL's purpose.
+
+## D22. Deterministic guard short-circuit and select-first extrema — APPROVED
+
+**Approved for rc.4.** `when` evaluates recursively, left-to-right, with mandatory
+short-circuit: `all` stops at first false and `any` at first true. This is observable when
+a later custom operator throws, so exhaustive evaluation is not conformant. Fixtures pin
+`any(PASS, throw)`, `all(FAIL, throw)`, and their non-short-circuit counterparts.
+
+`MIN`/`MAX` select the raw structural extremum before operator evaluation, then invoke the
+operator exactly once. Classification failure or mixed kinds fail before invocation; the
+first normative-order element breaks ties; the chosen result, including `SKIP`, becomes
+the aggregate result. Effective-population evaluation remains exclusive to
+`ALL`/`ANY`/`COUNT`.
+
+## D23. Closed finite-binary64 number domain — APPROVED
+
+**Approved for rc.4.** Every JSON number token is converted using IEEE 754 binary64
+round-to-nearest, ties-to-even. Every finite result is accepted; overflow to infinity is
+rejected, underflow follows binary64, and negative zero is normalized to positive zero.
+The former "outside the determinism guarantee" caveat is removed: `0.1` is accepted and
+`9007199254740993` rounds to `9007199254740992` normatively. Payload/context overflow
+uses `INVALID_PAYLOAD_NUMBER`/`INVALID_CONTEXT_NUMBER` with the lexicographically
+smallest path. A numeric-looking string is numeric for ordered comparison only when its
+conversion is finite; `"1e400"` is valid JSON text but unclassified for ordering.
+
+## D24. Closed nested schemas and custom-operator `params` — APPROVED
+
+**Approved for rc.4.** The snapshot envelope, `requires`, `exports`, `aggregate`, static
+dictionary references, object dictionary entries, `when` objects, and steps are explicitly
+closed. `snapshot.meta` remains the sole open core extension.
+
+Operator-specific top-level rule fields are forbidden. A custom rule uses one `params`
+JSON object and its registered operator supplies a closed compile-time schema plus its
+accepted standard operand fields. Core rejects schema mismatches before execution and
+passes accepted params verbatim. Registration API and schema language are implementation
+details, but a cross-runtime operator pack must publish equivalent machine-readable
+schemas. Strings in params do not create artifact-graph edges; dictionary dependencies
+use the normative `dictionary` field.
+
+## D25. Order-independent hash of the executable bundle — APPROVED
+
+**Approved for rc.4; supersedes D6's artifacts-only projection.** `sourceHash` is SHA-256
+over JCS of `{requires, exports, artifacts}` after sorting operator names, exported
+pipeline ids, and artifacts by id. Missing `requires` projects to an empty operator list.
+Nested semantic arrays (`flow`, `steps`, `when`, dictionary entries) retain order. This
+makes database row order irrelevant while ensuring public API and operator requirements
+are authenticated by the same integrity identifier as the executable graph. `meta`
+remains excluded.
+
+## [DR-VI] Addendum: executable bundle simplification rc.3 → rc.4 — APPROVED
+
+rc.4 is the final pre-1.0 architectural candidate. The release gate MUST prove the new
+closure, combined-DAG, short-circuit, extrema, binary64, nested-schema, params-schema, and
+hash rules with both positive and rejection fixtures, and MUST be demonstrated red by an
+intentional violation before tagging. Further pre-1.0 changes are limited to errata found
+while implementing Node and Java against this exact candidate.
