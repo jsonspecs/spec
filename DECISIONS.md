@@ -342,6 +342,11 @@ rule (EXCEPTION, authored code) as the first step of each flow. Consumers matchi
   is not compared.
 - **Cross-role `onEmpty` values** (`TRUE`/`FALSE` on a check, `PASS`/`FAIL` on a
   predicate) — the artifact is invalid; there is no silent coercion.
+- **Erratum rc.1: `onEmpty: "ERROR"` removed.** The option promised an ABORT that
+  the closed §6.7 enum has no code for; it is also redundant — a hard stop composes
+  from `onEmpty: "FAIL"` + `level: "EXCEPTION"` with the analyst's own diagnostics,
+  and it was the only place where rule content would produce an anonymous abort,
+  breaking the two-channel failure model. Zero production-pack usage.
 
 In the spec these items are referenced as `[DR-I]`; Part II and Part III blocks as
 `[DR-II]` and `[DR-III]` respectively.

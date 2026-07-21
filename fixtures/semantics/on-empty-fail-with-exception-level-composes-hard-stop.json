@@ -1,0 +1,67 @@
+{
+  "name": "sem/on-empty-fail-with-exception-level-composes-hard-stop",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0",
+    "sourceHash": "e9c1198a58ad963f7c433c5be1b9ebd7ef47aa42158f85eb943afc02a11a0d46",
+    "artifacts": [
+      {
+        "id": "library.se.hs",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "EXCEPTION",
+        "code": "SE24",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10,
+        "aggregate": {
+          "mode": "EACH",
+          "onEmpty": "FAIL"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.hs"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "EXCEPTION",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "EXCEPTION",
+        "code": "SE24",
+        "message": "failed",
+        "field": "x[*].v",
+        "ruleId": "library.se.hs",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "EACH",
+          "total": 0
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0",
+      "sourceHash": "e9c1198a58ad963f7c433c5be1b9ebd7ef47aa42158f85eb943afc02a11a0d46"
+    }
+  }
+}

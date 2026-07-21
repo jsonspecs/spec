@@ -456,7 +456,10 @@ the artifact invalid.
 | `TRUE` | — (invalid for check) | `TRUE` |
 | `FALSE` | — (invalid) | `FALSE` |
 | `UNDEFINED` | treated as `PASS` | `UNDEFINED` |
-| `ERROR` | evaluation aborts (Part II, `ABORT`) | same |
+
+There is no abort-on-empty option: a hard stop composes from `onEmpty: "FAIL"` on a
+rule with `level: "EXCEPTION"` — the analyst's own `code` and `message` instead of an
+anonymous abort. `[DR-I]`
 
 Cross-role `onEmpty` values (`TRUE`/`FALSE` on a check, `PASS`/`FAIL` on a predicate)
 make the artifact invalid; they are never silently coerced. `[DR-I]`
