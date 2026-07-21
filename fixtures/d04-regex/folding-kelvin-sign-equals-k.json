@@ -1,0 +1,52 @@
+{
+  "name": "d04/folding-kelvin-sign-equals-k",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "0d60edaf43c87a3635090ab39d4413c27c745ebe410d3789d979500e2b5a5ea6",
+    "artifacts": [
+      {
+        "id": "library.f.k",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "F1",
+        "message": "failed",
+        "field": "a",
+        "value": "^k$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.f.k"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "K"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "0d60edaf43c87a3635090ab39d4413c27c745ebe410d3789d979500e2b5a5ea6"
+    }
+  }
+}

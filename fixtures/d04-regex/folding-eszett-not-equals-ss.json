@@ -1,0 +1,64 @@
+{
+  "name": "d04/folding-eszett-not-equals-ss",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "7200a81ed12f038aeed6c5f2e9e8f3d9e92b6cfafadf307fa279b956c71f8709",
+    "artifacts": [
+      {
+        "id": "library.f.e2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "F5",
+        "message": "failed",
+        "field": "a",
+        "value": "^ss$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.f.e2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ß"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "F5",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.f.e2",
+        "pipelineId": "checks.main",
+        "expected": "^ss$",
+        "actual": "ß"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "7200a81ed12f038aeed6c5f2e9e8f3d9e92b6cfafadf307fa279b956c71f8709"
+    }
+  }
+}

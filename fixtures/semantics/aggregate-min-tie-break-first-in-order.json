@@ -1,0 +1,79 @@
+{
+  "name": "sem/aggregate-min-tie-break-first-in-order",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "54e7fc74441f9414ddb1d17fac565c8310e64c374cb32adcba7ab42523f49bfb",
+    "artifacts": [
+      {
+        "id": "library.se.tie",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "SE25",
+        "message": "failed",
+        "field": "x[*].v",
+        "value": 10,
+        "aggregate": {
+          "mode": "MIN"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.se.tie"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "x": [
+        {
+          "v": 5
+        },
+        {
+          "v": 5
+        },
+        {
+          "v": 20
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "SE25",
+        "message": "failed",
+        "field": "x[0].v",
+        "ruleId": "library.se.tie",
+        "pipelineId": "checks.main",
+        "expected": 10,
+        "actual": 5,
+        "details": {
+          "mode": "MIN"
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "54e7fc74441f9414ddb1d17fac565c8310e64c374cb32adcba7ab42523f49bfb"
+    }
+  }
+}

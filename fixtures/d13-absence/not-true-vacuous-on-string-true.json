@@ -3,7 +3,7 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0",
+    "specVersion": "1.0.0-rc.2",
     "sourceHash": "8d894c1ba6b51c7edbb0907c8b80a05649289a4e01c7ab85c26dc2f863ea478c",
     "artifacts": [
       {
@@ -43,7 +43,7 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0",
+      "specVersion": "1.0.0-rc.2",
       "sourceHash": "8d894c1ba6b51c7edbb0907c8b80a05649289a4e01c7ab85c26dc2f863ea478c"
     }
   }

@@ -3,7 +3,7 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0",
+    "specVersion": "1.0.0-rc.2",
     "sourceHash": "8b79a9be8ebff692b2fc47e4fe98e6320063bd40872553a8519ce427d9cc1c8b",
     "artifacts": [
       {
@@ -51,12 +51,12 @@
     "error": {
       "code": "DANGEROUS_PAYLOAD_KEY",
       "details": {
-        "path": "a.constructor",
+        "parentPath": "a",
         "key": "constructor"
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0",
+      "specVersion": "1.0.0-rc.2",
       "sourceHash": "8b79a9be8ebff692b2fc47e4fe98e6320063bd40872553a8519ce427d9cc1c8b"
     }
   }

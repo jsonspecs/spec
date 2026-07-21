@@ -1,0 +1,83 @@
+{
+  "name": "d10/conformance-predicate-throw-operator-fault",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "requires": {
+      "operators": [
+        "conformance.predicate.throw"
+      ]
+    },
+    "sourceHash": "99e5010e60f2b4327b859ea05c76141ae87569723dddff682bb73e40e1745ece",
+    "artifacts": [
+      {
+        "id": "library.co.p",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "conformance.predicate.throw",
+        "field": "a"
+      },
+      {
+        "id": "library.co.c",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "CO2",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "library.cond.co",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": "library.co.p",
+        "steps": [
+          {
+            "rule": "library.co.c"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.cond.co"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.predicate.throw"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "OPERATOR_FAULT",
+      "details": {
+        "ruleId": "library.co.p",
+        "operator": "conformance.predicate.throw"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "99e5010e60f2b4327b859ea05c76141ae87569723dddff682bb73e40e1745ece"
+    }
+  }
+}

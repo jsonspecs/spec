@@ -1,0 +1,49 @@
+{
+  "name": "d11/reject-orphan-scope",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "778638da01ae2e0699eb849a76794da58cc266ae9d457bc747ad7b0daef0ce76",
+    "artifacts": [
+      {
+        "id": "library.x.ok2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "X15",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "ghost.rule",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "field": "a",
+        "level": "ERROR",
+        "code": "X16",
+        "message": "failed"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.ok2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "d10/conformance-check-invalid-result-contract-violation",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "requires": {
+      "operators": [
+        "conformance.check.invalid_result"
+      ]
+    },
+    "sourceHash": "88c3752663e93838dd3d7c686955413b67f95900f1ee7460b6dab91a5fd831bb",
+    "artifacts": [
+      {
+        "id": "library.co.r",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "conformance.check.invalid_result",
+        "level": "ERROR",
+        "code": "CO1",
+        "message": "failed",
+        "field": "a"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.co.r"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.check.invalid_result"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "OPERATOR_CONTRACT_VIOLATION",
+      "details": {
+        "ruleId": "library.co.r",
+        "operator": "conformance.check.invalid_result"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "88c3752663e93838dd3d7c686955413b67f95900f1ee7460b6dab91a5fd831bb"
+    }
+  }
+}

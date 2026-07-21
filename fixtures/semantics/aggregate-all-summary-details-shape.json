@@ -3,7 +3,7 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0",
+    "specVersion": "1.0.0-rc.2",
     "sourceHash": "22ae7905664e00ac731728edffd13a491620696c9c0890cab7b86351aaafd8ec",
     "artifacts": [
       {
@@ -40,8 +40,14 @@
   "input": {
     "pipelineId": "checks.main",
     "payload": {
-      "x[0].v": 1,
-      "x[1].v": 2
+      "x": [
+        {
+          "v": 1
+        },
+        {
+          "v": 2
+        }
+      ]
     }
   },
   "expected": {
@@ -64,7 +70,7 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0",
+      "specVersion": "1.0.0-rc.2",
       "sourceHash": "22ae7905664e00ac731728edffd13a491620696c9c0890cab7b86351aaafd8ec"
     }
   }

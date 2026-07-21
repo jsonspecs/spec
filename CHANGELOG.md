@@ -3,6 +3,32 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.2] — 2026-07-21
+
+External review round (see decision register D15–D18 and addendum [DR-IV]).
+
+- **D15**: normative input is nested JSON only; the flat map is an internal
+  projection; unaddressable keys (empty, containing `.` `[` `]`) are rejected.
+  Symmetric ABORT codes: `INVALID_PAYLOAD`/`INVALID_CONTEXT`,
+  `DANGEROUS_*_KEY`/`INVALID_*_KEY` with `{parentPath, key}` details,
+  `PAYLOAD_TOO_DEEP`/`CONTEXT_TOO_DEEP`; pinned validation order.
+- **D16**: regex linearity restated as a property of the language (RE2 subset), not
+  of every execution; informative security note.
+- **D17**: custom-operator conformance boundary; operator outcome contract incl.
+  returned `EXCEPTION`; reserved `conformance.*` test operators.
+- **D18**: Unicode 16.0.0 CaseFolding.txt (statuses C+S) pinned for flag `i`.
+- [DR-IV]: algorithmic depth (256 accepted / 257 rejected; no result depth limit),
+  path grammar EBNF, schema pinnings (aggregate/wildcard, `summaryIssue` default,
+  integer constraints, dictionary entry types), longest-prefix scopes + orphan
+  rejection, MUST version-range acceptance, MIN/MAX tie-break, canon-over-fixtures
+  priority, RC version threaded end-to-end.
+- Fixtures: 80 → **113** (84 evaluation, 29 rejection); flat payloads rewritten to
+  nested; new sets: input types, invalid keys, depth bounds, case folding,
+  conformance operators, path grammar, JCS edges, MIN tie-break.
+- Tooling/release gate: full tree diff against the generator, hash integrity for
+  rejection fixtures, ABORT-fixture payload presence-only validation, tag/main and
+  CHANGELOG checks in release, actions pinned by SHA.
+
 ## [1.0.0-rc.1] — 2026-07-21
 
 Initial release candidate.

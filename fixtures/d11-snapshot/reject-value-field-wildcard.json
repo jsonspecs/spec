@@ -1,0 +1,39 @@
+{
+  "name": "d11/reject-value-field-wildcard",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "9fc0e35f58596ede65d65625b9432cb664646d7f0f8f1c3c64518eaddc9ecab6",
+    "artifacts": [
+      {
+        "id": "library.x.p3",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "field_equals_field",
+        "level": "ERROR",
+        "code": "X19",
+        "message": "failed",
+        "field": "a",
+        "value_field": "b[*].v"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.p3"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

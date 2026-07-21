@@ -1,6 +1,6 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
+**Version:** 1.0.0-rc.2 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
 
 This specification is the canon of runtime behavior for a given version. It states only
@@ -24,7 +24,10 @@ This specification defines the observable behavior of a JSONSpecs rules runtime:
 
 Two conformant implementations, given the same snapshot, the same `payload`, and the same
 `context`, MUST produce identical normative results (Part III defines the normative
-surface) and MUST accept or reject the same set of inputs.
+surface) and MUST accept or reject the same set of inputs. For snapshots using
+non-built-in operators this guarantee is bounded by §7.1. `[D17]` The text of this
+specification is the canon; the fixture suite is a mandatory but not sufficient check
+of a conformance claim (§7.3).
 
 This specification does not define APIs, function names, internal representations,
 compilation strategies, the moment at which validation occurs, performance characteristics,
@@ -55,8 +58,17 @@ documents. Structures that cannot round-trip through JSON serialization (cyclic 
 non-finite numbers, host-specific types) are outside the model; the runtime boundary MUST
 reject them (Part II, input validation).
 
-**Maximum depth.** Artifacts, payload, context, and the transport-normalized result have a
-maximum JSON nesting depth of **256**. Inputs exceeding it are rejected (Part II). `[D9]`
+**Maximum depth.** Depth is defined algorithmically: a scalar or an empty container has
+depth 1; a non-empty container has depth 1 + the maximum depth of its members. Every
+input document — each artifact, the payload, the context — MUST NOT exceed depth
+**256**: depth 256 is accepted, 257 is rejected (Part II). `[D9][DR-IV]` The limit is an
+*input guard*, not a constraint on the result: a result built from bounded inputs is
+bounded by construction plus fixed envelope overhead, and no normative depth limit
+applies to it (this is what lets a depth-256 `meta` pass through to issues verbatim).
+
+Values that are not JSON documents (host-language cycles, functions, BigInt and the
+like) are outside the data model entirely; how an implementation's API boundary treats
+them is an adapter concern, out of scope. `[DR-IV]`
 
 **Reserved keys.** The object keys `__proto__`, `prototype`, and `constructor` are
 forbidden in payload and context at any depth. This is a contract rule, not a
@@ -161,9 +173,15 @@ accounts[*].balance          ← wildcard, §3.6
 $context.currentDate         ← context access
 ```
 
-**Flattening.** The runtime accepts payload either as a nested JSON object or as an
-already-flat map of path → value. Flattening is normatively defined as follows and is
-idempotent (flat input passes through unchanged):
+**Normative input form.** `[D15]` The payload and the context are ordinary nested JSON
+objects. The flat path → value map below is an **internal projection** that defines
+path resolution — it is not an input format: accepting pre-flattened input is an
+implementation adapter outside this contract. So that every leaf has exactly one
+unambiguous path, object keys in payload and context MUST NOT be empty and MUST NOT
+contain `.`, `[` or `]` — such keys are unaddressable, and the input is rejected
+(Part II, `INVALID_PAYLOAD_KEY` / `INVALID_CONTEXT_KEY`).
+
+**Flattening (internal projection).** Normatively defined as follows:
 
 - A nested object key `k` under prefix `p` produces paths `p.k…`; an array element at
   index `i` under prefix `p` produces paths `p[i]…`.
@@ -177,6 +195,21 @@ idempotent (flat input passes through unchanged):
 **Resolution.** Resolving path `f` against the flat map yields either
 *(present, value)* or *absent*. There is no partial resolution and no prototype-chain
 or default-value fallback.
+
+**Path grammar.** `[DR-IV]` A field reference MUST match:
+
+```ebnf
+path      = [ "$context." ] , segment , { "." , segment } ;
+segment   = key , { index } ;
+key       = key-char , { key-char } ;                  (* non-empty *)
+key-char  = ? any code point except "." "[" "]" ? ;
+index     = "[" , ( "0" | nz-digit , { digit } ) , "]"  (* no leading zeros *)
+          | "[*]" ;
+```
+
+Paths violating the grammar (empty segments, `a..b`, leading-zero indexes like
+`a[01]`) make the artifact invalid. `[*]` is permitted only where §3.6 allows it;
+`value_field` and `$context.*` paths MUST NOT contain `[*]`.
 
 **Context access.** Paths with the reserved prefix `$context.` resolve against the
 `context` input instead of the payload, with the same resolution semantics. Wildcards are
@@ -206,6 +239,17 @@ An operator's behavior is a pure function of: the resolved field value(s), the r
 parameter fields (`value`, `value_field`, `fields`, `dictionary`, `flags`), the referenced
 dictionary contents, and — for `$context.*` — the context. Operators MUST NOT depend on
 evaluation order, wall-clock time, locale, or any other ambient state.
+
+**Operator outcome contract.** `[D17]` A check invocation yields exactly one of `OK`,
+`FAIL`, `EXCEPTION`; a predicate yields exactly one of `TRUE`, `FALSE`, `UNDEFINED`.
+Built-in operators never yield `EXCEPTION`. A custom check operator MAY yield
+`EXCEPTION` deliberately ("evaluation impossible"): this produces an issue carrying
+the rule's `code`, `message` and `meta`, with `expected`/`actual` omitted, at level
+`EXCEPTION` regardless of the rule's declared level, and evaluation stops per §5.6.
+That is distinct from a thrown/host failure — `ABORT OPERATOR_FAULT` — and from a
+result outside the enum — `ABORT OPERATOR_CONTRACT_VIOLATION` (§6.7). The predicate
+enum has no `EXCEPTION`: a predicate deliberately unable to evaluate yields
+`UNDEFINED`; anything outside its enum is `OPERATOR_CONTRACT_VIOLATION`.
 
 **Absent-field behavior — two operator classes.** `[D13]`
 
@@ -307,8 +351,12 @@ value-semantic predicates return `UNDEFINED` (§3.1); `is_empty` returns `TRUE`;
 `[D4]` This section defines the complete pattern language. It is a portable subset chosen
 so that every mainstream backend platform can execute it with its standard regex engine
 (it is a strict subset of RE2, of ECMAScript-with-`u`, of `java.util.regex`, and of .NET
-non-backtracking mode). Patterns in this subset execute in linear time; no additional
-ReDoS heuristics are needed or defined.
+non-backtracking mode). The language is implementable by a linear-time
+automaton (it is a subset of RE2) — a property of the *language*, not of every
+execution: backtracking engines may execute some subset patterns (e.g. `(a+)+$`)
+super-linearly. `[D16]` *Security note (informative):* implementations SHOULD execute
+patterns with an automaton-based engine or apply equivalent mitigations; the choice is
+out of contract scope `[D12]`.
 
 #### 3.4.1 Preprocessing
 
@@ -372,8 +420,16 @@ rejection, not a runtime error.
   substring) matches. Authors anchor with `^`/`$` explicitly.
 - Flags: only `i`, `m`, `s`, each at most once, in any order; any other flag string makes
   the artifact invalid.
-  - `i` — case-insensitive via **Unicode simple case folding**, culture-invariant
-    (`и` matches `И`; Turkish-locale `i`/`I` behavior MUST NOT leak in). `[D4.2]`
+  - `i` — case-insensitive via **Unicode simple case folding**, culture-invariant,
+    pinned to **Unicode 16.0.0**: the normative mapping is
+    <https://www.unicode.org/Public/16.0.0/ucd/CaseFolding.txt>, statuses `C` and `S`
+    only (`F` and `T` entries are not used). Equivalence is symmetric and transitive —
+    two code points are equivalent iff their simple foldings are equal, never a
+    one-directional substitution. Consequences: `и` ≡ `И`; `K` (U+212A) ≡ `k`;
+    `ſ` ≡ `s`; `Σ` ≡ `σ` ≡ `ς`; `ß` ≡ `ẞ` (U+1E9E) but `ß` ≢ `SS` (full folding
+    excluded); Turkish `İ`/`ı` fold to themselves and match neither ASCII `i` nor `I`;
+    Turkish-locale behavior MUST NOT leak in. Implementations whose engine ships a
+    different Unicode version MUST compensate. `[D4.2][D18]`
   - `m` — `^`/`$` additionally match after/before U+000A.
   - `s` — `.` also matches U+000A.
 
@@ -430,10 +486,11 @@ the operator yields OK.
 | `MIN` | apply the base operator once, to the minimum element value | 
 | `MAX` | same, to the maximum element value |
 
-For `MIN`/`MAX` the extremum is taken under §2.5 ordered comparison; if any element is
-unclassified or the elements do not all classify to the same kind, the extremum is
-undetermined and the rule FAILs (one summary issue): what cannot be compared is not
-compared. `[DR-I]`
+For `MIN`/`MAX` the extremum is taken under §2.5 ordered comparison; if several
+elements attain the extremum, the **first in enumeration order** (§3.6.1) is selected
+`[DR-IV]`. If any element is unclassified or the elements do not all classify to the
+same kind, the extremum is undetermined and the rule FAILs (one summary issue): what
+cannot be compared is not compared. `[DR-I]`
 
 **Predicate modes.**
 
@@ -493,7 +550,10 @@ versions). `[DR-II]`
 | any dictionary, by `id` | any rule (dictionaries are globally addressable) |
 
 Nested pipelines do not inherit visibility: `a.b.rule_x` is visible from pipeline `a.b`,
-not from pipeline `a`.
+not from pipeline `a`. When pipeline ids overlap as prefixes, an artifact belongs to
+the **longest** pipeline id that prefixes it. Every non-pipeline artifact id MUST be
+either `library.*` or prefixed (followed by `.`) by the id of a pipeline present in
+the snapshot; an orphan scope makes the snapshot invalid. `[DR-IV]`
 
 The *scope* of a pipeline is its own `id`. The *scope* of a condition is inferred from
 its `id`: the prefix up to (not including) the last `.`. A condition `id` containing no
@@ -524,7 +584,7 @@ Common fields beyond §4.1:
 | `field` | per operator | dot-notation path (§2.7); not used by `any_filled` |
 | `fields` | `any_filled` only | non-empty array of paths |
 | `value`, `value_field`, `flags`, `dictionary` | per operator | as defined in Part I §3 |
-| `aggregate` | optional | §3.6; only meaningful when `field` contains `[*]` |
+| `aggregate` | optional | §3.6; valid only when `field` contains `[*]` — `aggregate` on a non-wildcard field is invalid; `summaryIssue` defaults to `false` and is valid only with `mode: "ALL"` `[DR-IV]` |
 | `meta` | optional | any JSON object; passed through to issues and trace; never affects evaluation |
 
 **Check rules** (`role: "check"`) additionally require:
@@ -538,7 +598,8 @@ Common fields beyond §4.1:
 **Predicate rules** (`role: "predicate"`) MUST NOT have `level`, `code`, or `message`;
 their presence makes the artifact invalid. A predicate rule using an operator not
 available in the predicate role (Part I §3.3) is invalid. `aggregate.mode` of `MIN` or
-`MAX` on a predicate rule is invalid.
+`MAX` on a predicate rule is invalid. `length_equals`/`length_max` `value` and
+`COUNT` `value` MUST be non-negative integers. `[DR-IV]`
 
 ### 4.5 Artifact: `condition`
 
@@ -598,7 +659,8 @@ pipelines except through pipeline steps — see §4.8.)
 | `entries` | yes | non-empty array |
 
 Each entry is a scalar (string, number, boolean — `null` is invalid) or an object with
-at least one of `code`, `value`. Matching semantics: Part I §3.5.
+at least one of `code`, `value`, each of which MUST itself be a scalar (string, number
+or boolean) `[DR-IV]`. Matching semantics: §3.5.
 
 ### 4.8 Steps
 
@@ -624,7 +686,7 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0",
+  "specVersion": "1.0.0-rc.2",
   "sourceHash": "<64 lowercase hex chars>",
   "requires": { "operators": ["valid_inn"] },
   "artifacts": [ … ],
@@ -641,16 +703,16 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 | --- | --- | --- |
 | `format` | yes | exactly `"jsonspecs-snapshot"` |
 | `formatVersion` | yes | exactly `2` (integer) |
-| `specVersion` | yes | full SemVer 2.0.0 version of this specification the snapshot targets |
+| `specVersion` | yes | full SemVer 2.0.0 version of this specification the snapshot targets (prereleases included: an rc-suite pins rc versions) |
 | `sourceHash` | yes | SHA-256, lowercase hex, over the RFC 8785 (JCS) canonicalization of the `artifacts` array `[D6]` |
 | `requires.operators` | optional | non-empty array of unique non-built-in operator names used by the artifacts `[D10]` |
 | `artifacts` | yes | array of artifacts; order is significant only through `sourceHash` |
 | `meta` | optional | free-form project metadata; `projectId` and `rulesetVersion`, when present, are carried into the result's `ruleset` (Part III) |
 
-**Version acceptance.** An implementation declares the range of `specVersion` values it
-supports. It MUST reject a snapshot whose `specVersion` has a major version it does not
-implement, and SHOULD reject a minor version newer than it implements. Prerelease
-identifiers compare by SemVer precedence. The snapshot pins the behavior contract (`specVersion`), never an implementation
+**Version acceptance.** An implementation declares the exact range of `specVersion`
+values it supports and MUST reject any snapshot whose `specVersion` falls outside that
+declaration — anything weaker lets two implementations accept different snapshot sets,
+defeating the purpose. Prerelease identifiers compare by SemVer precedence. `[DR-IV]` The snapshot pins the behavior contract (`specVersion`), never an implementation
 version. Implementations MAY read implementation-specific hints from `meta` but MUST
 NOT base acceptance on them. `[DR-II]`
 
@@ -708,11 +770,22 @@ reported when several apply:
    `details: { "entrypointCount": <n> }`. `details` carry only the requested id — enumerating the
    available pipelines to the caller is diagnostic tooling's job, not the runtime
    error's. `[D7][DR-II]`
-2. **Payload validation.** `payload` MUST be a JSON object; it MUST NOT contain reserved
-   keys (§2.1) at any depth (`ABORT DANGEROUS_PAYLOAD_KEY`) and MUST NOT exceed the
-   depth limit (`ABORT PAYLOAD_TOO_DEEP`).
-3. **Context validation.** `context`, when present, MUST be a JSON object under the same
-   key and depth rules as payload (same `ABORT` codes).
+2. **Container types.** `payload` MUST be a JSON object — otherwise `ABORT` with
+   `INVALID_PAYLOAD`, `details: {"expected": "object"}` (this covers `null`, arrays,
+   scalars). `context`, when present, MUST be a JSON object — otherwise
+   `INVALID_CONTEXT`, same details. Payload is checked before context.
+3. **Key scan.** `[D15]` A key is *dangerous* if it is a reserved key (§2.1); a key is
+   *invalid* if it is empty (`""`) or contains `.`, `[` or `]`. The scan is top-down
+   and does not enter the subtree under a dangerous or invalid key — a violation is
+   *visible* only when all its ancestor keys are clean, so its `parentPath` is always
+   a well-formed dot path (root = `""`). Among visible violations the precedence is:
+   dangerous in payload, dangerous in context, invalid in payload, invalid in
+   context; within a class, the lexicographically smallest `(parentPath, key)` pair
+   (code-point order, `parentPath` first). Codes: `DANGEROUS_PAYLOAD_KEY`,
+   `DANGEROUS_CONTEXT_KEY`, `INVALID_PAYLOAD_KEY`, `INVALID_CONTEXT_KEY`; details:
+   `{"parentPath": "…", "key": "…"}`.
+4. **Depth.** §2.1 depth of payload ≤ 256 — otherwise `PAYLOAD_TOO_DEEP`,
+   `details: {"maxDepth": 256}`; likewise context — `CONTEXT_TOO_DEEP`.
 
 All input-validation failures are `ABORT` (the evaluation could not be performed).
 There is no separate required-context phase `[D14]`: context completeness is checked by
@@ -937,22 +1010,23 @@ The normative code enum and the exact `details` shape per code:
 | --- | --- | --- |
 | `PIPELINE_NOT_FOUND` | §5.1 step 1 | `{"pipelineId": "<requested>"}` |
 | `PIPELINE_ID_REQUIRED` | §5.1 step 1 | `{"entrypointCount": <n>}` |
-| `DANGEROUS_PAYLOAD_KEY` | §5.1 steps 2–3 | `{"path": "<dot path>", "key": "<the key>"}`; when several reserved keys exist, the reported `path` is the **lexicographically smallest** (by code points) — this makes `details` deterministic under any traversal order `[DR-III]` |
-| `PAYLOAD_TOO_DEEP` | §5.1 steps 2–3 | `{"maxDepth": 256}` — and nothing else: *which* path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
+| `INVALID_PAYLOAD` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
+| `INVALID_CONTEXT` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
+| `DANGEROUS_PAYLOAD_KEY` / `DANGEROUS_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — the smallest visible `(parentPath, key)` per §5.1; determinism under any traversal order `[DR-III][D15]` |
+| `INVALID_PAYLOAD_KEY` / `INVALID_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — same selection rule `[D15]` |
+| `PAYLOAD_TOO_DEEP` / `CONTEXT_TOO_DEEP` | §5.1 step 4 | `{"maxDepth": 256}` — and nothing else: *which* path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
 | `OPERATOR_FAULT` | an operator implementation threw/panicked during evaluation | `{"ruleId": "…", "operator": "…"}` |
 | `OPERATOR_CONTRACT_VIOLATION` | an operator returned a value outside its declared result shape (Part I §3.1) | `{"ruleId": "…", "operator": "…"}` |
 
 The enum is closed for this spec version: implementations MUST NOT emit other codes in
-Channel B. Built-in operators, correctly implemented, never trigger the two
-`OPERATOR_*` codes; on inputs valid per this specification they cannot occur at all —
-fixtures therefore cover them only via deliberately broken custom operators, and their
-`details` shapes are.
+Channel B. Built-in operators never trigger the two `OPERATOR_*` codes; they are
+exercised portably through the reserved conformance operators of §7.3.
 
 ### 6.8 `ruleset` provenance
 
 ```json
 "ruleset": {
-  "specVersion": "1.0.0",
+  "specVersion": "1.0.0-rc.2",
   "sourceHash": "…",
   "projectId": "…",
   "rulesetVersion": "…",
@@ -984,10 +1058,15 @@ NOT be the only carrier of any normative fact.
 
 A conformance claim names: the implementation and version; the supported `specVersion`
 range (§4.9); and the set of non-built-in operator names the deployment provides.
-Conformance of two implementations is judged **relative to equal registered operator
-sets**: the rejection set (§4.10) is parametrized by that set through
-`requires.operators` — the same snapshot may legitimately be accepted by a deployment
-providing `valid_inn` and rejected (`OPERATOR_NOT_FOUND`) by one that does not. For
+Cross-implementation equality of the normative result is guaranteed **only for
+snapshots that use built-in operators exclusively**. `[D17]` Equal operator *names* do
+not imply equal *semantics*: for snapshots with custom operators, what is common
+across implementations is only the extension contract (§3.1 outcome contract, §6.7
+`OPERATOR_*` reactions — both portably testable via the §7.3 conformance operators)
+and the parametrization of the rejection set (§4.10) through `requires.operators` —
+the same snapshot may legitimately be accepted by a deployment providing `valid_inn`
+and rejected (`OPERATOR_NOT_FOUND`) by one that does not. The business behavior of a
+custom operator is the promise of its package, not of this specification. For
 snapshots using only built-in operators, conformance is unconditional. `[D10]`
 
 ### 7.2 The normative projection
@@ -1033,11 +1112,25 @@ text and fixtures version together, atomically, under one tag. Two fixture kinds
 ```
 
 A runner executes every fixture against the implementation and compares the normative
-projection structurally. An implementation is conformant to spec version X **iff it
-passes every fixture of version X**. Fixtures are organized by the decision or section
-they pin (`d1-numbers/`, `d2-length/`, `regex/`, `order/`, `strict/`, `abort/`, …);
-every note in this specification and every decision
-D1–D14 MUST be covered by at least one fixture before 1.0.0 is tagged.
+projection structurally. Passing the complete suite of version X is a **necessary
+condition** of a conformance claim for X — not a sufficient one: the suite samples the
+behavior space, the text defines it. `[DR-IV]` If a fixture contradicts the text, the
+text prevails; the fixture is corrected through an erratum and a new suite version —
+fixtures never silently redefine the text. Fixtures are organized by the decision or
+section they pin; every decision D1–D18 MUST be covered by at least one fixture.
+
+**Reserved conformance operators.** `[DR-IV]` The following operator names are
+reserved. They are registered **only by conformance runners** as part of the test
+harness — never by production runtimes — and each implementation adapts them to its
+own registration API. Their pinned behavior when invoked:
+
+| Name | Role | Behavior | Expected reaction |
+| --- | --- | --- | --- |
+| `conformance.check.throw` | check | raises a host failure | `ABORT OPERATOR_FAULT` |
+| `conformance.check.invalid_result` | check | returns a value outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` |
+| `conformance.check.exception` | check | returns `EXCEPTION` | `EXCEPTION` issue per §3.1, evaluation stops |
+| `conformance.predicate.throw` | predicate | raises a host failure | `ABORT OPERATOR_FAULT` |
+| `conformance.predicate.invalid_result` | predicate | returns a value outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` |
 
 ### 7.4 Requirements summary
 

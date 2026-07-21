@@ -1,0 +1,42 @@
+{
+  "name": "d11/reject-aggregate-without-wildcard",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "564bf00f8f27e4db62b16df44565e967df236ea2b726ad8d86ac7e2877a03fff",
+    "artifacts": [
+      {
+        "id": "library.x.aw",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "greater_than",
+        "level": "ERROR",
+        "code": "X14",
+        "message": "failed",
+        "field": "a",
+        "value": 1,
+        "aggregate": {
+          "mode": "EACH"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.aw"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

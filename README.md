@@ -43,11 +43,11 @@ tagging).
   **Minor**: backward-compatible behavior additions (new operators, new fields with
   defined absence semantics). **Major**: anything that changes a verdict on an
   existing valid input.
-- Current status: **1.0.0-rc.1**. The `v1.0.0` tag is applied after the
+- Current status: **1.0.0-rc.2**. The `v1.0.0` tag is applied after the
   cross-implementation stand comparison (Node v3 vs Java) confirms the suite:
 
 ```
-git tag v1.0.0-rc.1 && git push origin v1.0.0-rc.1   # release candidate (prerelease)
+git tag v1.0.0-rc.2 && git push origin v1.0.0-rc.2   # release candidate (prerelease)
 git tag v1.0.0      && git push origin v1.0.0        # after stand confirmation
 ```
 

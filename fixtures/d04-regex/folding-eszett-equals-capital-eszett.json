@@ -1,0 +1,52 @@
+{
+  "name": "d04/folding-eszett-equals-capital-eszett",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "9e300323ca679ca08b713685184a0aee29a1c8c6e79ac9b95ba467ec85270641",
+    "artifacts": [
+      {
+        "id": "library.f.e1",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "F4",
+        "message": "failed",
+        "field": "a",
+        "value": "^ß$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.f.e1"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ẞ"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "9e300323ca679ca08b713685184a0aee29a1c8c6e79ac9b95ba467ec85270641"
+    }
+  }
+}

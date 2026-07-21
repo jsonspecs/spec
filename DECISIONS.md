@@ -8,7 +8,8 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all decisions **APPROVED** by the owner. This register is the input for the
+Status: all 18 decisions (D1–D18) and addenda [DR-I]–[DR-IV] are **APPROVED** by the
+owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
 (JVM, Go, .NET, Python, Rust, PHP, Node) — never the convenience of the first Node
@@ -350,3 +351,103 @@ rule (EXCEPTION, authored code) as the first step of each flow. Consumers matchi
 
 In the spec these items are referenced as `[DR-I]`; Part II and Part III blocks as
 `[DR-II]` and `[DR-III]` respectively.
+
+
+---
+
+## D15. Normative input — nested JSON only — APPROVED
+
+**Context (external rc.1 review, blocker).** The fv1 dual input form (nested OR flat
+payload) is ambiguous: `{"a.b": 1, "a": {"b": 2}}` — which value does path `a.b` get?
+Defining escaping, mode detection, and collision handling would bloat the contract.
+
+**Approved:** the normative fv2 input is plain nested JSON only; the flat map is an
+internal projection defining path resolution; accepting flat input is an
+implementation adapter outside the contract. Keys that break addressing — the empty
+key `""` and keys containing `.` `[` `]` — are rejected. Symmetric codes:
+`INVALID_PAYLOAD`/`INVALID_CONTEXT` (non-object, `details: {"expected":"object"}`),
+`DANGEROUS_*_KEY`/`INVALID_*_KEY` (`details: {parentPath, key}`; parentPath from the
+container root, root = `""`), `PAYLOAD_TOO_DEEP`/`CONTEXT_TOO_DEEP`. Check order:
+container type → key scan (top-down, never descending into a violating subtree —
+ancestors of a visible violation are always clean, so parentPath is well-formed;
+precedence: dangerous payload → dangerous context → invalid payload → invalid
+context; within a class the lexicographically smallest `(parentPath, key)` pair) →
+depth.
+
+**Consequences:** sparse wildcard matches REMAIN (a gap arises from an absent child
+field: `{"x":[{"v":1},{},{"v":2}]}` → `x[0].v`, `x[2].v`) — the D5 ordering rule does
+not simplify; all fixtures with flat payloads were rewritten to nested form;
+flat-payload integrations migrate through an adapter / the Node v3 CLI.
+
+## D16. Regex linearity — a property of the language, not of execution — APPROVED
+
+**Context (external rc.1 review, blocker).** "Patterns of the subset execute in
+linear time" was wrong: the grammar admits `(a+)+$`, which backtracking engines (V8,
+java.util.regex) execute super-linearly.
+
+**Approved:** normatively, "the language is implementable by a linear-time automaton"
+(a subset of RE2), plus an informative security note (SHOULD use an automaton engine
+or equivalent mitigations) without mandating any library [D12]. For the Node v3
+implementation (roadmap, not spec): the dependency `re2` (the npm package is named
+`re2`); its adequacy is PROVEN by running the full regex fixture set, including
+folding (re2 may ship a different Unicode version than the pinned one — compensation
+is mandatory), with the exact dependency version pinned and a banking-grade native
+module supply procedure (npm mirror, SBOM, verified binaries or source builds). A
+service timeout is defense-in-depth only: synchronous code is truly interruptible
+only via a worker/separate process.
+
+## D17. Custom-operator conformance boundary + outcome contract — APPROVED
+
+**Refines D10 and §7.1.** Equal operator names do not imply equal semantics:
+cross-implementation equality of the result is guaranteed only for snapshots using
+built-in operators exclusively. For custom operators, what is shared is the extension
+contract: a check returns exactly `OK|FAIL|EXCEPTION`, a predicate exactly
+`TRUE|FALSE|UNDEFINED` (the predicate enum has NO `EXCEPTION` — a predicate's "cannot
+evaluate" is `UNDEFINED`; this resolves an ambiguity in the earlier D10 wording). A
+check operator returning `EXCEPTION` is a deliberate "evaluation impossible" outcome:
+an issue with the rule's authored `code`/`message`/`meta`, no `expected`/`actual`,
+level `EXCEPTION` overriding the declared level, stop per §5.6. A thrown failure →
+`ABORT OPERATOR_FAULT`; an out-of-enum result → `ABORT OPERATOR_CONTRACT_VIOLATION`.
+Portable testability — the reserved operators `conformance.check.throw` /
+`.invalid_result` / `.exception`, `conformance.predicate.throw` /
+`.invalid_result`, registered ONLY by conformance runners (the production runtime is
+unchanged — no conflict with §7.4 "conformance without modes"). Business semantics of
+a custom operator are its package's responsibility.
+
+## D18. Unicode pinning for case folding — APPROVED
+
+Flag `i` — Unicode simple case folding per **Unicode 16.0.0**, normative reference to
+the immutable file <https://www.unicode.org/Public/16.0.0/ucd/CaseFolding.txt>,
+statuses `C` and `S` only (`F` and `T` unused). Equivalence is symmetric and
+transitive: points are equivalent iff their foldings are equal (never a
+one-directional substitution). Reference facts for fixtures: `и`≡`И`, `K`(U+212A)≡`k`,
+`ſ`≡`s`, `Σ`≡`σ`≡`ς`, `ß`≡`ẞ`(U+1E9E), `ß`≢`SS` (full folding excluded), Turkish
+`İ`/`ı` fold to themselves and match neither ASCII `i` nor `I`. No table hash needed:
+the version plus the immutable link suffice. An implementation whose engine ships a
+different Unicode version MUST compensate; adequacy is confirmed by executing the
+fixtures, not by assuming compatibility.
+
+---
+
+## [DR-IV] Addendum: external review round rc.1 → rc.2 — APPROVED
+
+Beyond D15–D18, approved as a batch: the algorithmic depth definition (scalar and
+empty container = 1; container = 1 + max of children; 256 accepted, 257 rejected; the
+limit is an input guard, there is NO normative result depth limit — resolving the
+deep-`meta` passthrough paradox); non-JSON host values are an adapter concern; a
+formal path EBNF (non-empty segments, no leading-zero indexes, `[*]` only where
+allowed, no wildcards in `value_field` / `$context.*`); `aggregate` without a
+wildcard in `field` → invalid; `summaryIssue` defaults to `false`, valid only with
+`ALL`; `length_*`/`COUNT.value` are non-negative integers; dictionary entry
+`code`/`value` are scalars; ownership under overlapping pipeline ids — the longest
+prefix; orphan scopes → invalid; `specVersion` acceptance is MUST across the whole
+declared range (SHOULD dropped); MIN/MAX tie-break — the first element in enumeration
+order; canon priority: text > fixtures, contradictions → erratum + suite version; the
+conformance "iff" weakened to "necessary but not sufficient"; the RC version is
+threaded end-to-end (`1.0.0-rc.N` in the spec, the generator, fixture snapshots and
+`ruleset.specVersion`; the switch to `1.0.0` is one dedicated commit+tag).
+Release gate: fixture generation into a temp dir + full tree diff (git diff is blind
+to untracked files), the validator checks ABORT fixtures only for the *presence* of
+`input.payload` (its type is the runtime's business), hash verification extended to
+rejection fixtures (except hash-mismatch), the release checks the tag against the
+CHANGELOG and the commit's membership in main, actions pinned by SHA.

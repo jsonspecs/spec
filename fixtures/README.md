@@ -1,8 +1,9 @@
 # Conformance fixtures
 
 This tree is a **normative appendix** of the specification (SPEC.md §7.3): the spec
-text and the fixtures version together, atomically, under one tag. An implementation
-is conformant to a spec version iff it passes every fixture of that version.
+text and the fixtures version together, atomically, under one tag. Passing every
+fixture of a version is a necessary condition of a conformance claim — not a
+sufficient one; the SPEC text is the canon (SPEC.md §7.3).
 
 ## Format
 
@@ -45,11 +46,16 @@ Directories map to decisions (`DECISIONS.md`) and semantic areas:
 
 Fixtures are generated: edit `tools/generate-fixtures.mjs`, run it, commit both.
 CI fails if the tree and the generator diverge. `tools/validate-fixtures.mjs` checks
-structure and `sourceHash` integrity (JCS/RFC 8785 + SHA-256) of every snapshot.
+structure and `sourceHash` integrity (JCS/RFC 8785 + SHA-256) of every snapshot —
+including rejection fixtures, so each rejects for its intended reason (the single
+exception is `d06/reject-source-hash-mismatch`, whose broken hash *is* the test).
+For ABORT fixtures the validator checks only the presence of `input.payload`: its
+type is deliberately wrong in `INVALID_PAYLOAD`/`INVALID_CONTEXT` fixtures and is
+the tested runtime's business.
 
 ---
 
 Дерево — **нормативное приложение** спеки (§7.3): текст и фикстуры версионируются
-одним тегом. Реализация конформна версии спеки тогда и только тогда, когда проходит
-все фикстуры этой версии. Сравнение — структурное равенство JSON нормативной проекции
+одним тегом. Прохождение всех фикстур версии — необходимое, но не достаточное условие
+декларации конформанса; канон — текст спеки (SPEC.md §7.3). Сравнение — структурное равенство JSON нормативной проекции
 (§7.2). Фикстуры генерируются из `tools/generate-fixtures.mjs`; правки — в генераторе.

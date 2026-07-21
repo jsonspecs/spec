@@ -1,0 +1,51 @@
+{
+  "name": "d06/jcs-canonicalization-edge-values",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "dee6bb2d60af89a2c118ae158951973e43a3c934a06db80eea8c928d9c7c196d",
+    "artifacts": [
+      {
+        "id": "library.j.edge",
+        "type": "rule",
+        "description": "JCS edge: \"Пётр\"\t\\backslash",
+        "role": "check",
+        "operator": "equals",
+        "field": "a",
+        "value": 1e+21,
+        "level": "ERROR",
+        "code": "J1",
+        "message": "failed"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.j.edge"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1e+21
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "dee6bb2d60af89a2c118ae158951973e43a3c934a06db80eea8c928d9c7c196d"
+    }
+  }
+}

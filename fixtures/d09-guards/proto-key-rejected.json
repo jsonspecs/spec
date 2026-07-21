@@ -3,7 +3,7 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0",
+    "specVersion": "1.0.0-rc.2",
     "sourceHash": "7e1ed0a47b489d4ba6e77c649f4f902c690a3ca24e1f608e08fe520c66144792",
     "artifacts": [
       {
@@ -48,12 +48,12 @@
     "error": {
       "code": "DANGEROUS_PAYLOAD_KEY",
       "details": {
-        "path": "x.__proto__",
+        "parentPath": "x",
         "key": "__proto__"
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0",
+      "specVersion": "1.0.0-rc.2",
       "sourceHash": "7e1ed0a47b489d4ba6e77c649f4f902c690a3ca24e1f608e08fe520c66144792"
     }
   }

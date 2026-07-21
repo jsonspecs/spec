@@ -1,0 +1,64 @@
+{
+  "name": "d04/folding-turkish-dotless-i-no-match",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "ef27dc43a04b2096b78e0ed35b1f867d4cae3dce015bfbba90a6bc90f5613aaa",
+    "artifacts": [
+      {
+        "id": "library.f.t2",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "F7",
+        "message": "failed",
+        "field": "a",
+        "value": "^i$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.f.t2"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ı"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "F7",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.f.t2",
+        "pipelineId": "checks.main",
+        "expected": "^i$",
+        "actual": "ı"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "ef27dc43a04b2096b78e0ed35b1f867d4cae3dce015bfbba90a6bc90f5613aaa"
+    }
+  }
+}

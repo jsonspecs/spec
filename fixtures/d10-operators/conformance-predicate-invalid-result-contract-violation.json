@@ -1,0 +1,83 @@
+{
+  "name": "d10/conformance-predicate-invalid-result-contract-violation",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "requires": {
+      "operators": [
+        "conformance.predicate.invalid_result"
+      ]
+    },
+    "sourceHash": "de1fdebbe0ede651aabad503af7d6a24b67895935a76364131900336062ca8e6",
+    "artifacts": [
+      {
+        "id": "library.co.p",
+        "type": "rule",
+        "description": "fixture predicate",
+        "role": "predicate",
+        "operator": "conformance.predicate.invalid_result",
+        "field": "a"
+      },
+      {
+        "id": "library.co.c",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "CO2",
+        "message": "failed",
+        "field": "b"
+      },
+      {
+        "id": "library.cond.co",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": "library.co.p",
+        "steps": [
+          {
+            "rule": "library.co.c"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.cond.co"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.predicate.invalid_result"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 1
+    }
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "OPERATOR_CONTRACT_VIOLATION",
+      "details": {
+        "ruleId": "library.co.p",
+        "operator": "conformance.predicate.invalid_result"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "de1fdebbe0ede651aabad503af7d6a24b67895935a76364131900336062ca8e6"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "d04/folding-long-s-equals-s",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "1506973af18969a0061c6d1f09a2373fd20c96f457ad3d540aecb7a9b31abfb6",
+    "artifacts": [
+      {
+        "id": "library.f.s",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "matches_regex",
+        "level": "ERROR",
+        "code": "F2",
+        "message": "failed",
+        "field": "a",
+        "value": "^s$",
+        "flags": "i"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.f.s"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "ſ"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "1506973af18969a0061c6d1f09a2373fd20c96f457ad3d540aecb7a9b31abfb6"
+    }
+  }
+}

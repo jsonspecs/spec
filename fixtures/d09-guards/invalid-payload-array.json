@@ -1,0 +1,57 @@
+{
+  "name": "d09/invalid-payload-array",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.2",
+    "sourceHash": "63350ca3aff47f74b883aa94cb36080d916fccfb67006566a920c3f9e00de539",
+    "artifacts": [
+      {
+        "id": "library.i.r",
+        "type": "rule",
+        "description": "fixture rule",
+        "role": "check",
+        "operator": "not_empty",
+        "level": "ERROR",
+        "code": "I1",
+        "message": "failed",
+        "field": "ok"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.i.r"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": [
+      1,
+      2
+    ]
+  },
+  "expected": {
+    "status": "ABORT",
+    "control": "STOP",
+    "issues": [],
+    "error": {
+      "code": "INVALID_PAYLOAD",
+      "details": {
+        "expected": "object"
+      }
+    },
+    "ruleset": {
+      "specVersion": "1.0.0-rc.2",
+      "sourceHash": "63350ca3aff47f74b883aa94cb36080d916fccfb67006566a920c3f9e00de539"
+    }
+  }
+}

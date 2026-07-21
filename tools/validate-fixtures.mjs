@@ -48,11 +48,16 @@ for (const p of files) {
   if (!fx.expected || typeof fx.expected !== 'object') { err('missing expected'); continue; }
 
   const rejection = fx.expected.verdict === 'reject';
+  // sourceHash integrity holds for ALL fixtures except the one that tests hash mismatch itself:
+  // otherwise a rejection fixture could pass for the wrong reason (accidentally broken hash).
+  if (fx.name !== 'd06/reject-source-hash-mismatch' && Array.isArray(fx.snapshot.artifacts)) {
+    const h = sha(jcs(fx.snapshot.artifacts));
+    if (fx.snapshot.sourceHash !== h) err(`sourceHash mismatch: ${fx.snapshot.sourceHash} != ${h}`);
+  }
   if (rejection) {
     rejN++;
     if (fx.input !== undefined) err('rejection fixture must not have input');
-    // rejection snapshots are invalid by design — no envelope/hash checks
-    continue;
+    continue; // rejection snapshots are invalid by design — no further envelope checks
   }
   evalN++;
   const s = fx.snapshot;
@@ -60,12 +65,10 @@ for (const p of files) {
   if (s.formatVersion !== 2) err('bad snapshot.formatVersion');
   if (typeof s.specVersion !== 'string') err('bad snapshot.specVersion');
   if (!Array.isArray(s.artifacts)) err('snapshot.artifacts must be an array');
-  else {
-    const h = sha(jcs(s.artifacts));
-    if (s.sourceHash !== h) err(`sourceHash mismatch: ${s.sourceHash} != ${h}`);
-  }
   if (!fx.input || typeof fx.input !== 'object') err('missing input');
-  else if (!fx.input.payload || typeof fx.input.payload !== 'object') err('input.payload must be an object');
+  // input.payload type is the tested runtime's business (INVALID_PAYLOAD fixtures carry
+  // null/arrays deliberately) — the validator checks presence only.
+  else if (!('payload' in fx.input)) err('input.payload must be present');
   const e = fx.expected;
   if (!STATUSES.has(e.status)) err(`bad expected.status ${e.status}`);
   if (e.control !== 'CONTINUE' && e.control !== 'STOP') err(`bad expected.control ${e.control}`);
