@@ -3,21 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "c7b6beb1980cea52630cf385830001c97b787a8da182d6fd991970e7a3d4905e",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "35132d89f597ee892246c1291c71d05f4732809784b8fe286dc535827695a769",
     "artifacts": [
       {
         "id": "library.x.deep",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "X12",
-        "message": "failed",
         "field": "a",
-        "meta": {
-          "n": {
+        "issue": {
+          "level": "ERROR",
+          "code": "X12",
+          "message": "failed",
+          "meta": {
             "n": {
               "n": {
                 "n": {
@@ -271,7 +270,9 @@
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 "n": {
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   "n": {
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     "n": {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "n": 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "n": {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "n": 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 }

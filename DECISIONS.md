@@ -8,7 +8,7 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 18 decisions (D1–D18) and addenda [DR-I]–[DR-IV] are **APPROVED** by the
+Status: all 20 decisions (D1–D20) and addenda [DR-I]–[DR-V] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -196,7 +196,7 @@ a promise of the individual implementation, documented and tested by it — the 
 does not participate.
 
 What the spec still defines (the extension interface, nothing more): the result shape
-of any operator (`OK|FAIL|EXCEPTION` / `TRUE|FALSE|UNDEFINED|EXCEPTION`) and the
+of any operator (`PASS|FAIL|SKIP`) and the
 runtime's reaction to its violation; the unknown-operator rule — a snapshot
 referencing an operator absent from the implementation's registry is **rejected
 before any evaluation**, normative identifier `OPERATOR_NOT_FOUND` (determinism
@@ -244,8 +244,8 @@ parameter) and belongs to a CLI migrator. The cost is paid once by existing Node
 consumers, not permanently by the entire future market of implementations.
 
 **[DR-II]** Approved alongside in Part II of the drafting review: closed artifact
-schemas (unknown fields reject the snapshot); a rule step referencing a predicate is
-invalid; `specVersion` replaces `engine.minVersion` in the snapshot (the snapshot pins
+schemas (unknown fields reject the snapshot); as revised by D19, a rule step targeting
+a rule without `issue` is invalid; `specVersion` replaces `engine.minVersion` in the snapshot (the snapshot pins
 the behavior contract, never an implementation version); `PIPELINE_NOT_FOUND` details
 carry only the requested id (no `availablePipelines` — enumerating the ruleset to the
 caller is tooling's job); nested strict summaries append inner-to-outer.
@@ -265,13 +265,13 @@ field is required is always a separate, analyst-authored rule; value operators n
 imply it.
 
 - **Presence-semantic operators** (absence is part of their domain): `not_empty`
-  (absent → FAIL), `is_empty` (absent → OK), `not_true` (absent → OK), `any_filled`
+  (absent → FAIL), `is_empty` (absent → PASS), `not_true` (absent → PASS), `any_filled`
   (absent = empty).
 - **Value-semantic operators** (everything else, including `is_*` type checks,
   comparisons, regex, dictionaries, and both operands of `field_*_field`): on an
-  absent field the operator is **not invoked** — the check yields OK with no issue
-  (*skip*), the predicate yields UNDEFINED. The skip is recorded in trace
-  (informative, D7); the normative result is untouched.
+  absent field the operator is **not invoked** and the rule receives `SKIP`. At a
+  rule step it produces nothing; in `when` it maps to `false`. Skip is recorded in
+  trace (informative, D7).
 
 **Rationale (a DSL design principle, not industry alignment):** whether a field is
 mandatory is the analyst's explicit decision, and an *absence* failure is a distinct
@@ -317,7 +317,7 @@ rule (EXCEPTION, authored code) as the first step of each flow. Consumers matchi
   and deliberately mirrors `error.details`). Consumer discriminator: `details.mode`.
   Per-mode shapes are normative; MIN/MAX point `field` at the concrete extremum
   element.
-- **Rule `meta` passes through to issues verbatim**; the runtime never writes into it
+- **`rule.issue.meta` passes through to issues verbatim**; the runtime never writes into it
   (the prototype did not pass it through at all, contrary to its own spec text).
 - **ABORT details**: `PAYLOAD_TOO_DEEP` → `{"maxDepth": 256}` with no path in any
   normative surface (which path trips first depends on traversal order);
@@ -335,17 +335,17 @@ rule (EXCEPTION, authored code) as the first step of each flow. Consumers matchi
 ## [DR-I] Addendum: Part I approvals (data model / operators) — APPROVED
 
 - **D3 extended to the string family** (`contains`, `matches_regex`,
-  `not_matches_regex`): a non-string value → FAIL/FALSE; host stringification never
+  `not_matches_regex`): a non-string value → FAIL; host stringification never
   happens. Same motive as D3: the prototype coerced via `String()` (the number `123`
   passed `^\d+$`), which would drag ECMAScript number formatting into the contract.
 - **MIN/MAX over non-comparables**: if elements do not classify to one kind (§2.5),
   the extremum is undetermined → FAIL with a summary issue. What cannot be compared
   is not compared.
-- **Cross-role `onEmpty` values** (`TRUE`/`FALSE` on a check, `PASS`/`FAIL` on a
-  predicate) — the artifact is invalid; there is no silent coercion.
+- **`onEmpty`** is unified by D20 to `PASS|FAIL|SKIP`; legacy
+  `TRUE|FALSE|UNDEFINED` values are invalid.
 - **Erratum rc.1: `onEmpty: "ERROR"` removed.** The option promised an ABORT that
   the closed §6.7 enum has no code for; it is also redundant — a hard stop composes
-  from `onEmpty: "FAIL"` + `level: "EXCEPTION"` with the analyst's own diagnostics,
+  from `onEmpty: "FAIL"` + `issue.level: "EXCEPTION"` with the analyst's own diagnostics,
   and it was the only place where rule content would produce an anonymous abort,
   breaking the two-channel failure model. Zero production-pack usage.
 
@@ -398,21 +398,15 @@ only via a worker/separate process.
 
 ## D17. Custom-operator conformance boundary + outcome contract — APPROVED
 
-**Refines D10 and §7.1.** Equal operator names do not imply equal semantics:
-cross-implementation equality of the result is guaranteed only for snapshots using
-built-in operators exclusively. For custom operators, what is shared is the extension
-contract: a check returns exactly `OK|FAIL|EXCEPTION`, a predicate exactly
-`TRUE|FALSE|UNDEFINED` (the predicate enum has NO `EXCEPTION` — a predicate's "cannot
-evaluate" is `UNDEFINED`; this resolves an ambiguity in the earlier D10 wording). A
-check operator returning `EXCEPTION` is a deliberate "evaluation impossible" outcome:
-an issue with the rule's authored `code`/`message`/`meta`, no `expected`/`actual`,
-level `EXCEPTION` overriding the declared level, stop per §5.6. A thrown failure →
-`ABORT OPERATOR_FAULT`; an out-of-enum result → `ABORT OPERATOR_CONTRACT_VIOLATION`.
-Portable testability — the reserved operators `conformance.check.throw` /
-`.invalid_result` / `.exception`, `conformance.predicate.throw` /
-`.invalid_result`, registered ONLY by conformance runners (the production runtime is
-unchanged — no conflict with §7.4 "conformance without modes"). Business semantics of
-a custom operator are its package's responsibility.
+**Refines D10 and §7.1, as revised by D19.** Equal operator names do not imply equal
+semantics: cross-implementation result equality is guaranteed only for snapshots using
+built-ins exclusively. The shared extension contract is strictly `PASS|FAIL|SKIP`.
+A returned `EXCEPTION` is outside the enum and causes
+`ABORT OPERATOR_CONTRACT_VIOLATION`; a thrown exception causes
+`ABORT OPERATOR_FAULT`. The reaction is site-independent. Business level
+`EXCEPTION` belongs to `rule.issue`, never to the operator. Portable testing uses
+`conformance.rule.throw`, `conformance.rule.invalid_result`, and
+`conformance.rule.tri`, registered only by conformance runners.
 
 ## D18. Unicode pinning for case folding — APPROVED
 
@@ -437,8 +431,8 @@ limit is an input guard, there is NO normative result depth limit — resolving 
 deep-`meta` passthrough paradox); non-JSON host values are an adapter concern; a
 formal path EBNF (non-empty segments, no leading-zero indexes, `[*]` only where
 allowed, no wildcards in `value_field` / `$context.*`); `aggregate` without a
-wildcard in `field` → invalid; `summaryIssue` defaults to `false`, valid only with
-`ALL`; `length_*`/`COUNT.value` are non-negative integers; dictionary entry
+wildcard in `field` → invalid; the former `summaryIssue` decision is superseded by
+D20; `length_*`/`COUNT.value` are non-negative integers; dictionary entry
 `code`/`value` are scalars; ownership under overlapping pipeline ids — the longest
 prefix; orphan scopes → invalid; `specVersion` acceptance is MUST across the whole
 declared range (SHOULD dropped); MIN/MAX tie-break — the first element in enumeration
@@ -451,3 +445,50 @@ to untracked files), the validator checks ABORT fixtures only for the *presence*
 `input.payload` (its type is the runtime's business), hash verification extended to
 rejection fixtures (except hash-mismatch), the release checks the tag against the
 CHANGELOG and the commit's membership in main, actions pinned by SHA.
+
+---
+
+## D19. One rule model without check/predicate roles — APPROVED
+
+**Approved for rc.3.** The `role` field is removed. An operator always returns one
+site-independent `PASS|FAIL|SKIP` outcome, making a rule one reusable business
+condition. A rule step maps `FAIL` to an issue; `when` maps `PASS` to `true` and
+`FAIL`/`SKIP` to `false`, and never creates issues.
+
+Diagnostics are one optional closed object: `issue: {level, code, message, meta?}`.
+It never affects logic. A rule with `issue.level: EXCEPTION` is valid in `when`; a
+rule without `issue` is valid as a condition; only a rule step targeting such a rule
+is rejected. `meta` moves inside `issue`, and code uniqueness applies among rules
+with `issue`.
+
+Returned operator `EXCEPTION` is removed: dynamic business escalation violated
+analyst ownership of levels. Any value outside `PASS|FAIL|SKIP`, including
+`EXCEPTION`, causes `OPERATOR_CONTRACT_VIOLATION`; a thrown technical failure causes
+`OPERATOR_FAULT`. This supersedes the role-specific portions of D10/D13/D17.
+
+## D20. Unified wildcard aggregation and effective population — APPROVED
+
+**Approved for rc.3.** Logical aggregation is separate from reporting:
+`mode = ALL|ANY|COUNT|MIN|MAX`; `issueMode = EACH|SUMMARY` exists only for
+`ALL`/`ANY`. It is required for those modes when `issue` exists and forbidden when
+it does not. `COUNT`/`MIN`/`MAX` always summarize on failure. Legacy logical `EACH`
+and `summaryIssue` are removed.
+
+A wildcard requires explicit `aggregate`, and aggregate is forbidden without one.
+`value_field` contains no wildcard. `onEmpty = PASS|FAIL|SKIP`, default `SKIP`, and
+applies only to zero structural matches. `SKIP` elements are excluded from the
+effective population; structural matches that all skip produce aggregate `SKIP`
+regardless of `onEmpty`.
+
+Group details distinguish `matched`, `evaluated`, `skipped`, `passed`, and `failed`.
+The COUNT change is acknowledged as semantic: skipped check elements could previously
+count as passed; now they do not participate. `conformance.rule.tri` portably tests
+mixed populations.
+
+## [DR-V] Addendum: unification rc.2 → rc.3 — APPROVED
+
+rc.3 is the final architectural redesign before `1.0.0`. After publication, only
+errata clarifying approved semantics and fixtures pinning them are accepted before
+the final tag. New operators and compatible extensions follow `1.0.0` as minor
+decisions; scalar `greater_or_equal`/`less_or_equal` remain a D21 candidate, not part
+of rc.3.

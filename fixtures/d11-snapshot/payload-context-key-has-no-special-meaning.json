@@ -3,19 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "2532c06de3f2b9573d1554b4dce17d1169f8ed40b6b0d2a9e887c0f212c93ed6",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "d0b30afd238b8de80e49ad89e171a24fc07038176b5b769e17be98929e1c8ad9",
     "artifacts": [
       {
         "id": "library.x.ctx",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "EXCEPTION",
-        "code": "CTX.CURRENT_DATE.REQUIRED",
-        "message": "failed",
-        "field": "$context.currentDate"
+        "field": "$context.currentDate",
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "CTX.CURRENT_DATE.REQUIRED",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -55,8 +56,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "2532c06de3f2b9573d1554b4dce17d1169f8ed40b6b0d2a9e887c0f212c93ed6"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "d0b30afd238b8de80e49ad89e171a24fc07038176b5b769e17be98929e1c8ad9"
     }
   }
 }

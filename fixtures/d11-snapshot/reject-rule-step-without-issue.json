@@ -1,16 +1,15 @@
 {
-  "name": "d11/reject-rule-step-referencing-predicate",
+  "name": "d11/reject-rule-step-without-issue",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "e1ffb47e7b531f7f55efff7faf2085d820f2ae059e308dad5b13bbe99195a70b",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "ef8d9447f6bd4b12eb4388549951f865745102fdddcbf2e5b30ef4b2e6f5e6dd",
     "artifacts": [
       {
         "id": "library.x.pp",
         "type": "rule",
-        "description": "fixture predicate",
-        "role": "predicate",
+        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a"
       },

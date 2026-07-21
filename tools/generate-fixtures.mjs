@@ -1,12 +1,12 @@
 // Fixture generator for jsonspecs/spec conformance suite.
 // Regenerates fixtures/**/*.json deterministically. Run: node tools/generate-fixtures.mjs
 import { createHash } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SPEC = '1.0.0-rc.2';
+const SPEC = '1.0.0-rc.3';
 const deep = n => n <= 1 ? 1 : { n: deep(n - 1) };
 
 // RFC 8785 (JCS) canonicalization — sufficient for fixture content
@@ -29,14 +29,18 @@ function snap(artifacts, opts = {}) {
   if (opts.specVersion !== undefined) s.specVersion = opts.specVersion;
   return s;
 }
-const chk = (id, operator, o = {}) => ({ id, type: 'rule', description: 'fixture rule', role: 'check',
-  operator, level: o.level ?? 'ERROR', code: o.code, message: o.message ?? 'failed', ...o.x,
+const chk = (id, operator, o = {}) => ({ id, type: 'rule', description: 'fixture rule',
+  operator, ...o.x,
   ...(o.field !== undefined ? { field: o.field } : {}), ...(o.fields ? { fields: o.fields } : {}),
   ...(o.value !== undefined ? { value: o.value } : {}), ...(o.value_field ? { value_field: o.value_field } : {}),
   ...(o.flags ? { flags: o.flags } : {}), ...(o.dictionary ? { dictionary: o.dictionary } : {}),
-  ...(o.aggregate ? { aggregate: o.aggregate } : {}), ...(o.meta ? { meta: o.meta } : {}) });
-const pred = (id, operator, o = {}) => ({ id, type: 'rule', description: 'fixture predicate', role: 'predicate',
-  operator, ...(o.field !== undefined ? { field: o.field } : {}), ...(o.value !== undefined ? { value: o.value } : {}), ...o.x });
+  ...(o.aggregate ? { aggregate: o.aggregate } : {}),
+  issue: { level: o.level ?? 'ERROR', code: o.code, message: o.message ?? 'failed', ...(o.meta ? { meta: o.meta } : {}) } });
+const pred = (id, operator, o = {}) => ({ id, type: 'rule', description: 'fixture rule',
+  operator, ...(o.field !== undefined ? { field: o.field } : {}), ...(o.fields ? { fields: o.fields } : {}),
+  ...(o.value !== undefined ? { value: o.value } : {}), ...(o.value_field ? { value_field: o.value_field } : {}),
+  ...(o.flags ? { flags: o.flags } : {}), ...(o.dictionary ? { dictionary: o.dictionary } : {}),
+  ...(o.aggregate ? { aggregate: o.aggregate } : {}), ...o.x });
 const pipe = (id, flow, o = {}) => ({ id, type: 'pipeline', description: 'fixture pipeline',
   entrypoint: o.entrypoint ?? true, strict: o.strict ?? false,
   ...(o.message ? { message: o.message } : {}), ...(o.strictCode ? { strictCode: o.strictCode } : {}), ...o.x, flow });
@@ -151,7 +155,8 @@ evalFx('d04-regex', 'd04/unanchored-search-semantics',
 
 /* ---------------- d05-order ---------------- */
 {
-  const r = chk('library.o.each', 'greater_than', { code: 'O1', field: 'x[*].v', value: 10 });
+  const r = chk('library.o.each', 'greater_than', { code: 'O1', field: 'x[*].v', value: 10,
+    aggregate: { mode: 'ALL', issueMode: 'EACH' } });
   evalFx('d05-order', 'd05/wildcard-gaps-ascending-numeric', snap(one(r)),
     { pipelineId: 'checks.main', payload: { x: [{ v: 2 }, {}, { v: 3 }, {}, {}, { v: 1 }] } },
     ERR([issue('ERROR', 'O1', M, 'x[0].v', 'library.o.each', 'checks.main', { expected: 10, actual: 2 }),
@@ -159,7 +164,8 @@ evalFx('d04-regex', 'd04/unanchored-search-semantics',
          issue('ERROR', 'O1', M, 'x[5].v', 'library.o.each', 'checks.main', { expected: 10, actual: 1 })]));
 }
 {
-  const r = chk('library.o.odo', 'greater_than', { code: 'O2', field: 'm[*].n[*].v', value: 10 });
+  const r = chk('library.o.odo', 'greater_than', { code: 'O2', field: 'm[*].n[*].v', value: 10,
+    aggregate: { mode: 'ALL', issueMode: 'EACH' } });
   evalFx('d05-order', 'd05/odometer-order-two-wildcards', snap(one(r)),
     { pipelineId: 'checks.main', payload: { m: [{ n: [{ v: 1 }, { v: 2 }] }, { n: [{ v: 3 }] }] } },
     ERR([issue('ERROR', 'O2', M, 'm[0].n[0].v', 'library.o.odo', 'checks.main', { expected: 10, actual: 1 }),
@@ -223,7 +229,8 @@ rejFx('d10-operators', 'd10/reject-operator-not-found',
 
 /* ---------------- d11-snapshot ---------------- */
 rejFx('d11-snapshot', 'd11/reject-any-filled-paths-alias',
-  snap(one({ id: 'library.x.af', type: 'rule', description: 'fixture rule', role: 'check', operator: 'any_filled', level: 'ERROR', code: 'X1', message: M, paths: ['a', 'b'] })));
+  snap(one({ id: 'library.x.af', type: 'rule', description: 'fixture rule', operator: 'any_filled',
+    issue: { level: 'ERROR', code: 'X1', message: M }, paths: ['a', 'b'] })));
 rejFx('d11-snapshot', 'd11/reject-required-context-field',
   snap([chk('library.x.r', 'not_empty', { code: 'X2', field: 'a' }),
     { id: 'checks.main', type: 'pipeline', description: 'fixture pipeline', entrypoint: true, strict: false, required_context: ['currentDate'], flow: [{ rule: 'library.x.r' }] }]));
@@ -240,18 +247,17 @@ rejFx('d11-snapshot', 'd11/reject-unsupported-spec-version',
     { status: 'EXCEPTION', control: 'STOP',
       issues: [issue('EXCEPTION', 'CTX.CURRENT_DATE.REQUIRED', M, '$context.currentDate', 'library.x.ctx', 'checks.main')] });
 }
-rejFx('d11-snapshot', 'd11/reject-duplicate-check-code',
+rejFx('d11-snapshot', 'd11/reject-duplicate-issue-code',
   snap([chk('library.x.d1', 'not_empty', { code: 'DUP', field: 'a' }), chk('library.x.d2', 'not_empty', { code: 'DUP', field: 'b' }),
     pipe('checks.main', [{ rule: 'library.x.d1' }, { rule: 'library.x.d2' }])]));
-rejFx('d11-snapshot', 'd11/reject-predicate-with-code',
-  snap([{ id: 'library.x.p', type: 'rule', description: 'fixture predicate', role: 'predicate', operator: 'not_empty', field: 'a', code: 'NOPE' },
+rejFx('d11-snapshot', 'd11/reject-partial-issue-object',
+  snap([{ id: 'library.x.p', type: 'rule', description: 'fixture rule', operator: 'not_empty', field: 'a',
+      issue: { code: 'NOPE', message: M } },
     chk('library.x.ok', 'not_empty', { code: 'X6', field: 'a' }), pipe('checks.main', [{ rule: 'library.x.ok' }])]));
-rejFx('d11-snapshot', 'd11/reject-rule-step-referencing-predicate',
+rejFx('d11-snapshot', 'd11/reject-legacy-rule-role',
+  snap(one({ ...chk('library.x.role', 'not_empty', { code: 'X6R', field: 'a' }), role: 'check' })));
+rejFx('d11-snapshot', 'd11/reject-rule-step-without-issue',
   snap([pred('library.x.pp', 'not_empty', { field: 'a' }), pipe('checks.main', [{ rule: 'library.x.pp' }])]));
-rejFx('d11-snapshot', 'd11/reject-when-leaf-referencing-check',
-  snap([chk('library.x.c1', 'not_empty', { code: 'X7', field: 'a' }),
-    { id: 'library.cond.bad', type: 'condition', description: 'fixture condition', when: 'library.x.c1', steps: [{ rule: 'library.x.c1' }] },
-    pipe('checks.main', [{ condition: 'library.cond.bad' }])]));
 rejFx('d11-snapshot', 'd11/reject-pipeline-cycle',
   snap([chk('library.x.c2', 'not_empty', { code: 'X8', field: 'a' }),
     pipe('checks.a', [{ pipeline: 'checks.b' }]), pipe('checks.b', [{ pipeline: 'checks.a' }], { entrypoint: false })]));
@@ -262,8 +268,9 @@ rejFx('d11-snapshot', 'd11/reject-dictionary-null-entry',
   snap([{ id: 'library.dict.bad', type: 'dictionary', description: 'fixture dictionary', entries: ['X', null] },
     chk('library.x.di', 'in_dictionary', { code: 'X10', field: 'a', dictionary: { type: 'static', id: 'library.dict.bad' } }),
     pipe('checks.main', [{ rule: 'library.x.di' }])]));
-rejFx('d11-snapshot', 'd11/reject-cross-role-on-empty',
-  snap(one(chk('library.x.oe', 'greater_than', { code: 'X11', field: 'x[*].v', value: 1, aggregate: { mode: 'EACH', onEmpty: 'TRUE' } }))));
+rejFx('d11-snapshot', 'd11/reject-legacy-on-empty-value',
+  snap(one(chk('library.x.oe', 'greater_than', { code: 'X11', field: 'x[*].v', value: 1,
+    aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'TRUE' } }))));
 
 /* ---------------- d13-absence ---------------- */
 evalFx('d13-absence', 'd13/value-check-skips-on-absent',
@@ -390,18 +397,19 @@ evalFx('d13-absence', 'd13/field-op-skips-if-either-operand-absent',
       { expected: { type: 'static', id: 'library.dict.blocked' }, actual: 'RU' })]));
 }
 {
-  const r = chk('library.se.all', 'greater_than', { code: 'SE13', field: 'x[*].v', value: 10, aggregate: { mode: 'ALL', summaryIssue: true } });
+  const r = chk('library.se.all', 'greater_than', { code: 'SE13', field: 'x[*].v', value: 10,
+    aggregate: { mode: 'ALL', issueMode: 'SUMMARY' } });
   evalFx('semantics', 'sem/aggregate-all-summary-details-shape', snap(one(r)),
     { pipelineId: 'checks.main', payload: { x: [{ v: 1 }, { v: 2 }] } },
     ERR([issue('ERROR', 'SE13', M, 'x[*].v', 'library.se.all', 'checks.main',
-      { details: { mode: 'ALL', total: 2, failed: 2 } })]));
+      { details: { mode: 'ALL', matched: 2, evaluated: 2, skipped: 0, passed: 0, failed: 2 } })]));
 }
 {
   const r = chk('library.se.cnt', 'greater_than', { code: 'SE14', field: 'x[*].v', value: 10, aggregate: { mode: 'COUNT', op: '>=', value: 2 } });
   evalFx('semantics', 'sem/aggregate-count-details-shape', snap(one(r)),
     { pipelineId: 'checks.main', payload: { x: [{ v: 11 }, { v: 2 }, { v: 3 }] } },
     ERR([issue('ERROR', 'SE14', M, 'x[*].v', 'library.se.cnt', 'checks.main',
-      { details: { mode: 'COUNT', op: '>=', value: 2, total: 3, passed: 1 } })]));
+      { details: { mode: 'COUNT', op: '>=', value: 2, matched: 3, evaluated: 3, skipped: 0, passed: 1, failed: 2 } })]));
 }
 {
   const r = chk('library.se.min', 'greater_than', { code: 'SE15', field: 'x[*].v', value: 10, aggregate: { mode: 'MIN' } });
@@ -410,23 +418,26 @@ evalFx('d13-absence', 'd13/field-op-skips-if-either-operand-absent',
     ERR([issue('ERROR', 'SE15', M, 'x[0].v', 'library.se.min', 'checks.main',
       { expected: 10, actual: 5, details: { mode: 'MIN' } })]));
 }
-evalFx('semantics', 'sem/aggregate-on-empty-default-pass',
-  snap(one(chk('library.se.oe1', 'greater_than', { code: 'SE16', field: 'x[*].v', value: 10 }))),
+evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
+  snap(one(chk('library.se.oe1', 'greater_than', { code: 'SE16', field: 'x[*].v', value: 10,
+    aggregate: { mode: 'ALL', issueMode: 'EACH' } }))),
   { pipelineId: 'checks.main', payload: {} }, OKR);
 {
-  const r = chk('library.se.oe2', 'greater_than', { code: 'SE17', field: 'x[*].v', value: 10, aggregate: { mode: 'EACH', onEmpty: 'FAIL' } });
+  const r = chk('library.se.oe2', 'greater_than', { code: 'SE17', field: 'x[*].v', value: 10,
+    aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
   evalFx('semantics', 'sem/aggregate-on-empty-fail-summary', snap(one(r)),
     { pipelineId: 'checks.main', payload: {} },
     ERR([issue('ERROR', 'SE17', M, 'x[*].v', 'library.se.oe2', 'checks.main',
-      { details: { mode: 'EACH', total: 0 } })]));
+      { details: { mode: 'ALL', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })]));
 }
 {
-  const r = chk('library.se.hs', 'greater_than', { code: 'SE24', field: 'x[*].v', value: 10, level: 'EXCEPTION', aggregate: { mode: 'EACH', onEmpty: 'FAIL' } });
+  const r = chk('library.se.hs', 'greater_than', { code: 'SE24', field: 'x[*].v', value: 10, level: 'EXCEPTION',
+    aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
   evalFx('semantics', 'sem/on-empty-fail-with-exception-level-composes-hard-stop', snap(one(r)),
     { pipelineId: 'checks.main', payload: {} },
     { status: 'EXCEPTION', control: 'STOP',
       issues: [issue('EXCEPTION', 'SE24', M, 'x[*].v', 'library.se.hs', 'checks.main',
-        { details: { mode: 'EACH', total: 0 } })] });
+        { details: { mode: 'ALL', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })] });
 }
 {
   const r = chk('library.se.meta', 'not_empty', { code: 'SE18', field: 'a', meta: { ui: 'form1', docLink: 'https://intra/reg/17' } });
@@ -491,10 +502,12 @@ rejFx('d11-snapshot', 'd11/reject-artifact-too-deep',
 rejFx('d11-snapshot', 'd11/reject-unsupported-minor-version',
   snap(one(chk('library.x.mv', 'not_empty', { code: 'X13', field: 'a' })), { specVersion: '1.999.0' }));
 rejFx('d11-snapshot', 'd11/reject-aggregate-without-wildcard',
-  snap(one(chk('library.x.aw', 'greater_than', { code: 'X14', field: 'a', value: 1, aggregate: { mode: 'EACH' } }))));
+  snap(one(chk('library.x.aw', 'greater_than', { code: 'X14', field: 'a', value: 1,
+    aggregate: { mode: 'ALL', issueMode: 'EACH' } }))));
 rejFx('d11-snapshot', 'd11/reject-orphan-scope',
   snap([chk('library.x.ok2', 'not_empty', { code: 'X15', field: 'a' }),
-    { id: 'ghost.rule', type: 'rule', description: 'fixture rule', role: 'check', operator: 'not_empty', field: 'a', level: 'ERROR', code: 'X16', message: M },
+    { id: 'ghost.rule', type: 'rule', description: 'fixture rule', operator: 'not_empty', field: 'a',
+      issue: { level: 'ERROR', code: 'X16', message: M } },
     pipe('checks.main', [{ rule: 'library.x.ok2' }])]));
 rejFx('d11-snapshot', 'd11/reject-path-empty-segment',
   snap(one(chk('library.x.p1', 'not_empty', { code: 'X17', field: 'a..b' }))));
@@ -503,8 +516,8 @@ rejFx('d11-snapshot', 'd11/reject-path-leading-zero-index',
 rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
   snap(one(chk('library.x.p3', 'field_equals_field', { code: 'X19', field: 'a', value_field: 'b[*].v' }))));
 {
-  const arts = [{ id: 'library.j.edge', type: 'rule', description: 'JCS edge: "Пётр"\t\\backslash', role: 'check',
-    operator: 'equals', field: 'a', value: 1e21, level: 'ERROR', code: 'J1', message: M },
+  const arts = [{ id: 'library.j.edge', type: 'rule', description: 'JCS edge: "Пётр"\t\\backslash',
+    operator: 'equals', field: 'a', value: 1e21, issue: { level: 'ERROR', code: 'J1', message: M } },
     pipe('checks.main', [{ rule: 'library.j.edge' }])];
   evalFx('d06-hash', 'd06/jcs-canonicalization-edge-values', snap(arts),
     { pipelineId: 'checks.main', payload: { a: 1e21 } }, OKR);
@@ -535,34 +548,132 @@ rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
       { expected: 10, actual: 5, details: { mode: 'MIN' } })]));
 }
 
-/* ---------------- rc.2: reserved conformance operators (D17) ---------------- */
+/* ---------------- rc.3: unified rule sites and reserved operators (D19) ---------------- */
 {
-  const co = (nm, op, expectedResult) => {
-    const r = chk('library.co.r', op, { code: 'CO1', field: 'a' });
-    evalFx('d10-operators', nm, snap(one(r), { requires: { operators: [op] } }),
-      { pipelineId: 'checks.main', payload: { a: 1 } }, expectedResult, [op]);
-  };
-  co('d10/conformance-check-throw-operator-fault', 'conformance.check.throw',
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'OPERATOR_FAULT', details: { ruleId: 'library.co.r', operator: 'conformance.check.throw' } } });
-  co('d10/conformance-check-invalid-result-contract-violation', 'conformance.check.invalid_result',
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'OPERATOR_CONTRACT_VIOLATION', details: { ruleId: 'library.co.r', operator: 'conformance.check.invalid_result' } } });
-  co('d10/conformance-check-exception-escalates-and-stops', 'conformance.check.exception',
+  const hard = chk('library.d19.reusable', 'not_empty', { code: 'D19.1', field: 'trigger', level: 'EXCEPTION' });
+  const target = chk('library.d19.target', 'not_empty', { code: 'D19.2', field: 'required' });
+  const arts = [hard, target,
+    { id: 'library.d19.condition', type: 'condition', description: 'fixture condition',
+      when: 'library.d19.reusable', steps: [{ rule: 'library.d19.target' }] },
+    pipe('checks.guard', [{ condition: 'library.d19.condition' }]),
+    pipe('checks.hard', [{ rule: 'library.d19.reusable' }], { entrypoint: false })];
+  evalFx('d19-unified-rules', 'd19/issue-bearing-rule-is-silent-in-when', snap(arts),
+    { pipelineId: 'checks.guard', payload: {} }, OKR);
+  evalFx('d19-unified-rules', 'd19/same-rule-creates-exception-issue-in-step', snap(arts),
+    { pipelineId: 'checks.hard', payload: {} },
     { status: 'EXCEPTION', control: 'STOP',
-      issues: [issue('EXCEPTION', 'CO1', M, 'a', 'library.co.r', 'checks.main')] });
-  const cp = (nm, op, code) => {
-    const arts = [pred('library.co.p', op, { field: 'a' }),
-      chk('library.co.c', 'not_empty', { code: 'CO2', field: 'b' }),
-      { id: 'library.cond.co', type: 'condition', description: 'fixture condition', when: 'library.co.p', steps: [{ rule: 'library.co.c' }] },
-      pipe('checks.main', [{ condition: 'library.cond.co' }])];
-    evalFx('d10-operators', nm, snap(arts, { requires: { operators: [op] } }),
+      issues: [issue('EXCEPTION', 'D19.1', M, 'trigger', 'library.d19.reusable', 'checks.hard')] });
+}
+{
+  const noIssue = pred('library.d19.noissue', 'length_equals', { field: 'kind', value: 2 });
+  const target = chk('library.d19.hit', 'not_empty', { code: 'D19.3', field: 'required' });
+  const arts = [noIssue, target,
+    { id: 'library.d19.noissue.condition', type: 'condition', description: 'fixture condition',
+      when: 'library.d19.noissue', steps: [{ rule: 'library.d19.hit' }] },
+    pipe('checks.main', [{ condition: 'library.d19.noissue.condition' }])];
+  evalFx('d19-unified-rules', 'd19/rule-without-issue-is-valid-in-when', snap(arts),
+    { pipelineId: 'checks.main', payload: { kind: 'AB' } },
+    ERR([issue('ERROR', 'D19.3', M, 'required', 'library.d19.hit', 'checks.main')]));
+}
+{
+  const any = pred('library.d19.any', 'any_filled', { fields: ['email', 'phone'] });
+  const nt = pred('library.d19.nottrue', 'not_true', { field: 'blocked' });
+  const target = chk('library.d19.allowed', 'not_empty', { code: 'D19.4', field: 'required' });
+  const arts = [any, nt, target,
+    { id: 'library.d19.formerly-blocked', type: 'condition', description: 'fixture condition',
+      when: { all: [any.id, nt.id] }, steps: [{ rule: target.id }] },
+    pipe('checks.main', [{ condition: 'library.d19.formerly-blocked' }])];
+  evalFx('d19-unified-rules', 'd19/all-builtins-are-usable-in-when', snap(arts),
+    { pipelineId: 'checks.main', payload: { email: 'x@example.test' } },
+    ERR([issue('ERROR', 'D19.4', M, 'required', target.id, 'checks.main')]));
+}
+{
+  const runFault = (name, op, site, code) => {
+    const r = site === 'step' ? chk('library.co.r', op, { code: 'CO1', field: 'a' }) : pred('library.co.r', op, { field: 'a' });
+    const artifacts = site === 'step'
+      ? one(r)
+      : [r, chk('library.co.after', 'not_empty', { code: 'CO2', field: 'b' }),
+          { id: 'library.co.cond', type: 'condition', description: 'fixture condition', when: r.id, steps: [{ rule: 'library.co.after' }] },
+          pipe('checks.main', [{ condition: 'library.co.cond' }])];
+    evalFx('d10-operators', name, snap(artifacts, { requires: { operators: [op] } }),
       { pipelineId: 'checks.main', payload: { a: 1 } },
-      { status: 'ABORT', control: 'STOP', issues: [], error: { code, details: { ruleId: 'library.co.p', operator: op } } }, [op]);
+      { status: 'ABORT', control: 'STOP', issues: [], error: { code, details: { ruleId: r.id, operator: op } } }, [op]);
   };
-  cp('d10/conformance-predicate-throw-operator-fault', 'conformance.predicate.throw', 'OPERATOR_FAULT');
-  cp('d10/conformance-predicate-invalid-result-contract-violation', 'conformance.predicate.invalid_result', 'OPERATOR_CONTRACT_VIOLATION');
+  runFault('d10/conformance-rule-throw-in-step-operator-fault', 'conformance.rule.throw', 'step', 'OPERATOR_FAULT');
+  runFault('d10/conformance-rule-throw-in-when-operator-fault', 'conformance.rule.throw', 'when', 'OPERATOR_FAULT');
+  runFault('d10/conformance-rule-invalid-result-in-step-contract-violation', 'conformance.rule.invalid_result', 'step', 'OPERATOR_CONTRACT_VIOLATION');
+  runFault('d10/conformance-rule-invalid-result-in-when-contract-violation', 'conformance.rule.invalid_result', 'when', 'OPERATOR_CONTRACT_VIOLATION');
 }
 
+/* ---------------- rc.3: unified wildcard aggregation (D20) ---------------- */
+{
+  const op = 'conformance.rule.tri';
+  const tri = (id, aggregate, code) => chk(id, op, { code, field: 'items[*].result', aggregate });
+  const payload = { items: [{ result: 'PASS' }, { result: 'SKIP' }, { result: 'FAIL' }] };
+
+  const eachAll = tri('library.d20.all.each', { mode: 'ALL', issueMode: 'EACH' }, 'D20.1');
+  evalFx('d20-aggregation', 'd20/all-each-ignores-skip-and-reports-failures',
+    snap(one(eachAll), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
+    ERR([issue('ERROR', 'D20.1', M, 'items[2].result', eachAll.id, 'checks.main')]), [op]);
+
+  const anyPass = tri('library.d20.any.pass', { mode: 'ANY', issueMode: 'EACH' }, 'D20.2');
+  evalFx('d20-aggregation', 'd20/any-each-pass-emits-no-partial-issues',
+    snap(one(anyPass), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload }, OKR, [op]);
+
+  const anyFail = tri('library.d20.any.fail', { mode: 'ANY', issueMode: 'EACH' }, 'D20.2F');
+  evalFx('d20-aggregation', 'd20/any-each-reports-fails-only-when-none-pass',
+    snap(one(anyFail), { requires: { operators: [op] } }),
+    { pipelineId: 'checks.main', payload: { items: [{ result: 'SKIP' }, { result: 'FAIL' }] } },
+    ERR([issue('ERROR', 'D20.2F', M, 'items[1].result', anyFail.id, 'checks.main')]), [op]);
+
+  const allSummary = tri('library.d20.all.summary', { mode: 'ALL', issueMode: 'SUMMARY' }, 'D20.3');
+  evalFx('d20-aggregation', 'd20/all-summary-exposes-effective-population',
+    snap(one(allSummary), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
+    ERR([issue('ERROR', 'D20.3', M, 'items[*].result', allSummary.id, 'checks.main',
+      { details: { mode: 'ALL', matched: 3, evaluated: 2, skipped: 1, passed: 1, failed: 1 } })]), [op]);
+
+  const count = tri('library.d20.count', { mode: 'COUNT', op: '>=', value: 2 }, 'D20.4');
+  evalFx('d20-aggregation', 'd20/count-excludes-skip-from-population',
+    snap(one(count), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
+    ERR([issue('ERROR', 'D20.4', M, 'items[*].result', count.id, 'checks.main',
+      { details: { mode: 'COUNT', op: '>=', value: 2, matched: 3, evaluated: 2, skipped: 1, passed: 1, failed: 1 } })]), [op]);
+
+  const allSkip = tri('library.d20.skip', { mode: 'ALL', issueMode: 'SUMMARY', onEmpty: 'FAIL' }, 'D20.5');
+  evalFx('d20-aggregation', 'd20/all-skip-propagates-skip-not-on-empty-fail',
+    snap(one(allSkip), { requires: { operators: [op] } }),
+    { pipelineId: 'checks.main', payload: { items: [{ result: 'SKIP' }, { result: 'SKIP' }] } }, OKR, [op]);
+
+  const empty = tri('library.d20.empty', { mode: 'ANY', issueMode: 'SUMMARY', onEmpty: 'FAIL' }, 'D20.6');
+  evalFx('d20-aggregation', 'd20/structural-empty-applies-on-empty-fail',
+    snap(one(empty), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload: {} },
+    ERR([issue('ERROR', 'D20.6', M, 'items[*].result', empty.id, 'checks.main',
+      { details: { mode: 'ANY', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })]), [op]);
+}
+
+rejFx('d11-snapshot', 'd11/reject-wildcard-without-aggregate',
+  snap(one(chk('library.d20.bad1', 'greater_than', { code: 'D20.X1', field: 'x[*].v', value: 1 }))));
+rejFx('d11-snapshot', 'd11/reject-all-with-issue-without-issue-mode',
+  snap(one(chk('library.d20.bad2', 'greater_than', { code: 'D20.X2', field: 'x[*].v', value: 1, aggregate: { mode: 'ALL' } }))));
+rejFx('d11-snapshot', 'd11/reject-issue-mode-without-issue',
+  snap([pred('library.d20.bad3', 'greater_than', { field: 'x[*].v', value: 1, aggregate: { mode: 'ALL', issueMode: 'EACH' } }),
+    chk('library.d20.ok', 'not_empty', { code: 'D20.X3', field: 'a' }), pipe('checks.main', [{ rule: 'library.d20.ok' }])]));
+rejFx('d11-snapshot', 'd11/reject-issue-mode-on-count',
+  snap(one(chk('library.d20.bad4', 'greater_than', { code: 'D20.X4', field: 'x[*].v', value: 1,
+    aggregate: { mode: 'COUNT', op: '>=', value: 1, issueMode: 'SUMMARY' } }))));
+rejFx('d11-snapshot', 'd11/reject-legacy-each-aggregate-mode',
+  snap(one(chk('library.d20.bad5', 'greater_than', { code: 'D20.X5', field: 'x[*].v', value: 1,
+    aggregate: { mode: 'EACH', issueMode: 'EACH' } }))));
+
 /* ---------------- write ---------------- */
+function cleanGeneratedJson(dir) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) cleanGeneratedJson(path);
+    else if (entry.endsWith('.json')) unlinkSync(path);
+  }
+}
+
+cleanGeneratedJson(join(ROOT, 'fixtures'));
 let n = 0;
 for (const f of out) {
   const dir = join(ROOT, 'fixtures', f.dir);

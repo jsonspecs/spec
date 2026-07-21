@@ -1,0 +1,82 @@
+{
+  "name": "d20/all-each-ignores-skip-and-reports-failures",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "5b58329ad242073f031fa46fa5bfda8ee8d636e0babebfac4c03040e4720fc60",
+    "artifacts": [
+      {
+        "id": "library.d20.all.each",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.1",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.all.each"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "PASS"
+        },
+        {
+          "result": "SKIP"
+        },
+        {
+          "result": "FAIL"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D20.1",
+        "message": "failed",
+        "field": "items[2].result",
+        "ruleId": "library.d20.all.each",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "5b58329ad242073f031fa46fa5bfda8ee8d636e0babebfac4c03040e4720fc60"
+    }
+  }
+}

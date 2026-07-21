@@ -1,0 +1,80 @@
+{
+  "name": "d19/rule-without-issue-is-valid-in-when",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "4d7c17c0d4ac87bd73a71bf5e670a93d75bc8bf5d87e4c7fba39f50b5f9417b1",
+    "artifacts": [
+      {
+        "id": "library.d19.noissue",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "length_equals",
+        "field": "kind",
+        "value": 2
+      },
+      {
+        "id": "library.d19.hit",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D19.3",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "library.d19.noissue.condition",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": "library.d19.noissue",
+        "steps": [
+          {
+            "rule": "library.d19.hit"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.d19.noissue.condition"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "kind": "AB"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D19.3",
+        "message": "failed",
+        "field": "required",
+        "ruleId": "library.d19.hit",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "4d7c17c0d4ac87bd73a71bf5e670a93d75bc8bf5d87e4c7fba39f50b5f9417b1"
+    }
+  }
+}

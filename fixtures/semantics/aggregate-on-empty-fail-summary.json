@@ -3,23 +3,25 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "be48e328a1b69bc0fd9a219dd2ec6b6bc766f25f997a37767b5ee8a225a23d69",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "7187b1088621b311eeba41505b4f4fc85215a62350df1d45de2b0b049d78c189",
     "artifacts": [
       {
         "id": "library.se.oe2",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "ERROR",
-        "code": "SE17",
-        "message": "failed",
         "field": "x[*].v",
         "value": 10,
         "aggregate": {
-          "mode": "EACH",
+          "mode": "ALL",
+          "issueMode": "EACH",
           "onEmpty": "FAIL"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE17",
+          "message": "failed"
         }
       },
       {
@@ -54,14 +56,18 @@
         "ruleId": "library.se.oe2",
         "pipelineId": "checks.main",
         "details": {
-          "mode": "EACH",
-          "total": 0
+          "mode": "ALL",
+          "matched": 0,
+          "evaluated": 0,
+          "skipped": 0,
+          "passed": 0,
+          "failed": 0
         }
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "be48e328a1b69bc0fd9a219dd2ec6b6bc766f25f997a37767b5ee8a225a23d69"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "7187b1088621b311eeba41505b4f4fc85215a62350df1d45de2b0b049d78c189"
     }
   }
 }

@@ -3,19 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "666ab9a0eb0afbefa4af0f77a84908dd534f32aee1accd2ec20dedb881bb9c4d",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "09196ebe584a523b63e5961623b18577fd4b7045753dc359878f6e9b3febe674",
     "artifacts": [
       {
         "id": "library.se.sid",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "SE23",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "SE23",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -53,8 +54,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "666ab9a0eb0afbefa4af0f77a84908dd534f32aee1accd2ec20dedb881bb9c4d"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "09196ebe584a523b63e5961623b18577fd4b7045753dc359878f6e9b3febe674"
     }
   }
 }

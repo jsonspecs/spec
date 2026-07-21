@@ -3,8 +3,8 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "7658ef53434ede0f05bec3a187654701fa0901368c2c0d53aa5c8728e2e9902b",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "7e36056d89260a9f5e10e914d0fe7f7539dbde63ec64e088b16199d0ea5b9d97",
     "artifacts": [
       {
         "id": "library.dict.countries",
@@ -21,30 +21,32 @@
         "id": "library.se.di1",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "in_dictionary",
-        "level": "ERROR",
-        "code": "SE10",
-        "message": "failed",
         "field": "a",
         "dictionary": {
           "type": "static",
           "id": "library.dict.countries"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE10",
+          "message": "failed"
         }
       },
       {
         "id": "library.se.di2",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "in_dictionary",
-        "level": "ERROR",
-        "code": "SE11",
-        "message": "failed",
         "field": "b",
         "dictionary": {
           "type": "static",
           "id": "library.dict.countries"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE11",
+          "message": "failed"
         }
       },
       {
@@ -92,8 +94,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "7658ef53434ede0f05bec3a187654701fa0901368c2c0d53aa5c8728e2e9902b"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "7e36056d89260a9f5e10e914d0fe7f7539dbde63ec64e088b16199d0ea5b9d97"
     }
   }
 }

@@ -3,31 +3,33 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "fba21b4adca4c3b90d720be70625d41980bbbeec42dd79abb0eb3c788dd082ac",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "4acd731a1a9173b6fe58185947eb75a7079e0cd9f9c4e40e8587c378ba36ce44",
     "artifacts": [
       {
         "id": "library.a.cg",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "EXCEPTION",
-        "code": "A7",
-        "message": "failed",
-        "field": "$context.currentDate"
+        "field": "$context.currentDate",
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "A7",
+          "message": "failed"
+        }
       },
       {
         "id": "library.a.cd",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "field_less_or_equal_than_field",
-        "level": "ERROR",
-        "code": "A8",
-        "message": "failed",
         "field": "doc.issueDate",
-        "value_field": "$context.currentDate"
+        "value_field": "$context.currentDate",
+        "issue": {
+          "level": "ERROR",
+          "code": "A8",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -75,8 +77,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "fba21b4adca4c3b90d720be70625d41980bbbeec42dd79abb0eb3c788dd082ac"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "4acd731a1a9173b6fe58185947eb75a7079e0cd9f9c4e40e8587c378ba36ce44"
     }
   }
 }

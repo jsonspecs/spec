@@ -3,30 +3,32 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "94778ac85d8e429a65ef248addee8521a763febde94e04bb757abf3cfb051fda",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "2e0a414add815a5235c81c5e694a4caf8e864f0373c5cc1ecbfae60a83bf8e81",
     "artifacts": [
       {
         "id": "library.se.x",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "EXCEPTION",
-        "code": "SE5",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "SE5",
+          "message": "failed"
+        }
       },
       {
         "id": "library.se.after",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "SE6",
-        "message": "failed",
-        "field": "b"
+        "field": "b",
+        "issue": {
+          "level": "ERROR",
+          "code": "SE6",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.inner",
@@ -77,8 +79,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "94778ac85d8e429a65ef248addee8521a763febde94e04bb757abf3cfb051fda"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "2e0a414add815a5235c81c5e694a4caf8e864f0373c5cc1ecbfae60a83bf8e81"
     }
   }
 }

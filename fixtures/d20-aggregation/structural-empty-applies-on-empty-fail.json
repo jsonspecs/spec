@@ -1,0 +1,79 @@
+{
+  "name": "d20/structural-empty-applies-on-empty-fail",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "7923ed8b5b100d3746c56335a760bf7b99a5b13fa1ff9db8cd8b8fee8e9a8fde",
+    "artifacts": [
+      {
+        "id": "library.d20.empty",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "ANY",
+          "issueMode": "SUMMARY",
+          "onEmpty": "FAIL"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.6",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.empty"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {}
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D20.6",
+        "message": "failed",
+        "field": "items[*].result",
+        "ruleId": "library.d20.empty",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "ANY",
+          "matched": 0,
+          "evaluated": 0,
+          "skipped": 0,
+          "passed": 0,
+          "failed": 0
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "7923ed8b5b100d3746c56335a760bf7b99a5b13fa1ff9db8cd8b8fee8e9a8fde"
+    }
+  }
+}

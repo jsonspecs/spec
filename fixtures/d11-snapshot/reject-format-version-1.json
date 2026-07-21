@@ -3,19 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 1,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "771fbaae14785735778cdf8837677d7f7a417db4a1b1a2615b626c3249cd4bb3",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "af764a175f4330a323a4e8be57a92f4b8fbf0ea4d7752aec53392f014c8be502",
     "artifacts": [
       {
         "id": "library.x.f",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "X4",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X4",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

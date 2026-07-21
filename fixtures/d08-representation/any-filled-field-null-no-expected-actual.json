@@ -3,22 +3,23 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "3ef3ba41c7d424fa6b9783ed9b2d1fe2c592d85b0c7bab5ffdd19a9c551f04d2",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "f4ce105e5d0c8aea5ca7a8cddee1b84d2fd977834f228921bc441a03e749f38c",
     "artifacts": [
       {
         "id": "library.p.any",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "any_filled",
-        "level": "ERROR",
-        "code": "P4",
-        "message": "failed",
         "fields": [
           "phone",
           "email"
-        ]
+        ],
+        "issue": {
+          "level": "ERROR",
+          "code": "P4",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -56,8 +57,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "3ef3ba41c7d424fa6b9783ed9b2d1fe2c592d85b0c7bab5ffdd19a9c551f04d2"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "f4ce105e5d0c8aea5ca7a8cddee1b84d2fd977834f228921bc441a03e749f38c"
     }
   }
 }

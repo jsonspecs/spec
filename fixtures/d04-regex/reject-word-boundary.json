@@ -3,20 +3,21 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "b76380c193df4a8af7364ec3d73b63e0cf428a9ea612c5d2986e868de6740686",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "993057aecfbee7e3d810a75a5b47375153624a9a0b4bc4fd0849e66cb56900f7",
     "artifacts": [
       {
         "id": "library.r.c",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "matches_regex",
-        "level": "ERROR",
-        "code": "R3",
-        "message": "failed",
         "field": "a",
-        "value": "\\bfoo"
+        "value": "\\bfoo",
+        "issue": {
+          "level": "ERROR",
+          "code": "R3",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

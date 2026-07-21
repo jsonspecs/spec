@@ -1,0 +1,90 @@
+{
+  "name": "d20/all-summary-exposes-effective-population",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "9d1dc420760edeedc76f9e1065d33b961b32ff5bcedde7ff61d9e312e1253809",
+    "artifacts": [
+      {
+        "id": "library.d20.all.summary",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "SUMMARY"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.3",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.all.summary"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "PASS"
+        },
+        {
+          "result": "SKIP"
+        },
+        {
+          "result": "FAIL"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D20.3",
+        "message": "failed",
+        "field": "items[*].result",
+        "ruleId": "library.d20.all.summary",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "ALL",
+          "matched": 3,
+          "evaluated": 2,
+          "skipped": 1,
+          "passed": 1,
+          "failed": 1
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "9d1dc420760edeedc76f9e1065d33b961b32ff5bcedde7ff61d9e312e1253809"
+    }
+  }
+}

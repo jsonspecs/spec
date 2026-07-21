@@ -1,0 +1,70 @@
+{
+  "name": "d20/all-skip-propagates-skip-not-on-empty-fail",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "2ad0c9d5ae0526b00712f94239e2842e6afa69790dcbf29e2c716954772666da",
+    "artifacts": [
+      {
+        "id": "library.d20.skip",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "SUMMARY",
+          "onEmpty": "FAIL"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.5",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.skip"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "SKIP"
+        },
+        {
+          "result": "SKIP"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "2ad0c9d5ae0526b00712f94239e2842e6afa69790dcbf29e2c716954772666da"
+    }
+  }
+}

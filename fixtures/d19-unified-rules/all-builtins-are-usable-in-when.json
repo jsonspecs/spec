@@ -1,0 +1,94 @@
+{
+  "name": "d19/all-builtins-are-usable-in-when",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "7fdb72f550259b3bf966b302db0a8e76bd133c1521dd195011016d3e0c573449",
+    "artifacts": [
+      {
+        "id": "library.d19.any",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "any_filled",
+        "fields": [
+          "email",
+          "phone"
+        ]
+      },
+      {
+        "id": "library.d19.nottrue",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_true",
+        "field": "blocked"
+      },
+      {
+        "id": "library.d19.allowed",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D19.4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "library.d19.formerly-blocked",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": {
+          "all": [
+            "library.d19.any",
+            "library.d19.nottrue"
+          ]
+        },
+        "steps": [
+          {
+            "rule": "library.d19.allowed"
+          }
+        ]
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.d19.formerly-blocked"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "email": "x@example.test"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D19.4",
+        "message": "failed",
+        "field": "required",
+        "ruleId": "library.d19.allowed",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "7fdb72f550259b3bf966b302db0a8e76bd133c1521dd195011016d3e0c573449"
+    }
+  }
+}

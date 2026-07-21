@@ -40,7 +40,13 @@ key order does not, absent key ≠ key with `null`, numbers compare as binary64 
 Directories map to decisions (`DECISIONS.md`) and semantic areas:
 `d01-numbers`, `d02-length`, `d03-string-strict`, `d04-regex`, `d05-order`,
 `d06-hash`, `d08-representation`, `d09-guards`, `d10-operators`, `d11-snapshot`,
-`d13-absence`, `semantics`.
+`d13-absence`, `d19-unified-rules`, `d20-aggregation`, `semantics`.
+
+The reserved test-only operators `conformance.rule.throw`,
+`conformance.rule.invalid_result`, and `conformance.rule.tri` are registered by the
+fixture runner only. `tri` maps input strings `PASS`, `SKIP`, and `FAIL` to the
+same-named outcomes so mixed aggregate populations can be tested portably. They are
+not production operators.
 
 ## Maintenance
 

@@ -3,32 +3,34 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "906d8c071f1c8e57128550fe0342342fe3e2d5fc2cef6a9f4d6a7acfe1264b8e",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "2e5719b4c73e21897245be19a31936bd99ac5ebf7e5d6ba105a0764e5ba54be2",
     "artifacts": [
       {
         "id": "library.r.pp1",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "matches_regex",
-        "level": "ERROR",
-        "code": "R7",
-        "message": "failed",
         "field": "a",
-        "value": "^\\\\d+$"
+        "value": "^\\\\d+$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R7",
+          "message": "failed"
+        }
       },
       {
         "id": "library.r.pp2",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "matches_regex",
-        "level": "ERROR",
-        "code": "R8",
-        "message": "failed",
         "field": "a",
-        "value": "^\\d+$"
+        "value": "^\\d+$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R8",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -59,8 +61,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "906d8c071f1c8e57128550fe0342342fe3e2d5fc2cef6a9f4d6a7acfe1264b8e"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "2e5719b4c73e21897245be19a31936bd99ac5ebf7e5d6ba105a0764e5ba54be2"
     }
   }
 }

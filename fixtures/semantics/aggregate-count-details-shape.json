@@ -3,24 +3,25 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "f0cb1e9951b0ff03938d5e02c9a122a0133be04094e22b4fbe8a93c838a7d005",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "076f11a0fa25e71ed06c7074371d57ab2fb311df026ee2853e4a76170549a84e",
     "artifacts": [
       {
         "id": "library.se.cnt",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "ERROR",
-        "code": "SE14",
-        "message": "failed",
         "field": "x[*].v",
         "value": 10,
         "aggregate": {
           "mode": "COUNT",
           "op": ">=",
           "value": 2
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE14",
+          "message": "failed"
         }
       },
       {
@@ -70,14 +71,17 @@
           "mode": "COUNT",
           "op": ">=",
           "value": 2,
-          "total": 3,
-          "passed": 1
+          "matched": 3,
+          "evaluated": 3,
+          "skipped": 0,
+          "passed": 1,
+          "failed": 2
         }
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "f0cb1e9951b0ff03938d5e02c9a122a0133be04094e22b4fbe8a93c838a7d005"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "076f11a0fa25e71ed06c7074371d57ab2fb311df026ee2853e4a76170549a84e"
     }
   }
 }

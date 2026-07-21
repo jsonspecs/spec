@@ -3,32 +3,34 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "2f5fbd8ad66b0a37b8e49f9bfb65d97ed855418b456a0c0e6c5b0cdb2b42bf59",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "e071776a09f33dc76425fb008c0bf439aca9f52710369eb0d652202ba13d1633",
     "artifacts": [
       {
         "id": "library.l.max",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "length_max",
-        "level": "ERROR",
-        "code": "L1",
-        "message": "failed",
         "field": "emoji",
-        "value": 1
+        "value": 1,
+        "issue": {
+          "level": "ERROR",
+          "code": "L1",
+          "message": "failed"
+        }
       },
       {
         "id": "library.l.eq",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "length_equals",
-        "level": "ERROR",
-        "code": "L2",
-        "message": "failed",
         "field": "name",
-        "value": 4
+        "value": 4,
+        "issue": {
+          "level": "ERROR",
+          "code": "L2",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -60,8 +62,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "2f5fbd8ad66b0a37b8e49f9bfb65d97ed855418b456a0c0e6c5b0cdb2b42bf59"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "e071776a09f33dc76425fb008c0bf439aca9f52710369eb0d652202ba13d1633"
     }
   }
 }

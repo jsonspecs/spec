@@ -14,7 +14,7 @@ explicitly out of scope.
 | Path | Role |
 | --- | --- |
 | [`SPEC.md`](SPEC.md) / [`SPEC_RU.md`](SPEC_RU.md) | **The canon.** Behavior specification for the version tagged on this repository. States only expected behavior; rationale lives in the decision register. |
-| [`DECISIONS.md`](DECISIONS.md) / [`DECISIONS_RU.md`](DECISIONS_RU.md) | Decision register D1–D14 + addenda: every design decision with its reasoning, alternatives, and migration cost, referenced from the spec as `[D#]` / `[DR-*]`. |
+| [`DECISIONS.md`](DECISIONS.md) / [`DECISIONS_RU.md`](DECISIONS_RU.md) | Decision register D1–D20 + addenda: every design decision with its reasoning, alternatives, and migration cost, referenced from the spec as `[D#]` / `[DR-*]`. |
 | [`fixtures/`](fixtures/) | **Normative appendix.** Conformance fixtures; an implementation is conformant iff it passes all of them. See `fixtures/README.md`. |
 | [`source/`](source/) | Historical, non-normative: the prototype's specification (`jsonspecs/rules`) and the production-pack audit the decisions refer to. |
 | [`tools/`](tools/) | Fixture generator and validator (Node ≥ 20, no dependencies). |
@@ -43,11 +43,11 @@ tagging).
   **Minor**: backward-compatible behavior additions (new operators, new fields with
   defined absence semantics). **Major**: anything that changes a verdict on an
   existing valid input.
-- Current status: **1.0.0-rc.2**. The `v1.0.0` tag is applied after the
+- Current status: **1.0.0-rc.3**. The `v1.0.0` tag is applied after the
   cross-implementation stand comparison (Node v3 vs Java) confirms the suite:
 
 ```
-git tag v1.0.0-rc.2 && git push origin v1.0.0-rc.2   # release candidate (prerelease)
+git tag v1.0.0-rc.3 && git push origin v1.0.0-rc.3   # release candidate (prerelease)
 git tag v1.0.0      && git push origin v1.0.0        # after stand confirmation
 ```
 

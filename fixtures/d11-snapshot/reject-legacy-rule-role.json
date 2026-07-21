@@ -1,0 +1,40 @@
+{
+  "name": "d11/reject-legacy-rule-role",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "b79da397655766d0173c6ae62a1a8b1d048dbcc3a4c2eb22b01b01d4160bdee2",
+    "artifacts": [
+      {
+        "id": "library.x.role",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X6R",
+          "message": "failed"
+        },
+        "role": "check"
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.x.role"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

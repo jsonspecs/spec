@@ -1,0 +1,40 @@
+{
+  "name": "d11/reject-wildcard-without-aggregate",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "d0df9e115ec6e03ddbcde313f6ea5baa9fee87c31e2734a813fbdbeb0f2b68e0",
+    "artifacts": [
+      {
+        "id": "library.d20.bad1",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "greater_than",
+        "field": "x[*].v",
+        "value": 1,
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.X1",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.bad1"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

@@ -1,30 +1,33 @@
 {
-  "name": "d11/reject-predicate-with-code",
+  "name": "d11/reject-partial-issue-object",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "2df8df95d06df9ceea0be7adc4cd668c3dab82f853eb7149622407410e609775",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "f0732b49248b0e5fd6ddcd916b3ac19bf57bdebfd33d41fbaedf2e5f28272075",
     "artifacts": [
       {
         "id": "library.x.p",
         "type": "rule",
-        "description": "fixture predicate",
-        "role": "predicate",
+        "description": "fixture rule",
         "operator": "not_empty",
         "field": "a",
-        "code": "NOPE"
+        "issue": {
+          "code": "NOPE",
+          "message": "failed"
+        }
       },
       {
         "id": "library.x.ok",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "X6",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X6",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

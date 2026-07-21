@@ -1,0 +1,94 @@
+{
+  "name": "d19/same-rule-creates-exception-issue-in-step",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "48d2eb0340662418a94ce2b0bf0cacb1575451d152c1f16a7cc25d5dbc354eca",
+    "artifacts": [
+      {
+        "id": "library.d19.reusable",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "trigger",
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "D19.1",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "library.d19.target",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "required",
+        "issue": {
+          "level": "ERROR",
+          "code": "D19.2",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "library.d19.condition",
+        "type": "condition",
+        "description": "fixture condition",
+        "when": "library.d19.reusable",
+        "steps": [
+          {
+            "rule": "library.d19.target"
+          }
+        ]
+      },
+      {
+        "id": "checks.guard",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "condition": "library.d19.condition"
+          }
+        ]
+      },
+      {
+        "id": "checks.hard",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": false,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d19.reusable"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.hard",
+    "payload": {}
+  },
+  "expected": {
+    "status": "EXCEPTION",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "EXCEPTION",
+        "code": "D19.1",
+        "message": "failed",
+        "field": "trigger",
+        "ruleId": "library.d19.reusable",
+        "pipelineId": "checks.hard"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "48d2eb0340662418a94ce2b0bf0cacb1575451d152c1f16a7cc25d5dbc354eca"
+    }
+  }
+}

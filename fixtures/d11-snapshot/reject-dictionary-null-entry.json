@@ -3,8 +3,8 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "8a5150c069d85c4fd1bb044231b007c89a4b0fb7612f418d9cbb45570eb11d6e",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "908fa46ac7aca112940c51ae30cf17a5581eb72dc854d4633a879ebea3f40b24",
     "artifacts": [
       {
         "id": "library.dict.bad",
@@ -19,15 +19,16 @@
         "id": "library.x.di",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "in_dictionary",
-        "level": "ERROR",
-        "code": "X10",
-        "message": "failed",
         "field": "a",
         "dictionary": {
           "type": "static",
           "id": "library.dict.bad"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "X10",
+          "message": "failed"
         }
       },
       {

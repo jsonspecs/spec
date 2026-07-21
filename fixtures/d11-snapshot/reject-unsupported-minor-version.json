@@ -4,18 +4,19 @@
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
     "specVersion": "1.999.0",
-    "sourceHash": "0ec4bfd5151708c30b81c116e89a02673c9a1ae0df2b6bab1a64420c24c6c205",
+    "sourceHash": "a0ccea4d7b009bb4b745a8b33921d30026a6602e3c21ef448ba04509314f195b",
     "artifacts": [
       {
         "id": "library.x.mv",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "X13",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X13",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

@@ -1,22 +1,27 @@
 {
-  "name": "sem/aggregate-on-empty-default-pass",
+  "name": "sem/aggregate-on-empty-default-skip",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "7694dc539d15bef1e457e3d16d48d20f6551e600932c45ca32ae0a0c70fe60e1",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "369684aa264c2932984d73f3887e7f6ff83457632d6434c4abcc298c6087f47d",
     "artifacts": [
       {
         "id": "library.se.oe1",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "ERROR",
-        "code": "SE16",
-        "message": "failed",
         "field": "x[*].v",
-        "value": 10
+        "value": 10,
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE16",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -42,8 +47,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "7694dc539d15bef1e457e3d16d48d20f6551e600932c45ca32ae0a0c70fe60e1"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "369684aa264c2932984d73f3887e7f6ff83457632d6434c4abcc298c6087f47d"
     }
   }
 }

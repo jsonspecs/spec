@@ -1,0 +1,72 @@
+{
+  "name": "d20/any-each-pass-emits-no-partial-issues",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "d05c1bc7ec7b3d236c9036c51686ec91adad93d497cf1503738687df6148f2a6",
+    "artifacts": [
+      {
+        "id": "library.d20.any.pass",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "ANY",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.2",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.any.pass"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "PASS"
+        },
+        {
+          "result": "SKIP"
+        },
+        {
+          "result": "FAIL"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "control": "CONTINUE",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "d05c1bc7ec7b3d236c9036c51686ec91adad93d497cf1503738687df6148f2a6"
+    }
+  }
+}

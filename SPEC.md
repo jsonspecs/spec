@@ -1,6 +1,6 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0-rc.2 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
+**Version:** 1.0.0-rc.3 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
 
 This specification is the canon of runtime behavior for a given version. It states only
@@ -8,9 +8,8 @@ expected behavior. The reasoning behind every decision lives in a separate docum
 `DECISIONS.md` / `DECISIONS_RU.md` — which in turn refers to the prototype
 implementation (`source/`) whose practical experience produced these decisions.
 
-**Notation.** `[D1]`…`[D14]` refer to numbered decisions in `DECISIONS.md`;
-`[DR-I]`, `[DR-II]`, `[DR-III]` refer to its addenda for Parts I–III of the drafting
-review. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
+**Notation.** `[D1]`…`[D20]` refer to numbered decisions in `DECISIONS.md`;
+`[DR-I]`…`[DR-V]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
 
 ---
 
@@ -64,7 +63,8 @@ input document — each artifact, the payload, the context — MUST NOT exceed d
 **256**: depth 256 is accepted, 257 is rejected (Part II). `[D9][DR-IV]` The limit is an
 *input guard*, not a constraint on the result: a result built from bounded inputs is
 bounded by construction plus fixed envelope overhead, and no normative depth limit
-applies to it (this is what lets a depth-256 `meta` pass through to issues verbatim).
+applies to it: moving accepted `issue.meta` into the result envelope must not make the
+result invalid.
 
 Values that are not JSON documents (host-language cycles, functions, BigInt and the
 like) are outside the data model entirely; how an implementation's API boundary treats
@@ -146,8 +146,7 @@ rules for February; `2026-02-30` and `2026-13-01` are not dates. The year range 
 
 A comparison is *determined* only when both operands classify to the **same** kind
 (both numbers or both dates). If either operand is unclassified, or the kinds differ, the
-comparison is *undetermined*, and the operator fails (check → FAIL, predicate →
-UNDEFINED).
+comparison is *undetermined*, and the operator returns `FAIL` for present operands.
 
 Note the classification is disjoint by construction: no string is simultaneously numeric
 and a date.
@@ -227,124 +226,93 @@ special semantics. `[D11]`
 
 ### 3.1 Operator model
 
-A *rule* applies one operator to the payload (and possibly context). Operators come in two
-roles:
+A *rule* applies one operator to payload and, possibly, context. A rule has no
+`check` or `predicate` role: it is one business condition whose consequences are
+determined by its use site (§5.3–§5.4). `[D19]`
 
-- **check** operators return `OK` or `FAIL`. A `FAIL` produces an issue (Part II).
-- **predicate** operators return `TRUE`, `FALSE`, or `UNDEFINED`. Predicates produce no
-  issues; they feed `when` expressions and predicate aggregation. Before a `when`
-  expression combines leaf results, `UNDEFINED` is converted to `FALSE`.
+The normative operator outcome is exactly one of `PASS`, `FAIL`, `SKIP`:
 
-An operator's behavior is a pure function of: the resolved field value(s), the rule's
-parameter fields (`value`, `value_field`, `fields`, `dictionary`, `flags`), the referenced
-dictionary contents, and — for `$context.*` — the context. Operators MUST NOT depend on
-evaluation order, wall-clock time, locale, or any other ambient state.
+- `PASS` — the condition is satisfied;
+- `FAIL` — the condition is not satisfied;
+- `SKIP` — the condition is semantically not applicable to this input.
 
-**Operator outcome contract.** `[D17]` A check invocation yields exactly one of `OK`,
-`FAIL`, `EXCEPTION`; a predicate yields exactly one of `TRUE`, `FALSE`, `UNDEFINED`.
-Built-in operators never yield `EXCEPTION`. A custom check operator MAY yield
-`EXCEPTION` deliberately ("evaluation impossible"): this produces an issue carrying
-the rule's `code`, `message` and `meta`, with `expected`/`actual` omitted, at level
-`EXCEPTION` regardless of the rule's declared level, and evaluation stops per §5.6.
-That is distinct from a thrown/host failure — `ABORT OPERATOR_FAULT` — and from a
-result outside the enum — `ABORT OPERATOR_CONTRACT_VIOLATION` (§6.7). The predicate
-enum has no `EXCEPTION`: a predicate deliberately unable to evaluate yields
-`UNDEFINED`; anything outside its enum is `OPERATOR_CONTRACT_VIOLATION`.
+A returned value outside this closed enum, including the string `EXCEPTION`, causes
+`ABORT OPERATOR_CONTRACT_VIOLATION`. A thrown exception or host panic causes
+`ABORT OPERATOR_FAULT`. The reaction is independent of whether the rule is invoked
+from a step or from `when`. A business stop is expressed only by a rule `FAIL` with
+`issue.level: "EXCEPTION"`; an operator neither selects a level nor creates an issue.
+`[D17][D19]`
 
-**Absent-field behavior — two operator classes.** `[D13]`
+Operator behavior is a pure function of resolved field values, rule parameters
+(`value`, `value_field`, `fields`, `dictionary`, `flags`), referenced dictionary
+contents, and context. Operators MUST NOT depend on the use site, evaluation order,
+wall-clock time, locale, or any other ambient state.
 
-- **Presence-semantic operators** (`not_empty`, `is_empty`, `not_true`, `any_filled`):
-  absence is part of their domain; their behavior on an absent field is defined
-  individually in the table below.
-- **Value-semantic operators** (all others): they constrain a value *if one is present*.
-  When the field is absent, the operator is **not invoked**: the check yields OK and
-  produces no issue (a *skip*); the predicate yields UNDEFINED. An implementation SHOULD
-  record the skip as a trace event (informative surface; the normative result is
-  unaffected). Required-ness is always expressed by a separate presence rule
-  (`not_empty` / `any_filled`) — never implied by a value check. This is a deliberate
-  design principle of the DSL, not an industry-alignment choice: whether a field is
-  mandatory is the analyst's explicit decision, and an *absence* failure is a distinct
-  diagnostic from an *operator* failure — it deserves its own rule with its own `code`
-  and `message`, authored by the analyst, rather than a generic error fused into every
-  value operator. (That this happens to coincide with JSON Schema's separation of
-  `pattern`/`enum` from `required` is incidental, not a design driver.)
+**Absent-field behavior.** `[D13][D19]`
 
-For `field_*_field` operators, the rule is value-semantic in both operands: if either
-the `field` or the `value_field` path is absent, the check is skipped.
+- **Presence semantics** (`not_empty`, `is_empty`, `not_true`, `any_filled`):
+  absence is in their domain; the outcome is listed below.
+- **Value semantics** (all others): when a required operand is absent, the operator
+  is not invoked and the rule receives `SKIP`. This applies to both operands of
+  `field_*_field`.
 
-**String-strict operators** `[D3][DR-I]`: the operators `contains`,
-`matches_regex`, and `not_matches_regex` require the field value to be a string; any
-non-string value (including numbers) is `FAIL` / `FALSE`. Host-language stringification
-never occurs. Migration note: rules matching numeric-typed payload fields (e.g. an
-integrator sending INN as a JSON number) change verdict from pass to FAIL; this surfaces
-a payload typing error rather than hiding it.
+`SKIP` has no effect in a rule step and maps to `false` in `when`. Requiredness is
+therefore always expressed by a separate presence rule. An implementation SHOULD
+record `SKIP` in trace, but trace cannot change the normative result.
 
-### 3.2 Check operators
+**String-strict operators** `[D3][DR-I]`: `contains`, `matches_regex`, and
+`not_matches_regex` require a string; a present non-string produces `FAIL`. Host
+stringification is never applied.
 
-The built-in check operator set. The "Absent" column shows behavior when the field does
-not resolve (§2.7): presence-semantic operators define it individually; value-semantic
-operators show **skip** (OK, no issue, no invocation — §3.1). All comparisons use §2.4
-equality and §2.5 ordered comparison; no coercion ever occurs beyond the numeric-string
-and date classification of §2.5.
+### 3.2 Built-in operators
 
-| Operator | Parameters | OK when | Absent |
+Every operator in this table is allowed both in a rule step and in `when`. The
+"Absent" column gives the rule outcome when the path does not resolve. All
+comparisons use §2.4 and §2.5 without other coercion.
+
+| Operator | Parameters | PASS when | Absent |
 | --- | --- | --- | --- |
 | `not_empty` | — | field is not empty (§2.6) | FAIL |
-| `is_empty` | — | field is empty (§2.6) | OK |
-| `not_true` | — | value is anything except the boolean `true` | OK |
-| `any_filled` | `fields: path[]` | at least one listed field is not empty (§2.6); `field` is not used | absent = empty; FAIL when all listed fields are empty |
-| `is_boolean` | — | value is a boolean | skip |
-| `is_string` | — | value is a string | skip |
-| `is_number` | — | value is a number | skip |
-| `is_integer` | — | value is a number with zero fractional part | skip |
-| `equals` | `value` | value equals `value` (§2.4) | skip |
-| `not_equals` | `value` | value does not equal `value` (§2.4) | skip |
-| `contains` | `value: string` | value is a string containing `value` as a substring (code-point sequence containment; empty `value` is contained in every string) | skip |
-| `matches_regex` | `value: pattern`, `flags?` | value is a string containing a match of the pattern (§3.4; search semantics — unanchored unless the pattern anchors itself) | skip |
-| `not_matches_regex` | `value: pattern`, `flags?` | value is a string containing **no** match of the pattern | skip |
-| `greater_than` | `value: number \| date-string` | comparison determined (§2.5) and field > value | skip |
-| `less_than` | `value: number \| date-string` | determined and field < value | skip |
-| `length_equals` | `value: number` | value is a string of exactly `value` code points (§2.3); non-string → FAIL `[D2][D3]` | skip |
-| `length_max` | `value: number` | value is a string of at most `value` code points; non-string → FAIL `[D2][D3]` | skip |
-| `field_equals_field` | `value_field: path` | both fields present and equal (§2.4) | skip if either absent |
-| `field_not_equals_field` | `value_field: path` | both present and not equal | skip if either absent |
-| `field_greater_than_field` | `value_field: path` | both present, comparison determined, field > other; undetermined → FAIL | skip if either absent |
-| `field_less_than_field` | `value_field: path` | both present, determined, field < other | skip if either absent |
-| `field_greater_or_equal_than_field` | `value_field: path` | both present, determined, field ≥ other | skip if either absent |
-| `field_less_or_equal_than_field` | `value_field: path` | both present, determined, field ≤ other | skip if either absent |
-| `in_dictionary` | `dictionary: {type:"static", id}` | value matches a dictionary entry (§3.5) | skip |
-| `not_in_dictionary` | `dictionary: {type:"static", id}` | value matches **no** dictionary entry (§3.5) | skip |
+| `is_empty` | — | field is empty (§2.6) | PASS |
+| `not_true` | — | value is anything except boolean `true` | PASS |
+| `any_filled` | `fields: path[]` | at least one listed field is not empty; `field` is unused | absence = empty; FAIL when all are empty |
+| `is_boolean` | — | value is a boolean | SKIP |
+| `is_string` | — | value is a string | SKIP |
+| `is_number` | — | value is a number | SKIP |
+| `is_integer` | — | value is a number with zero fractional part | SKIP |
+| `equals` | `value` | value equals `value` (§2.4) | SKIP |
+| `not_equals` | `value` | value does not equal `value` | SKIP |
+| `contains` | `value: string` | value contains `value` as a substring | SKIP |
+| `matches_regex` | `value: pattern`, `flags?` | string contains a pattern match (§3.4) | SKIP |
+| `not_matches_regex` | `value: pattern`, `flags?` | string contains no pattern match | SKIP |
+| `greater_than` | `value: number \| date-string` | comparison is determined and field > value | SKIP |
+| `less_than` | `value: number \| date-string` | comparison is determined and field < value | SKIP |
+| `length_equals` | `value: number` | string has exactly `value` code points; non-string → FAIL | SKIP |
+| `length_max` | `value: number` | string has at most `value` code points; non-string → FAIL | SKIP |
+| `field_equals_field` | `value_field: path` | both fields are present and equal | SKIP if either is absent |
+| `field_not_equals_field` | `value_field: path` | both are present and unequal | SKIP if either is absent |
+| `field_greater_than_field` | `value_field: path` | both present, determined, field > value_field | SKIP if either is absent |
+| `field_less_than_field` | `value_field: path` | both present, determined, field < value_field | SKIP if either is absent |
+| `field_greater_or_equal_than_field` | `value_field: path` | both present, determined, field ≥ value_field | SKIP if either is absent |
+| `field_less_or_equal_than_field` | `value_field: path` | both present, determined, field ≤ value_field | SKIP if either is absent |
+| `in_dictionary` | `dictionary: {type:"static", id}` | value matches an entry (§3.5) | SKIP |
+| `not_in_dictionary` | `dictionary: {type:"static", id}` | value matches no entry (§3.5) | SKIP |
 
-Notes.
+`any_filled` accepts only `fields[]`; the legacy `paths[]` alias does not exist.
+The "required and satisfies X" idiom remains two rules: one presence rule and one
+value rule. `[D11][D13]`
 
-- `any_filled` takes `fields[]`; the legacy alias `paths[]` does not exist in this
-  specification. `[D11]`
-- `not_true`: `OK` for absent, `null`, `""`, `false`, `0`, `"true"`, objects — everything
-  except the boolean `true`. Only strict boolean `true` is `FAIL`. It is
-  presence-semantic by design (a prohibition that holds vacuously).
-- For `greater_than`/`less_than`, `value` in the artifact is classified by the same §2.5
-  rules as the payload operand (a JSON number, or a string that is numeric or a valid
-  date).
-- The idiom "field is required *and* must satisfy X" is two rules: a `not_empty` check
-  and the value check. An absent field then produces exactly one issue (the presence
-  one) instead of a cascade. `[D13]`
+### 3.3 Outcome interpretation
 
-### 3.3 Predicate operators
+| Outcome | Rule step | `when` leaf |
+| --- | --- | --- |
+| `PASS` | produces nothing | `true` |
+| `FAIL` | creates an issue from `rule.issue` | `false`, no issue |
+| `SKIP` | produces nothing | `false` |
 
-Available as predicates: `not_empty`, `is_empty`, `is_boolean`, `is_string`, `is_number`,
-`is_integer`, `equals`, `not_equals`, `contains`, `matches_regex`, `not_matches_regex`,
-`greater_than`, `less_than`, all six `field_*_field` operators, `in_dictionary`,
-`not_in_dictionary`.
-
-**Not available as predicates:** `any_filled`, `length_equals`, `length_max`, `not_true`.
-A rule with `role: "predicate"` and one of these operators is rejected.
-
-Result mapping: where the check table says OK the predicate returns `TRUE`; where it says
-FAIL for a *present* field the predicate returns `FALSE`. On an **absent** field:
-value-semantic predicates return `UNDEFINED` (§3.1); `is_empty` returns `TRUE`;
-`not_empty` returns `FALSE`. `UNDEFINED` is converted to `FALSE` at the
-`when`-expression leaf (Part II) and counts as not-`TRUE` in predicate aggregation
-(§3.6).
+The `issue` object does not participate in logical evaluation. A rule with
+`issue.level: "EXCEPTION"` MAY therefore be used in `when`; it remains an ordinary,
+side-effect-free condition at that site. `[D19]`
 
 ### 3.4 Regular expressions
 
@@ -444,84 +412,67 @@ A dictionary is a named list of `entries`. A payload value *matches* an entry wh
 | object with neither field | never matches (artifact SHOULD be rejected by schema; if present, it is a non-match) |
 
 Matching is §2.4 equality — strict, no coercion; the payload value's type must match the
-entry's type. `in_dictionary` is OK/TRUE when any entry matches; `not_in_dictionary` is
-OK/TRUE when the field is present and no entry matches. `dictionary.type` MUST be
+entry's type. `in_dictionary` is `PASS` when any entry matches; `not_in_dictionary` is
+`PASS` when the field is present and no entry matches. `dictionary.type` MUST be
 `"static"`.
 
 ### 3.6 Wildcards and aggregation
 
 #### 3.6.1 Wildcard resolution and enumeration order `[D5]`
 
-A `field` path may contain `[*]` segments. A `[*]` segment matches exactly the
-**non-negative integer** index segments at that position in the flat map; nothing else.
-Resolution produces the list of concrete paths present in the flat map.
+A `field` path may contain `[*]` segments. Each segment matches non-negative integer
+indices at that position in the internal flat map. Resolution returns concrete paths
+present after flattening the normative nested JSON input.
 
-Enumeration order is normative:
+Indices are ordered numerically ascending; gaps are allowed. Multiple wildcard
+segments are ordered lexicographically by their index tuple, left segment first
+(odometer order). This order controls per-element issues and `MIN`/`MAX` tie-breaks.
 
-1. indices are ordered as **numbers, ascending** (`a[2]` before `a[10]`; insertion order
-   of the flat map is irrelevant; gaps are permitted — `a[0], a[2], a[5]` enumerate in
-   that order);
-2. with multiple `[*]` segments, tuples of indices are ordered lexicographically with the
-   **leftmost segment most significant** ("odometer" order):
-   `[0][0], [0][1], [1][0], [1][2], …`
+#### 3.6.2 Aggregation `[D20]`
 
-This order determines the order of per-element issues in the result and the element order
-observed by aggregation.
+A rule whose `field` contains `[*]` MUST have `aggregate` with an explicit `mode`.
+`aggregate` on a non-wildcard field is invalid. `value_field` MUST NOT contain a
+wildcard; aligned comparison of two wildcard paths is not defined in version 1.
 
-#### 3.6.2 Aggregation
-
-Without an `aggregate` object, defaults apply: check → `EACH`, predicate → `ANY`.
-
-`aggregate` fields: `mode`, `onEmpty`, `summaryIssue` (check + `ALL` only), `op` and
-`value` (`COUNT` only; `op` ∈ `== != > >= < <=`, default `>=`; `value` required).
-
-**Check modes.** The base operator is applied to each element; an element *passes* when
-the operator yields OK.
-
-| mode | Semantics |
+| Field | Constraint |
 | --- | --- |
-| `EACH` (default) | one issue per failing element, in enumeration order |
-| `ALL` | all elements must pass; `summaryIssue: false` → one issue per failing element; `summaryIssue: true` → exactly one summary issue if any element fails |
-| `COUNT` | let *k* = number of passing elements; OK iff *k* `op` `value`; on failure, one summary issue |
-| `MIN` | apply the base operator once, to the minimum element value | 
-| `MAX` | same, to the maximum element value |
+| `mode` | required: `ALL`, `ANY`, `COUNT`, `MIN`, or `MAX` |
+| `onEmpty` | `PASS`, `FAIL`, or `SKIP`; default `SKIP` |
+| `issueMode` | `EACH` or `SUMMARY`; only for `ALL`/`ANY`; required when the rule has `issue`, forbidden otherwise |
+| `op`, `value` | `COUNT` only; `op` ∈ `== != > >= < <=`, default `>=`; non-negative integer `value` required |
 
-For `MIN`/`MAX` the extremum is taken under §2.5 ordered comparison; if several
-elements attain the extremum, the **first in enumeration order** (§3.6.1) is selected
-`[DR-IV]`. If any element is unclassified or the elements do not all classify to the
-same kind, the extremum is undetermined and the rule FAILs (one summary issue): what
-cannot be compared is not compared. `[DR-I]`
+`issueMode` is forbidden for `COUNT`, `MIN`, and `MAX`: their failure always creates
+one summary issue. Legacy `EACH` is not a `mode` value.
 
-**Predicate modes.**
+**Population and `SKIP`.** Evaluation proceeds as follows:
 
-| mode | Semantics |
+1. Resolve the wildcard to a structural match list.
+2. If the list is empty, take the outcome from `onEmpty`.
+3. Evaluate each match. Exclude `SKIP` from the effective population. `matched` is
+   structural size, `evaluated` is `PASS`+`FAIL`, and `skipped` is `SKIP` count.
+4. If structural matches existed but all outcomes were `SKIP`, the whole rule is
+   `SKIP`, regardless of `onEmpty`.
+5. Otherwise evaluate the aggregate over the effective population.
+
+Thus `onEmpty` means no structural matches, not no computable outcomes.
+
+| mode | PASS when |
 | --- | --- |
-| `ANY` (default) | TRUE iff at least one element yields TRUE |
-| `ALL` | TRUE iff every element yields TRUE |
-| `COUNT` | TRUE iff the number of TRUE elements satisfies `op value` |
+| `ALL` | every evaluated element is `PASS` |
+| `ANY` | at least one evaluated element is `PASS` |
+| `COUNT` | the number of `PASS` outcomes satisfies `op value` |
+| `MIN` | the operator is `PASS` on the minimum value |
+| `MAX` | the operator is `PASS` on the maximum value |
 
-`UNDEFINED` element results count as not-TRUE. `MIN`/`MAX` with `role: "predicate"` make
-the artifact invalid.
+`MIN`/`MAX` use §2.5. An unclassified value or mixed comparison kinds cause `FAIL`;
+ties select the first element in normative order. An operator `SKIP` on the chosen
+extremum propagates as aggregate `SKIP`.
 
-**`onEmpty`** — behavior when the wildcard resolves to zero elements:
-
-| onEmpty | check | predicate |
-| --- | --- | --- |
-| default | `PASS` | `UNDEFINED` |
-| `PASS` | rule passes, no issue | — (invalid for predicate) |
-| `FAIL` | rule fails, issue created | — (invalid) |
-| `TRUE` | — (invalid for check) | `TRUE` |
-| `FALSE` | — (invalid) | `FALSE` |
-| `UNDEFINED` | treated as `PASS` | `UNDEFINED` |
-
-There is no abort-on-empty option: a hard stop composes from `onEmpty: "FAIL"` on a
-rule with `level: "EXCEPTION"` — the analyst's own `code` and `message` instead of an
-anonymous abort. `[DR-I]`
-
-Cross-role `onEmpty` values (`TRUE`/`FALSE` on a check, `PASS`/`FAIL` on a predicate)
-make the artifact invalid; they are never silently coerced. `[DR-I]`
-
----
+Issues are possible only for final aggregate `FAIL`: `ALL + EACH` reports each
+`FAIL`; `ANY + EACH` reports each `FAIL` only when no element passed;
+`ALL/ANY + SUMMARY`, `COUNT`, `MIN`, `MAX`, and `onEmpty: "FAIL"` produce one
+summary issue. `SKIP` elements never produce issues, and a successful `ANY` emits no
+partial issues.
 
 ## 4. Artifact formats
 
@@ -575,53 +526,56 @@ snapshot invalid.
 
 ### 4.4 Artifact: `rule`
 
-Common fields beyond §4.1:
+Fields in addition to §4.1:
 
 | Field | Required | Constraint |
 | --- | --- | --- |
-| `role` | yes | `"check"` or `"predicate"` |
-| `operator` | yes | name of a built-in operator (Part I §3) or an operator declared in `requires.operators` (§4.9) |
-| `field` | per operator | dot-notation path (§2.7); not used by `any_filled` |
-| `fields` | `any_filled` only | non-empty array of paths |
-| `value`, `value_field`, `flags`, `dictionary` | per operator | as defined in Part I §3 |
-| `aggregate` | optional | §3.6; valid only when `field` contains `[*]` — `aggregate` on a non-wildcard field is invalid; `summaryIssue` defaults to `false` and is valid only with `mode: "ALL"` `[DR-IV]` |
-| `meta` | optional | any JSON object; passed through to issues and trace; never affects evaluation |
+| `operator` | yes | built-in (§3.2) or declared in `requires.operators` (§4.9) |
+| `field` | per operator | §2.7 path; unused by `any_filled` |
+| `fields` | `any_filled` only | non-empty path array |
+| `value`, `value_field`, `flags`, `dictionary` | per operator | Part I; `value_field` contains no `[*]` |
+| `aggregate` | when `field` contains `[*]` | §3.6; forbidden without wildcard |
+| `issue` | optional | issue description for `FAIL` at a rule step |
 
-**Check rules** (`role: "check"`) additionally require:
+The closed `issue` object has this shape:
 
-| Field | Constraint |
-| --- | --- |
-| `level` | `"WARNING"`, `"ERROR"`, or `"EXCEPTION"` |
-| `code` | non-empty string; unique among all check rules in the snapshot |
-| `message` | non-empty string |
+```json
+{
+  "level": "WARNING | ERROR | EXCEPTION",
+  "code": "non-empty string",
+  "message": "non-empty string",
+  "meta": { "optional": "any JSON object" }
+}
+```
 
-**Predicate rules** (`role: "predicate"`) MUST NOT have `level`, `code`, or `message`;
-their presence makes the artifact invalid. A predicate rule using an operator not
-available in the predicate role (Part I §3.3) is invalid. `aggregate.mode` of `MIN` or
-`MAX` on a predicate rule is invalid. `length_equals`/`length_max` `value` and
-`COUNT` `value` MUST be non-negative integers. `[DR-IV]`
+`level`, `code`, and `message` are required together. `code` is unique among all
+rules with `issue` in the snapshot. Optional `meta` is passed through to issues and
+never affects evaluation. Top-level rule fields `role`, `level`, `code`, `message`,
+and `meta` do not exist in fv2. `[D19]`
+
+A rule without `issue` is a complete condition and MAY be used in `when`. A rule
+step MUST reference a rule with `issue`, otherwise the snapshot is invalid. A rule
+with `issue` MAY be used both in steps and in `when`; `when` ignores `issue`.
 
 ### 4.5 Artifact: `condition`
 
 | Field | Required | Constraint |
 | --- | --- | --- |
-| `when` | yes | a *when-expression*, see below |
-| `steps` | yes | non-empty array of steps (§4.8) |
+| `when` | yes | when expression |
+| `steps` | yes | non-empty step array (§4.8) |
 
-A **when-expression** is one of:
+A when expression is one of:
 
-```
-"pred_ref"
+```text
+"rule_ref"
 { "all": [ <when-expression>, … ] }
 { "any": [ <when-expression>, … ] }
 { "not": <when-expression> }
 ```
 
-`all`/`any` arrays MUST be non-empty. Leaves are references to rules with
-`role: "predicate"`; a leaf referencing a check rule, a condition, or a pipeline is
-invalid. Nesting is unrestricted in form but bounded by the global depth limit (§2.1).
-
-Semantics are defined in §5.4.
+`all`/`any` arrays MUST be non-empty. Every leaf references any valid `rule`;
+presence and level of `rule.issue` are irrelevant. A reference to a condition,
+pipeline, or dictionary makes the snapshot invalid. Semantics are in §5.4. `[D19]`
 
 ### 4.6 Artifact: `pipeline`
 
@@ -641,8 +595,8 @@ a non-strict pipeline is invalid.
 **No context-requirement field.** `[D14]` Pipelines declare no `required_context` (an
 unknown field under closed schemas). Whether the runtime context is complete
 is the analyst's explicit decision, expressed as ordinary rules on `$context.*` paths —
-e.g. a `not_empty` check on `$context.currentDate` with the level, `code`, and
-`message` the analyst chooses — placed where the analyst wants the guarantee (typically
+e.g. a `not_empty` rule on `$context.currentDate` with the `issue` object chosen by
+the analyst — placed where the analyst wants the guarantee (typically
 first in an entrypoint's `flow`). Note the interaction with skip semantics `[D13]`:
 value checks against an absent `$context.*` operand are skipped, so a scenario that
 depends on context MUST guard it explicitly if absence should be an error.
@@ -664,19 +618,17 @@ or boolean) `[DR-IV]`. Matching semantics: §3.5.
 
 ### 4.8 Steps
 
-A step is an object with exactly one of the keys `rule`, `condition`, `pipeline`, plus
-an optional `stepId` (non-empty string; passed through to issues and trace, never
-affects evaluation). Any other key, or more than one of the three, is invalid.
+A step is an object with exactly one of `rule`, `condition`, or `pipeline`, plus
+optional non-empty `stepId`, which is passed through to issues and trace.
 
 | Key | Must reference | Resolution |
 | --- | --- | --- |
-| `rule` | artifact with `type: "rule"` and `role: "check"` | §4.3, scoped refs allowed |
-| `condition` | artifact with `type: "condition"` | §4.3, scoped refs allowed |
-| `pipeline` | artifact with `type: "pipeline"` | absolute `id` only; scoped refs invalid |
+| `rule` | a `rule` artifact with `issue` | §4.3; scoped references allowed |
+| `condition` | a `condition` artifact | §4.3; scoped references allowed |
+| `pipeline` | a `pipeline` artifact | absolute `id` only |
 
-A rule step referencing a predicate rule is **invalid**: a no-op step in a validation
-scenario is almost certainly an authoring error, and "valid but meaningless" is a poor
-contract. `[DR-II]`
+A rule step referencing a rule without `issue` makes the snapshot invalid: the
+runtime would lack normative data for a `FAIL` issue. `[D19][DR-II]`
 
 ### 4.9 Snapshot format (`formatVersion: 2`)
 
@@ -686,7 +638,7 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0-rc.2",
+  "specVersion": "1.0.0-rc.3",
   "sourceHash": "<64 lowercase hex chars>",
   "requires": { "operators": ["valid_inn"] },
   "artifacts": [ … ],
@@ -734,10 +686,11 @@ evaluation is normative.
    the recomputed JCS hash of `artifacts`.
 2. Any artifact violating §4.1 (including duplicate `id`), or its type-specific schema
    (§4.4–§4.8), including regex patterns outside the §3.4 grammar or limits, invalid
-   `flags`, invalid `aggregate` combinations, and cross-role `onEmpty` values.
-3. Duplicate `code` among check rules.
+   `flags`, and invalid `aggregate`, `issueMode`, or `onEmpty` combinations.
+3. Duplicate `issue.code` among rules with `issue`.
 4. Any unresolved, wrong-typed, or invisible reference (§4.3), including `when` leaves
-   that are not predicate rules and pipeline steps with scoped references.
+   that are not rules, rule steps targeting rules without `issue`, and pipeline steps
+   with scoped references.
 5. A cycle in the pipeline call graph.
 6. An operator name that is neither built-in nor declared in `requires.operators`; or a
    declared required operator the implementation does not provide (`OPERATOR_NOT_FOUND`).
@@ -807,29 +760,26 @@ is indistinguishable.)
 
 ### 5.3 Rule steps
 
-A rule step evaluates its check rule against the payload per Part I §3 (including
-skip-on-absent `[D13]` and aggregation). Each failure produces an issue carrying: the
-rule's `level`, `code`, `message`, `meta`; the concrete `field` (for wildcards, the
-concrete matched path, not the pattern; for summary issues, the pattern); `ruleId`; the
-immediately enclosing pipeline's id as `pipelineId`; `stepId` when the step declares
-one; `expected`/`actual` per Part III. A skip produces nothing normative.
+A rule step evaluates its rule per Part I. `PASS` and `SKIP` have no normative
+effect. `FAIL` creates an issue from `rule.issue` and runtime facts: concrete
+`field`, `ruleId`, immediately enclosing `pipelineId`, optional `stepId`,
+`expected`/`actual`, and group `details` per Part III. `[D19]`
+
+The created issue level controls flow per §5.6. An operator cannot change the rule's
+level, code, or message.
 
 ### 5.4 Condition steps
 
-The `when` expression evaluates over a three-valued predicate layer collapsed to
-booleans at the leaves:
+A `when` leaf evaluates a rule and maps `PASS` to `true`, and `FAIL`/`SKIP` to
+`false`. `all`, `any`, and `not` combine those booleans.
 
-1. A leaf evaluates its predicate rule per Part I §3 (aggregation included), yielding
-   `TRUE`, `FALSE`, or `UNDEFINED`; `UNDEFINED` collapses to `FALSE` at the leaf.
-2. `all` is the conjunction, `any` the disjunction, `not` the negation of the collapsed
-   boolean results.
+`when` never creates issues and ignores `rule.issue`, including
+`level: "EXCEPTION"`. Short-circuit versus exhaustive evaluation is therefore not
+observable in the normative result; trace MAY differ. A thrown operator exception or
+contract violation still causes site-independent `ABORT` (§3.1, §6.7).
+`[D7][D12][D19]`
 
-Predicates produce no issues and have no observable side effects, therefore evaluation
-strategy (short-circuit or exhaustive, in any order) is unobservable in the normative
-result and unconstrained; trace MAY differ between implementations. `[D7][D12]`
-
-If the guard is true, the condition's `steps` execute in place (§5.2); otherwise the
-step is a no-op.
+When the guard is true, its steps execute in place; otherwise the condition is a no-op.
 
 ### 5.5 Pipeline steps
 
@@ -875,7 +825,7 @@ strict pipelines each apply the rule to their own subtree; the innermost trigger
 strict pipeline appends its summary first, and the stop propagates outward (outer strict
 pipelines that also qualify append their summaries in inner-to-outer order).
 
-Strict summary codes are runtime-generated and are therefore outside the check-rule
+Strict summary codes are runtime-generated and are therefore outside the rule
 `code` uniqueness rule (§4.4); authors SHOULD nevertheless avoid collisions between
 `strictCode` values and rule codes, as consumers distinguish issues by `code`.
 
@@ -941,7 +891,7 @@ normative — a field that the column excludes MUST be omitted:
 | `expected` | value | per §6.4 |
 | `actual` | value | per §6.4; omitted when there is no single actual value |
 | `details` | object | group-verdict summary issues only (§6.5); normative machine-readable facts of the issue, mirroring `error.details` on `ABORT` (§6.7) — one contract-wide pattern: `code` identifies the class, `details` carries the class-specific facts |
-| `meta` | object | when the rule declares `meta` (§6.6) |
+| `meta` | object | when `rule.issue` declares `meta` (§6.6) |
 
 Issue order in `issues[]` is normative: document order of rule evaluations (§5.2),
 wildcard enumeration order within a rule (§3.6.1), strict summaries per §5.7.
@@ -964,27 +914,29 @@ of these values is defined or permitted.
 
 ### 6.5 Group-verdict summary issues
 
-`[DR-III]` A summary issue (produced by `ALL` with `summaryIssue: true`, by a failing `COUNT`, by
-`MIN`/`MAX`, or by `onEmpty: "FAIL"`) carries `field` = the wildcard pattern and a
-`details` object:
+A summary issue is created on final `FAIL` for `ALL/ANY + SUMMARY`, `COUNT`,
+`MIN`/`MAX`, or `onEmpty: "FAIL"`. `[D20]`
 
 | Producer | `details` | `expected` / `actual` |
 | --- | --- | --- |
-| `ALL`, `summaryIssue: true` | `{"mode":"ALL","total":<n>,"failed":<k>}` | omitted / omitted |
-| `COUNT` failure | `{"mode":"COUNT","op":"…","value":<v>,"total":<n>,"passed":<k>}` | omitted / omitted |
-| `MIN` / `MAX` failure | `{"mode":"MIN"\|"MAX"}` | per §6.4 for the base operator; `field` is the **concrete path of the extremum element**, not the pattern; `actual` = the extremum value. If the extremum is undetermined (Part I §3.6.2), `field` is the pattern and `expected`/`actual` are omitted |
-| `onEmpty: "FAIL"` | `{"mode":"<effective mode>","total":0}` | omitted / omitted |
+| `ALL`/`ANY`, `issueMode: "SUMMARY"` | `{"mode":"ALL|ANY","matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
+| `COUNT` failure | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
+| `MIN`/`MAX` failure | `{"mode":"MIN|MAX"}` | per §6.4; `field` is the concrete extremum path and `actual` its value |
+| `onEmpty: "FAIL"` | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}` | omitted / omitted |
 
-The consumer rule is one sentence: **`details.mode` present ⇒ a group verdict, read
-`details`; otherwise an ordinary value issue, read `expected`/`actual`.** Per-element
-issues (`EACH`, or `ALL` with `summaryIssue: false`) are ordinary §6.3/§6.4 issues and
-never carry `details`.
+`matched` is structural wildcard match count, `evaluated` is `PASS`+`FAIL`,
+`skipped` is `SKIP`, and `passed`/`failed` partition the effective population.
+Always `matched = evaluated + skipped` and `evaluated = passed + failed`.
+
+For an undetermined `MIN`/`MAX` extremum, `field` is the wildcard pattern and
+`expected`/`actual` are omitted. Per-element `EACH` issues are ordinary §6.3–§6.4
+issues and never carry `details`.
 
 ### 6.6 `meta` passthrough
 
-When a rule declares `meta`, every issue produced by that rule carries `meta` **verbatim
-as authored**. The runtime MUST NOT add, remove, or rewrite keys inside it; runtime
-facts live in `details` (§6.5) or nowhere. `[DR-III]`
+When `rule.issue` declares `meta`, every issue produced by that rule carries it
+verbatim. The runtime MUST NOT rewrite it; runtime facts live in `details` or nowhere.
+The entire `issue` object, including `meta`, is ignored at a `when` site. `[DR-III][D19]`
 
 ### 6.7 `ABORT` and the two failure channels
 
@@ -1026,7 +978,7 @@ exercised portably through the reserved conformance operators of §7.3.
 
 ```json
 "ruleset": {
-  "specVersion": "1.0.0-rc.2",
+  "specVersion": "1.0.0-rc.3",
   "sourceHash": "…",
   "projectId": "…",
   "rulesetVersion": "…",
@@ -1117,20 +1069,18 @@ condition** of a conformance claim for X — not a sufficient one: the suite sam
 behavior space, the text defines it. `[DR-IV]` If a fixture contradicts the text, the
 text prevails; the fixture is corrected through an erratum and a new suite version —
 fixtures never silently redefine the text. Fixtures are organized by the decision or
-section they pin; every decision D1–D18 MUST be covered by at least one fixture.
+section they pin; every decision D1–D20 MUST be covered by at least one fixture.
 
 **Reserved conformance operators.** `[DR-IV]` The following operator names are
 reserved. They are registered **only by conformance runners** as part of the test
 harness — never by production runtimes — and each implementation adapts them to its
 own registration API. Their pinned behavior when invoked:
 
-| Name | Role | Behavior | Expected reaction |
-| --- | --- | --- | --- |
-| `conformance.check.throw` | check | raises a host failure | `ABORT OPERATOR_FAULT` |
-| `conformance.check.invalid_result` | check | returns a value outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` |
-| `conformance.check.exception` | check | returns `EXCEPTION` | `EXCEPTION` issue per §3.1, evaluation stops |
-| `conformance.predicate.throw` | predicate | raises a host failure | `ABORT OPERATOR_FAULT` |
-| `conformance.predicate.invalid_result` | predicate | returns a value outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` |
+| Name | Behavior | Expected reaction |
+| --- | --- | --- |
+| `conformance.rule.throw` | throws a host exception | `ABORT OPERATOR_FAULT` at either site |
+| `conformance.rule.invalid_result` | returns `EXCEPTION`, outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site |
+| `conformance.rule.tri` | maps values `"PASS"`, `"SKIP"`, `"FAIL"` to the same-named outcomes | §3.1 outcome; used for mixed aggregate populations |
 
 ### 7.4 Requirements summary
 

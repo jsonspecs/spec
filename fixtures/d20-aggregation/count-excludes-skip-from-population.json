@@ -1,0 +1,93 @@
+{
+  "name": "d20/count-excludes-skip-from-population",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "requires": {
+      "operators": [
+        "conformance.rule.tri"
+      ]
+    },
+    "sourceHash": "61513bf0ecd1a1c51ce3bd83037b42e21133cabdc7c20fea14e75ae56986800d",
+    "artifacts": [
+      {
+        "id": "library.d20.count",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "conformance.rule.tri",
+        "field": "items[*].result",
+        "aggregate": {
+          "mode": "COUNT",
+          "op": ">=",
+          "value": 2
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.count"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [
+    "conformance.rule.tri"
+  ],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        {
+          "result": "PASS"
+        },
+        {
+          "result": "SKIP"
+        },
+        {
+          "result": "FAIL"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "control": "STOP",
+    "issues": [
+      {
+        "kind": "ISSUE",
+        "level": "ERROR",
+        "code": "D20.4",
+        "message": "failed",
+        "field": "items[*].result",
+        "ruleId": "library.d20.count",
+        "pipelineId": "checks.main",
+        "details": {
+          "mode": "COUNT",
+          "op": ">=",
+          "value": 2,
+          "matched": 3,
+          "evaluated": 2,
+          "skipped": 1,
+          "passed": 1,
+          "failed": 1
+        }
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "61513bf0ecd1a1c51ce3bd83037b42e21133cabdc7c20fea14e75ae56986800d"
+    }
+  }
+}

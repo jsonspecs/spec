@@ -3,30 +3,32 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "945c71bd10963324b8106422318074fd29c77d731a03272ed6ae64fd92e6de0c",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "42ce7f7e50eb738229c6884ff0329d41886e3524f04f891e3e859e6dd595a7a8",
     "artifacts": [
       {
         "id": "library.p.n",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "P2",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "P2",
+          "message": "failed"
+        }
       },
       {
         "id": "library.p.e",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "P3",
-        "message": "failed",
-        "field": "b"
+        "field": "b",
+        "issue": {
+          "level": "ERROR",
+          "code": "P3",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -79,8 +81,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "945c71bd10963324b8106422318074fd29c77d731a03272ed6ae64fd92e6de0c"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "42ce7f7e50eb738229c6884ff0329d41886e3524f04f891e3e859e6dd595a7a8"
     }
   }
 }

@@ -1,0 +1,51 @@
+{
+  "name": "d11/reject-issue-mode-without-issue",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "0d914808f7013421b91167063a491371a39c9d2944bab2eb7dd8700036a10060",
+    "artifacts": [
+      {
+        "id": "library.d20.bad3",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "greater_than",
+        "field": "x[*].v",
+        "value": 1,
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "EACH"
+        }
+      },
+      {
+        "id": "library.d20.ok",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.X3",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.ok"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

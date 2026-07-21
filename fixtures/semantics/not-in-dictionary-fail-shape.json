@@ -3,8 +3,8 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "c49ddfb5221766f749c30a1c8e140ccbe076f914aeda9cc74c1a766d83a6ed27",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "491ef6046f0b68ae1252940487089ca37edfc3239a7f9521c2e3153e9dc6d730",
     "artifacts": [
       {
         "id": "library.dict.blocked",
@@ -18,15 +18,16 @@
         "id": "library.se.ni",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_in_dictionary",
-        "level": "ERROR",
-        "code": "SE12",
-        "message": "failed",
         "field": "a",
         "dictionary": {
           "type": "static",
           "id": "library.dict.blocked"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "SE12",
+          "message": "failed"
         }
       },
       {
@@ -70,8 +71,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "c49ddfb5221766f749c30a1c8e140ccbe076f914aeda9cc74c1a766d83a6ed27"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "491ef6046f0b68ae1252940487089ca37edfc3239a7f9521c2e3153e9dc6d730"
     }
   }
 }

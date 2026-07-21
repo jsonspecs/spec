@@ -3,20 +3,21 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "9fc0e35f58596ede65d65625b9432cb664646d7f0f8f1c3c64518eaddc9ecab6",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "f6743fdb9a5c052a9616c0488c4db7b847f979e5eff59f661321a3331433280f",
     "artifacts": [
       {
         "id": "library.x.p3",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "field_equals_field",
-        "level": "ERROR",
-        "code": "X19",
-        "message": "failed",
         "field": "a",
-        "value_field": "b[*].v"
+        "value_field": "b[*].v",
+        "issue": {
+          "level": "ERROR",
+          "code": "X19",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

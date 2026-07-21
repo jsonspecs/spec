@@ -1,32 +1,34 @@
 {
-  "name": "d11/reject-duplicate-check-code",
+  "name": "d11/reject-duplicate-issue-code",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "8eb8c245529dbae2126dfb09fe6722ba8a4ba10517ea5308538340ca835fd52e",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "ea250b27131420b3a19733ef036a8aa6d8cb729f8d31557d48ee725079bacafb",
     "artifacts": [
       {
         "id": "library.x.d1",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "DUP",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "DUP",
+          "message": "failed"
+        }
       },
       {
         "id": "library.x.d2",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "DUP",
-        "message": "failed",
-        "field": "b"
+        "field": "b",
+        "issue": {
+          "level": "ERROR",
+          "code": "DUP",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",

@@ -3,6 +3,28 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.3] — 2026-07-21
+
+Final pre-1.0 architectural unification (D19–D20 and addendum [DR-V]).
+
+- Removed rule `role: check|predicate`; every operator now has one site-independent
+  outcome contract: `PASS|FAIL|SKIP`.
+- Added optional closed `rule.issue: {level, code, message, meta?}`. Rule steps require
+  it; `when` accepts every rule and always ignores it.
+- Removed returned business `EXCEPTION`: out-of-enum returns, including `EXCEPTION`,
+  are `OPERATOR_CONTRACT_VIOLATION`; thrown failures are `OPERATOR_FAULT` at either site.
+- Unified wildcard aggregation: explicit `ALL|ANY|COUNT|MIN|MAX`, separate
+  `issueMode: EACH|SUMMARY`, structural `onEmpty`, and effective populations that
+  exclude `SKIP`.
+- Group details now distinguish `matched`, `evaluated`, `skipped`, `passed`, and
+  `failed`; COUNT no longer counts skipped elements as passed.
+- Replaced role-specific test operators with `conformance.rule.throw`,
+  `conformance.rule.invalid_result`, and `conformance.rule.tri`.
+- Fixtures: 113 → **128** (94 evaluation, 34 rejection), including D19 reuse and the
+  D20 aggregation boundary.
+- Declared rc.3 the final architecture change before `1.0.0`; subsequent RC changes
+  are errata only.
+
 ## [1.0.0-rc.2] — 2026-07-21
 
 External review round (see decision register D15–D18 and addendum [DR-IV]).

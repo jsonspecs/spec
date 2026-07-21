@@ -3,20 +3,25 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "b7321afb73845d0ea4c4e7f0d422f9da7d9a4523b537d5a25e8a5a2e95bb8402",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "8bf1f8c91e73a4a2b6ea5d16e693b74c143bafe1a4d03af6a5b1b93a30d1c1c3",
     "artifacts": [
       {
         "id": "library.o.odo",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "ERROR",
-        "code": "O2",
-        "message": "failed",
         "field": "m[*].n[*].v",
-        "value": 10
+        "value": 10,
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "O2",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -96,8 +101,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "b7321afb73845d0ea4c4e7f0d422f9da7d9a4523b537d5a25e8a5a2e95bb8402"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "8bf1f8c91e73a4a2b6ea5d16e693b74c143bafe1a4d03af6a5b1b93a30d1c1c3"
     }
   }
 }

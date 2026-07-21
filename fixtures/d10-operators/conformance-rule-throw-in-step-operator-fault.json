@@ -1,26 +1,27 @@
 {
-  "name": "d10/conformance-check-throw-operator-fault",
+  "name": "d10/conformance-rule-throw-in-step-operator-fault",
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
+    "specVersion": "1.0.0-rc.3",
     "requires": {
       "operators": [
-        "conformance.check.throw"
+        "conformance.rule.throw"
       ]
     },
-    "sourceHash": "17f00aca190d42d43dafe915e40c37377ca607e7cd90afb154ffa4beac855033",
+    "sourceHash": "923b76f3b85c4bbeb588892d187a2cf587d747ea0dccd0f73970e1c275848598",
     "artifacts": [
       {
         "id": "library.co.r",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
-        "operator": "conformance.check.throw",
-        "level": "ERROR",
-        "code": "CO1",
-        "message": "failed",
-        "field": "a"
+        "operator": "conformance.rule.throw",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "CO1",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -37,7 +38,7 @@
     ]
   },
   "operators": [
-    "conformance.check.throw"
+    "conformance.rule.throw"
   ],
   "input": {
     "pipelineId": "checks.main",
@@ -53,12 +54,12 @@
       "code": "OPERATOR_FAULT",
       "details": {
         "ruleId": "library.co.r",
-        "operator": "conformance.check.throw"
+        "operator": "conformance.rule.throw"
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "17f00aca190d42d43dafe915e40c37377ca607e7cd90afb154ffa4beac855033"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "923b76f3b85c4bbeb588892d187a2cf587d747ea0dccd0f73970e1c275848598"
     }
   }
 }

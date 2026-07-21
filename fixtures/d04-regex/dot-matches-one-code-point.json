@@ -3,20 +3,21 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "9b4a21741f48c667e8cc18e8ca63ed600038afeb80f90e145874779dcad71ac4",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "7ef49a8995389ff23ed6305cd504d72584a9103e7a00b4e2abbd9b27e557fbe3",
     "artifacts": [
       {
         "id": "library.r.dot",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "matches_regex",
-        "level": "ERROR",
-        "code": "R10",
-        "message": "failed",
         "field": "a",
-        "value": "^.$"
+        "value": "^.$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R10",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -44,8 +45,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "9b4a21741f48c667e8cc18e8ca63ed600038afeb80f90e145874779dcad71ac4"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "7ef49a8995389ff23ed6305cd504d72584a9103e7a00b4e2abbd9b27e557fbe3"
     }
   }
 }

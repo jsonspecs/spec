@@ -3,22 +3,23 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "94a5e060c4ede8b3c1a30996b8e3a08cc0ce23bfe5b01f63b94bb45b962dba32",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "b89efaa0d378c836d1b35c44b47e0594ef3ed7d6b1f23131eba9587d26e2aa21",
     "artifacts": [
       {
         "id": "library.se.meta",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "SE18",
-        "message": "failed",
         "field": "a",
-        "meta": {
-          "ui": "form1",
-          "docLink": "https://intra/reg/17"
+        "issue": {
+          "level": "ERROR",
+          "code": "SE18",
+          "message": "failed",
+          "meta": {
+            "ui": "form1",
+            "docLink": "https://intra/reg/17"
+          }
         }
       },
       {
@@ -59,8 +60,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "94a5e060c4ede8b3c1a30996b8e3a08cc0ce23bfe5b01f63b94bb45b962dba32"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "b89efaa0d378c836d1b35c44b47e0594ef3ed7d6b1f23131eba9587d26e2aa21"
     }
   }
 }

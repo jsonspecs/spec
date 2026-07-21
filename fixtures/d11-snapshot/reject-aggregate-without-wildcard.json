@@ -3,22 +3,24 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "564bf00f8f27e4db62b16df44565e967df236ea2b726ad8d86ac7e2877a03fff",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "11193e070e413ee8fb7e72bf585e760aa17b66fc0369034fd0fa19ee403691e3",
     "artifacts": [
       {
         "id": "library.x.aw",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "ERROR",
-        "code": "X14",
-        "message": "failed",
         "field": "a",
         "value": 1,
         "aggregate": {
-          "mode": "EACH"
+          "mode": "ALL",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "X14",
+          "message": "failed"
         }
       },
       {

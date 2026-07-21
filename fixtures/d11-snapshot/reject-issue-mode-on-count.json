@@ -1,0 +1,46 @@
+{
+  "name": "d11/reject-issue-mode-on-count",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "367c760054809a0655e322187a44b2cae36c4b7f829da5c254d9fbb80f6b90b2",
+    "artifacts": [
+      {
+        "id": "library.d20.bad4",
+        "type": "rule",
+        "description": "fixture rule",
+        "operator": "greater_than",
+        "field": "x[*].v",
+        "value": 1,
+        "aggregate": {
+          "mode": "COUNT",
+          "op": ">=",
+          "value": 1,
+          "issueMode": "SUMMARY"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D20.X4",
+          "message": "failed"
+        }
+      },
+      {
+        "id": "checks.main",
+        "type": "pipeline",
+        "description": "fixture pipeline",
+        "entrypoint": true,
+        "strict": false,
+        "flow": [
+          {
+            "rule": "library.d20.bad4"
+          }
+        ]
+      }
+    ]
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

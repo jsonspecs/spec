@@ -3,21 +3,22 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "834628eae1fc086362c97ee29853cf2fa539f61586049b62aed73d7a49a0c784",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "72633ecd05ebc0dadaef43cebd1d9f44e34ce343213bf14bdef28a7d4f24bb9e",
     "artifacts": [
       {
         "id": "library.r.i",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "matches_regex",
-        "level": "ERROR",
-        "code": "R9",
-        "message": "failed",
         "field": "a",
         "value": "^иван$",
-        "flags": "i"
+        "flags": "i",
+        "issue": {
+          "level": "ERROR",
+          "code": "R9",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
@@ -45,8 +46,8 @@
     "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "834628eae1fc086362c97ee29853cf2fa539f61586049b62aed73d7a49a0c784"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "72633ecd05ebc0dadaef43cebd1d9f44e34ce343213bf14bdef28a7d4f24bb9e"
     }
   }
 }

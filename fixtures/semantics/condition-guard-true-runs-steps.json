@@ -3,14 +3,13 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "05c7eb7ce573e0c7c6f617d37689ee365db59023161db23195b9be9451ce5d7d",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "4d6de6709ebd99dac6f4989dad87cfd6a62e32a56ade948b26525d48494e02bc",
     "artifacts": [
       {
         "id": "library.se.p1",
         "type": "rule",
-        "description": "fixture predicate",
-        "role": "predicate",
+        "description": "fixture rule",
         "operator": "not_empty",
         "field": "trigger"
       },
@@ -18,12 +17,13 @@
         "id": "library.se.c1",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "SE1",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "SE1",
+          "message": "failed"
+        }
       },
       {
         "id": "library.cond.g",
@@ -72,8 +72,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "05c7eb7ce573e0c7c6f617d37689ee365db59023161db23195b9be9451ce5d7d"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "4d6de6709ebd99dac6f4989dad87cfd6a62e32a56ade948b26525d48494e02bc"
     }
   }
 }

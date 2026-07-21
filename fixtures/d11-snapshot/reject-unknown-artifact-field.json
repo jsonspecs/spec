@@ -3,19 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "1037024aadc18d3d97d0504b28cfc6878b93efd790aff963efb9c93e7a62da84",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "83d007d22e7f8425461d2048bfd907d6dd66562b92c6ba6f9a4d318a92073ecd",
     "artifacts": [
       {
         "id": "library.x.u",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "X3",
-        "message": "failed",
         "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X3",
+          "message": "failed"
+        },
         "note": "oops"
       },
       {

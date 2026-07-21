@@ -3,23 +3,25 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
-    "sourceHash": "e9c1198a58ad963f7c433c5be1b9ebd7ef47aa42158f85eb943afc02a11a0d46",
+    "specVersion": "1.0.0-rc.3",
+    "sourceHash": "192df410c59b8796c6fd7187386e8f03f75b94583961808d0034fa7aa90e337a",
     "artifacts": [
       {
         "id": "library.se.hs",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "greater_than",
-        "level": "EXCEPTION",
-        "code": "SE24",
-        "message": "failed",
         "field": "x[*].v",
         "value": 10,
         "aggregate": {
-          "mode": "EACH",
+          "mode": "ALL",
+          "issueMode": "EACH",
           "onEmpty": "FAIL"
+        },
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "SE24",
+          "message": "failed"
         }
       },
       {
@@ -54,14 +56,18 @@
         "ruleId": "library.se.hs",
         "pipelineId": "checks.main",
         "details": {
-          "mode": "EACH",
-          "total": 0
+          "mode": "ALL",
+          "matched": 0,
+          "evaluated": 0,
+          "skipped": 0,
+          "passed": 0,
+          "failed": 0
         }
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.2",
-      "sourceHash": "e9c1198a58ad963f7c433c5be1b9ebd7ef47aa42158f85eb943afc02a11a0d46"
+      "specVersion": "1.0.0-rc.3",
+      "sourceHash": "192df410c59b8796c6fd7187386e8f03f75b94583961808d0034fa7aa90e337a"
     }
   }
 }

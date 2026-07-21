@@ -3,19 +3,20 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.2",
+    "specVersion": "1.0.0-rc.3",
     "sourceHash": "0000000000000000000000000000000000000000000000000000000000000000",
     "artifacts": [
       {
         "id": "library.h.r",
         "type": "rule",
         "description": "fixture rule",
-        "role": "check",
         "operator": "not_empty",
-        "level": "ERROR",
-        "code": "H1",
-        "message": "failed",
-        "field": "a"
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "H1",
+          "message": "failed"
+        }
       },
       {
         "id": "checks.main",
