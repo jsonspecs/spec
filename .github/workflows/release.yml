@@ -14,6 +14,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Tag commit must belong to main
         run: |
           git fetch origin main
@@ -25,6 +29,10 @@ jobs:
           grep -q "\*\*Version:\*\* $V" SPEC.md || { echo "::error::SPEC.md version does not match $V"; exit 1; }
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
+      - name: Validate full Russian SPEC translation parity
+        run: node tools/validate-doc-parity.mjs
+      - name: Cross-check JCS UTF-16 ordering on Java
+        run: java tools/JcsUtf16Check.java
       - name: Fixtures exactly match the generator
         run: |
           rm -rf /tmp/fixgen && mkdir -p /tmp/fixgen/fixtures

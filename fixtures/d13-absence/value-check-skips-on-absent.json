@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "47da81242ee8f08aecbadd4cc88e718be30a1dc34da45eec4521d9f3b173911e",
-    "artifacts": [
-      {
-        "id": "library.a.eq",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.a.eq"
+        ]
+      },
+      "library.a.eq": {
         "type": "rule",
         "operator": "equals",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "A1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.a.eq"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "c473202de7fe11338d4f478ed6566779502c4056446a6068b97b18660bb5a19c"
   },
   "operators": [],
   "input": {
@@ -40,11 +35,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "47da81242ee8f08aecbadd4cc88e718be30a1dc34da45eec4521d9f3b173911e"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "c473202de7fe11338d4f478ed6566779502c4056446a6068b97b18660bb5a19c"
     }
   }
 }

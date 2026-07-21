@@ -3,45 +3,36 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "12201d0b878ab5556c8a167b9d31e08870326171d07f99d20c4fc6cc97e350a9",
-    "artifacts": [
-      {
-        "id": "library.dict.blocked",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.ni"
+        ]
+      },
+      "library.dict.blocked": {
         "type": "dictionary",
         "entries": [
           "RU"
         ]
       },
-      {
-        "id": "library.se.ni",
+      "library.se.ni": {
         "type": "rule",
         "operator": "not_in_dictionary",
         "field": "a",
-        "dictionary": {
-          "type": "static",
-          "id": "library.dict.blocked"
-        },
+        "dictionary": "library.dict.blocked",
         "issue": {
           "level": "ERROR",
           "code": "SE12",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.ni"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "c63354509a9588108bbe796c167f5eaa1d753930f190cc66ed2370421581048e"
   },
   "operators": [],
   "input": {
@@ -52,11 +43,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "12201d0b878ab5556c8a167b9d31e08870326171d07f99d20c4fc6cc97e350a9"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "c63354509a9588108bbe796c167f5eaa1d753930f190cc66ed2370421581048e"
     }
   }
 }

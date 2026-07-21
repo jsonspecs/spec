@@ -3,19 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.params"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "ca9ad022cd99bcb21b5998066d06abb9ea94d0940870c3f1a42f85606f37d2bf",
-    "artifacts": [
-      {
-        "id": "library.d24.params",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d24.params"
+        ]
+      },
+      "library.d24.params": {
         "type": "rule",
         "operator": "conformance.rule.params",
         "params": {
@@ -26,18 +25,9 @@
           "code": "D24.1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d24.params"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "4a7948810d9172df160f46aa8da507e2040f7662e3edcc9fd706fdafd66436c6"
   },
   "operators": [
     "conformance.rule.params"
@@ -48,11 +38,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "ca9ad022cd99bcb21b5998066d06abb9ea94d0940870c3f1a42f85606f37d2bf"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "4a7948810d9172df160f46aa8da507e2040f7662e3edcc9fd706fdafd66436c6"
     }
   }
 }

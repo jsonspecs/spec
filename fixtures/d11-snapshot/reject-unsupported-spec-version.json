@@ -7,10 +7,14 @@
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "700675ff56b2ccdf4eaa68ebbe66fc4eeaafcb518b4d82f75d68714ee5031c47",
-    "artifacts": [
-      {
-        "id": "library.x.s",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.s"
+        ]
+      },
+      "library.x.s": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "X5",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.s"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "e1b4e63985ef8feee10390e3f3dde80e96ec5e0d8049d67c894adcfbc5295858"
   },
   "operators": [],
   "expected": {

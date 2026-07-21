@@ -3,25 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "a791a71eb0dcfd8f23355bfda0313fc8b514a4e0fd3cf97013b3edc15c2ea3af",
-    "artifacts": [
-      {
-        "id": "library.x.ok2",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "a",
-        "issue": {
-          "level": "ERROR",
-          "code": "X15",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.ok2"
+        ]
       },
-      {
-        "id": "ghost.rule",
+      "ghost.rule": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -31,17 +24,18 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.ok2"
-          }
-        ]
+      "library.x.ok2": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "X15",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "445bd1c4e792b52c417a06537f9ed0ec88bca9f5ca2ffe78bb41a5f24ae74348"
   },
   "operators": [],
   "expected": {

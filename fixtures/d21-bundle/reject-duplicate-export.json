@@ -3,15 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main",
       "checks.main"
     ],
-    "sourceHash": "1a2eb8fdbe95b0cfcd7e185ef23aa08fde0a0ba03359c676c9ee6f68f637ec3a",
-    "artifacts": [
-      {
-        "id": "library.d21.dup",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d21.dup"
+        ]
+      },
+      "library.d21.dup": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "D21.X3",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d21.dup"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "a531e7be9152880bd41b2ffcbce077024f1b2a5134da63717943bfcf8a54822e"
   },
   "operators": [],
   "expected": {

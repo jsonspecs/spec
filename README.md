@@ -1,28 +1,29 @@
-# jsonspecs/spec
+# Behavior specification and conformance suite for JSONSpecs rules runtimes
 
-Behavior specification and conformance suite for JSONSpecs rules runtimes.
 Русская версия: [README_RU.md](README_RU.md).
 
-This repository defines **what** a rules runtime does — never **how**. Any
-implementation (Node.js, Java, Go, …) that, for the same snapshot, payload, and
-context, produces the same normative result and accepts/rejects the same inputs is
-conformant. APIs, compilation strategy, internal representations, and performance are
-explicitly out of scope.
+This repository defines **what** a rules runtime does — never **how**. For snapshots
+using only built-in operators, any implementation (Node.js, Java, Go, …) that produces
+the same normative result for the same inputs and accepts/rejects the same snapshots is
+conformant. End-to-end equality for custom operators additionally requires the
+cross-runtime operator-pack profile in `SPEC.md` §7.1. APIs, compilation strategy,
+internal representations, and performance are explicitly out of scope.
 
 ## Layout
 
-| Path | Role |
-| --- | --- |
-| [`SPEC.md`](SPEC.md) / [`SPEC_RU.md`](SPEC_RU.md) | **The canon.** Behavior specification for the version tagged on this repository. States only expected behavior; rationale lives in the decision register. |
-| [`DECISIONS.md`](DECISIONS.md) / [`DECISIONS_RU.md`](DECISIONS_RU.md) | Decision register D1–D25 + addenda: every design decision with its reasoning, alternatives, and migration cost, referenced from the spec as `[D#]` / `[DR-*]`. |
-| [`fixtures/`](fixtures/) | **Normative appendix.** Conformance fixtures; passing all of them is necessary but not sufficient for conformance. See `fixtures/README.md`. |
-| [`source/`](source/) | Historical, non-normative: the prototype's specification (`jsonspecs/rules`) and the production-pack audit the decisions refer to. |
-| [`tools/`](tools/) | Fixture generator and validator (Node ≥ 20, no dependencies). |
+| Path                                                                  | Role                                                                                                                                                           |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`SPEC.md`](SPEC.md)                                                  | **The canon.** Normative behavior specification for the version tagged on this repository.                                                                     |
+| [`SPEC_RU.md`](SPEC_RU.md)                                            | Full Russian translation with matching structure; `SPEC.md` prevails if the texts diverge.                                                                     |
+| [`DECISIONS.md`](DECISIONS.md) / [`DECISIONS_RU.md`](DECISIONS_RU.md) | Decision register D1–D30 + addenda: every design decision with its reasoning, alternatives, and migration cost, referenced from the spec as `[D#]` / `[DR-*]`. |
+| [`fixtures/`](fixtures/)                                              | **Normative appendix.** Conformance fixtures; passing all of them is necessary but not sufficient for conformance. See `fixtures/README.md`.                   |
+| [`source/`](source/)                                                  | Historical, non-normative: the prototype's specification (`jsonspecs/rules`) and the production-pack audit the decisions refer to.                             |
+| [`tools/`](tools/)                                                    | Fixture generator and validator (Node ≥ 20, no dependencies).                                                                                                  |
 
 ## Consuming this spec as an implementer
 
 1. Implement the behavior in `SPEC.md`. When a statement carries `[D#]`/`[DR-*]`, the
-   register explains *why* — read it before assuming the spec is wrong.
+   register explains _why_ — read it before assuming the spec is wrong.
 2. Build a fixture runner: for each file in `fixtures/**`, feed
    `snapshot` + `input` to your runtime and compare the **normative projection**
    (SPEC.md §7.2) to `expected` with structural JSON equality (§6.1). Rejection
@@ -30,10 +31,10 @@ explicitly out of scope.
 3. Declare conformance: implementation + version, supported `specVersion` range, and
    registered non-built-in operator names (§7.1).
 
-Do **not** treat any existing implementation as the reference. The fixtures are the
-reference; where an implementation and the fixtures disagree, the implementation is
-wrong (or the fixture is — file an issue, the suite is versioned and fixable before
-tagging).
+Do **not** treat any existing implementation as the reference. The English `SPEC.md`
+is the canon; fixtures are its executable normative appendix. A contradiction is fixed
+as a spec erratum plus a versioned fixture update, never by silently following an
+implementation.
 
 ## Versioning and release process
 
@@ -43,11 +44,11 @@ tagging).
   **Minor**: backward-compatible behavior additions (new operators, new fields with
   defined absence semantics). **Major**: anything that changes a verdict on an
   existing valid input.
-- Current status: **1.0.0-rc.4**. The `v1.0.0` tag is applied after the
+- Current status: **1.0.0-rc.5**. The `v1.0.0` tag is applied after the
   cross-implementation stand comparison (Node v3 vs Java) confirms the suite:
 
 ```
-git tag v1.0.0-rc.4 && git push origin v1.0.0-rc.4   # release candidate (prerelease)
+git tag v1.0.0-rc.5 && git push origin v1.0.0-rc.5   # release candidate (prerelease)
 git tag v1.0.0      && git push origin v1.0.0        # after stand confirmation
 ```
 
@@ -60,7 +61,9 @@ a source archive is built, and a GitHub Release is created with generated notes
 
 ```
 node tools/validate-fixtures.mjs    # structural validity + sourceHash integrity
+node tools/validate-doc-parity.mjs  # English/Russian SPEC structure parity
 node tools/generate-fixtures.mjs    # regenerate fixtures (edit the generator, not the JSONs)
+java tools/JcsUtf16Check.java       # independent Java hash/order vector
 ```
 
 ## Relation to jsonspecs/rules

@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "pipeline"
     ],
-    "sourceHash": "901c75d2a05d0506a0d295d60e28f1f372b9ac097e2df7bbc4690643bff48edb",
-    "artifacts": [
-      {
-        "id": "rule",
+    "artifacts": {
+      "pipeline": {
+        "type": "pipeline",
+        "steps": [
+          "rule"
+        ]
+      },
+      "rule": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "D21.1",
           "message": "failed"
         }
-      },
-      {
-        "id": "pipeline",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "rule"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "b4261cde81f5234bcb53e903402b90fdc1f6e21c7a5b8072dffed7e0b17f4397"
   },
   "operators": [],
   "input": {
@@ -41,11 +36,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "901c75d2a05d0506a0d295d60e28f1f372b9ac097e2df7bbc4690643bff48edb"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "b4261cde81f5234bcb53e903402b90fdc1f6e21c7a5b8072dffed7e0b17f4397"
     }
   }
 }

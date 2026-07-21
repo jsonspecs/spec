@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "59901d08a681b4fc9ba18f6c535c742d9ea9df7bf4674bd928a42f2bf940faa3",
-    "artifacts": [
-      {
-        "id": "library.se.meta",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.meta"
+        ]
+      },
+      "library.se.meta": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -23,18 +27,9 @@
             "docLink": "https://intra/reg/17"
           }
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.meta"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "dc9da1cea2d0276a55a6367b35d57ab66cbfd23bd89a8ecfd7e570097b17fcf8"
   },
   "operators": [],
   "input": {
@@ -43,10 +38,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "SE18",
         "message": "failed",
@@ -60,8 +53,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "59901d08a681b4fc9ba18f6c535c742d9ea9df7bf4674bd928a42f2bf940faa3"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "dc9da1cea2d0276a55a6367b35d57ab66cbfd23bd89a8ecfd7e570097b17fcf8"
     }
   }
 }

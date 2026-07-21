@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "5cdc2b609ec8d9ab3a73199d39c84d149053e2ec38dd8dc3c60036382ac09a8a",
-    "artifacts": [
-      {
-        "id": "library.n.lt",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.n.lt"
+        ]
+      },
+      "library.n.lt": {
         "type": "rule",
         "operator": "less_than",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "N4",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.n.lt"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "894b52f9fec4686427271f2129487a2e7509c75d992cddda2df9feb478a5f8df"
   },
   "operators": [],
   "input": {
@@ -42,11 +37,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "5cdc2b609ec8d9ab3a73199d39c84d149053e2ec38dd8dc3c60036382ac09a8a"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "894b52f9fec4686427271f2129487a2e7509c75d992cddda2df9feb478a5f8df"
     }
   }
 }

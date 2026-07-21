@@ -3,25 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "361ef4a0a30a1585fc551593bdd2100e0a0f965b1d8d663bfc4df24b14075ff3",
-    "artifacts": [
-      {
-        "id": "library.a.req",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "inn",
-        "issue": {
-          "level": "ERROR",
-          "code": "A2",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.a.req",
+          "library.a.fmt"
+        ]
       },
-      {
-        "id": "library.a.fmt",
+      "library.a.fmt": {
         "type": "rule",
         "operator": "matches_regex",
         "field": "inn",
@@ -32,20 +26,18 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.a.req"
-          },
-          {
-            "rule": "library.a.fmt"
-          }
-        ]
+      "library.a.req": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "inn",
+        "issue": {
+          "level": "ERROR",
+          "code": "A2",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "1a30ce7e69c4611f83bb6c365ed39a2ccd3e612b47dcb895ac833dd722c4dae4"
   },
   "operators": [],
   "input": {
@@ -54,10 +46,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "A2",
         "message": "failed",
@@ -67,8 +57,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "361ef4a0a30a1585fc551593bdd2100e0a0f965b1d8d663bfc4df24b14075ff3"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "1a30ce7e69c4611f83bb6c365ed39a2ccd3e612b47dcb895ac833dd722c4dae4"
     }
   }
 }

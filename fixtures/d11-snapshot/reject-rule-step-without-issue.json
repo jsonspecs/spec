@@ -3,29 +3,24 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "fdc9195ffb8a3febf33eee8d5d151cdc546ccf8f9be3e2c0e0075a766d3ce7aa",
-    "artifacts": [
-      {
-        "id": "library.x.pp",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.pp"
+        ]
+      },
+      "library.x.pp": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a"
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.pp"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "d9849f73a9ebb102ca015e7ced9500fae45f4b7d7e9f508ec014237dffb550c4"
   },
   "operators": [],
   "expected": {

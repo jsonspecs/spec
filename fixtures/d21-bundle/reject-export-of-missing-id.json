@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.nope"
     ],
-    "sourceHash": "cbce28aceb11d2db31ff6fd94563618f9ae64d23dc6a3c061f903d99a68899fd",
-    "artifacts": [
-      {
-        "id": "library.d21.missing-export",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d21.missing-export"
+        ]
+      },
+      "library.d21.missing-export": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "D21.X5",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d21.missing-export"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "8e83c65d84e0d6716366e7e7ca8be7434a72145014bc0f35d535621ef5ad3ed6"
   },
   "operators": [],
   "expected": {

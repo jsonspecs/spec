@@ -3,6 +3,37 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.5] — 2026-07-21
+
+Final executable-format simplification, portable operator invocation boundary, and
+semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-VIII]).
+
+- Changed `artifacts` from an array with repeated ids to an object keyed by id.
+- Unified pipeline and condition steps as exact id strings; removed typed step objects
+  and `stepId`.
+- Removed `requires.operators`; custom dependencies are derived from reachable rules.
+- Simplified dictionary references to id strings and entries to unique scalars.
+- Added closed, core-resolved custom-operator `inputs`; `params` remains constants only.
+  Operators receive neither raw payload/context nor a resolver.
+- Made I-JSON the raw transport boundary: duplicate members and lone surrogates are
+  rejected before lossy parsing.
+- Defined `sourceHash` as SHA-256 over JCS of the whole snapshot with only
+  `sourceHash` omitted; pinned unsigned UTF-16 ordering and removed snapshot `meta`.
+  Authored `rule.issue.meta` remains hashed and normatively passed through.
+- Removed unproven version-1 features: pipeline `strict`, aggregate `MIN`/`MAX`, regex
+  flags, and the prototype's extra backslash preprocessing.
+- Reduced the normative result by removing `control`, issue `kind`, `stepId`, trace,
+  and engine version. Comparison operators remain explicit DSL verbs.
+- Clarified named-input and standard-operand absence, exact conformance-operator schemas,
+  unambiguous operator registration, numeric-string comparisons, portable regex
+  anchors/dot/classes, exhaustive aggregation, atomic `EACH` issues, technical `ABORT`
+  issue disposal, `OPERATOR_NOT_FOUND` precedence, and closed result objects.
+- Added a separate cross-runtime operator-pack profile with shared golden vectors and
+  deployment provenance, without coupling it to snapshot hashing.
+- Fixtures: 163 → **267** (185 evaluation, 82 rejection), including raw I-JSON,
+  UTF-16/JCS, absent-vs-null operator inputs, regex portability, aggregate fault/order,
+  rejection precedence, and a complete built-in operator outcome matrix.
+
 ## [1.0.0-rc.4] — 2026-07-21
 
 Executable-bundle simplification and cross-runtime semantic closure (D21–D25 and

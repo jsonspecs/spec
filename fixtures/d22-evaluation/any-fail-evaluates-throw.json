@@ -3,31 +3,36 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.throw"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "243ff10365e9307482961057eef2e98c6a789b0aa770d2eeed43262a306480f5",
-    "artifacts": [
-      {
-        "id": "library.d22.any-fail-evaluates-throw.first",
-        "type": "rule",
-        "operator": "is_true",
-        "field": "first"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "condition.any-fail-evaluates-throw"
+        ]
       },
-      {
-        "id": "library.d22.any-fail-evaluates-throw.throw",
-        "type": "rule",
-        "operator": "conformance.rule.throw",
-        "field": "unused"
+      "condition.any-fail-evaluates-throw": {
+        "type": "condition",
+        "when": {
+          "any": [
+            "library.d22.any-fail-evaluates-throw.first",
+            "library.d22.any-fail-evaluates-throw.throw"
+          ]
+        },
+        "steps": [
+          "library.d22.any-fail-evaluates-throw.target"
+        ]
       },
-      {
-        "id": "library.d22.any-fail-evaluates-throw.target",
+      "library.d22.any-fail-evaluates-throw.first": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "first",
+        "value": true
+      },
+      "library.d22.any-fail-evaluates-throw.target": {
         "type": "rule",
         "operator": "not_empty",
         "field": "required",
@@ -37,32 +42,12 @@
           "message": "failed"
         }
       },
-      {
-        "id": "condition.any-fail-evaluates-throw",
-        "type": "condition",
-        "when": {
-          "any": [
-            "library.d22.any-fail-evaluates-throw.first",
-            "library.d22.any-fail-evaluates-throw.throw"
-          ]
-        },
-        "steps": [
-          {
-            "rule": "library.d22.any-fail-evaluates-throw.target"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "condition.any-fail-evaluates-throw"
-          }
-        ]
+      "library.d22.any-fail-evaluates-throw.throw": {
+        "type": "rule",
+        "operator": "conformance.rule.throw"
       }
-    ]
+    },
+    "sourceHash": "c5cb6df6464f6be62d90d1bf05970c7f319b2031abc117f08bb979e28ea0b15f"
   },
   "operators": [
     "conformance.rule.throw"
@@ -76,7 +61,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "OPERATOR_FAULT",
@@ -86,8 +70,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "243ff10365e9307482961057eef2e98c6a789b0aa770d2eeed43262a306480f5"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "c5cb6df6464f6be62d90d1bf05970c7f319b2031abc117f08bb979e28ea0b15f"
     }
   }
 }

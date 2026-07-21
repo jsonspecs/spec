@@ -3,39 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "165386883a2415e6924f5e2b49c7d54529cad297163da0eae24875eff4fc8601",
-    "artifacts": [
-      {
-        "id": "library.se.pa",
-        "type": "rule",
-        "operator": "equals",
-        "field": "type",
-        "value": "FL"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.cond.w"
+        ]
       },
-      {
-        "id": "library.se.pb",
-        "type": "rule",
-        "operator": "equals",
-        "field": "resident",
-        "value": true
-      },
-      {
-        "id": "library.se.c2",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "passport",
-        "issue": {
-          "level": "ERROR",
-          "code": "SE2",
-          "message": "failed"
-        }
-      },
-      {
-        "id": "library.cond.w",
+      "library.cond.w": {
         "type": "condition",
         "when": {
           "all": [
@@ -46,22 +25,33 @@
           ]
         },
         "steps": [
-          {
-            "rule": "library.se.c2"
-          }
+          "library.se.c2"
         ]
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "library.cond.w"
-          }
-        ]
+      "library.se.c2": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "passport",
+        "issue": {
+          "level": "ERROR",
+          "code": "SE2",
+          "message": "failed"
+        }
+      },
+      "library.se.pa": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "type",
+        "value": "FL"
+      },
+      "library.se.pb": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "resident",
+        "value": true
       }
-    ]
+    },
+    "sourceHash": "f5b500029ead68ed917c04b1d609abb5ef2774db3d3a0dd62661ccc587799058"
   },
   "operators": [],
   "input": {
@@ -73,10 +63,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "SE2",
         "message": "failed",
@@ -86,8 +74,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "165386883a2415e6924f5e2b49c7d54529cad297163da0eae24875eff4fc8601"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "f5b500029ead68ed917c04b1d609abb5ef2774db3d3a0dd62661ccc587799058"
     }
   }
 }

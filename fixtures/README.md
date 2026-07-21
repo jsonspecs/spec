@@ -16,7 +16,7 @@ projection (SPEC.md §7.2) structurally:
   "snapshot": { "format": "jsonspecs-snapshot", "formatVersion": 2, "...": "..." },
   "operators": [],
   "input": { "pipelineId": "checks.main", "payload": {}, "context": {} },
-  "expected": { "status": "OK", "control": "CONTINUE", "issues": [], "ruleset": { "...": "..." } }
+  "expected": { "status": "OK", "issues": [], "ruleset": { "...": "..." } }
 }
 ```
 
@@ -25,6 +25,14 @@ Rejection fixture — the snapshot MUST be refused before any evaluation:
 ```json
 { "name": "d04/reject-lookahead", "snapshot": { "...": "..." }, "operators": [],
   "expected": { "verdict": "reject" } }
+```
+
+Raw I-JSON rejection fixture — pass `snapshotText` to the implementation's text
+adapter without parsing it in the runner first:
+
+```json
+{ "name": "d28/reject-duplicate-json-member", "snapshotText": "{...}",
+  "operators": [], "expected": { "verdict": "reject" } }
 ```
 
 `operators` is the set of registered non-built-in operator names for the fixture
@@ -41,22 +49,31 @@ Directories map to decisions (`DECISIONS.md`) and semantic areas:
 `d01-numbers`, `d02-length`, `d03-string-strict`, `d04-regex`, `d05-order`,
 `d06-hash`, `d08-representation`, `d09-guards`, `d10-operators`, `d11-snapshot`,
 `d13-absence`, `d19-unified-rules`, `d20-aggregation`, `d21-bundle`,
-`d22-evaluation`, `d23-binary64`, `d24-closed-schemas`, `d25-hash`, `semantics`.
+`d22-evaluation`, `d23-binary64`, `d24-closed-schemas`, `d26-format`, `d27-inputs`,
+`d28-hash`, `d29-removed`, `operators`, `semantics`. `operators` provides the complete
+built-in outcome matrix: PASS, FAIL with issue shape, and SKIP wherever the operator's
+absence semantics admits SKIP.
 
 The reserved test-only operators `conformance.rule.throw`,
-`conformance.rule.invalid_result`, `conformance.rule.tri`, and
-`conformance.rule.params` are registered by the
+`conformance.rule.invalid_result`, `conformance.rule.tri`,
+`conformance.rule.params`, and `conformance.rule.inputs` are registered by the
 fixture runner only. `tri` maps input strings `PASS`, `SKIP`, and `FAIL` to the
-same-named outcomes so mixed aggregate populations can be tested portably. `params`
-pins the closed `{outcome}` parameter schema. They are not production operators.
+same-named outcomes, and `THROW` to a host exception, so mixed populations and exhaustive
+aggregate evaluation can be tested portably. `params`
+pins the closed `{outcome}` parameter schema. `inputs` pins core path resolution and
+the absent-key versus present-`null` distinction. They are not production operators.
 
 ## Maintenance
 
 Fixtures are generated: edit `tools/generate-fixtures.mjs`, run it, commit both.
 CI fails if the tree and the generator diverge. `tools/validate-fixtures.mjs` checks
 structure and `sourceHash` integrity (JCS/RFC 8785 + SHA-256) of every snapshot.
-The hash-mismatch, missing/malformed-exports, and overflowing-snapshot-number fixtures
-are necessarily exempt because their intended malformed boundary prevents that check.
+`tools/JcsUtf16Check.java` independently rebuilds the complete UTF-16 edge snapshot
+and verifies the same `sourceHash` on Java.
+The hash-mismatch fixtures (including the unknown-operator precedence vector) and the
+overflowing-snapshot-number fixture are necessarily exempt
+because their intended malformed boundary prevents that check. Raw I-JSON fixtures
+have no parsed snapshot on purpose.
 For ABORT fixtures the validator checks only the presence of `input.payload`: its
 type is deliberately wrong in `INVALID_PAYLOAD`/`INVALID_CONTEXT` fixtures and is
 the tested runtime's business.

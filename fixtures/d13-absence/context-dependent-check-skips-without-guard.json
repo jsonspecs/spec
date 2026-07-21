@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "c6041250c9c745f96b1bdb17ac1f2979343a2ee595072e4f45e71163e3fb283f",
-    "artifacts": [
-      {
-        "id": "library.a.cd2",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.a.cd2"
+        ]
+      },
+      "library.a.cd2": {
         "type": "rule",
         "operator": "field_less_or_equal_than_field",
         "field": "doc.issueDate",
@@ -20,18 +24,9 @@
           "code": "A9",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.a.cd2"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "a4eb209d465ab41304a382432ad1f7b3c198325ee0cc5bfccc452c08d15b50cb"
   },
   "operators": [],
   "input": {
@@ -45,11 +40,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "c6041250c9c745f96b1bdb17ac1f2979343a2ee595072e4f45e71163e3fb283f"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "a4eb209d465ab41304a382432ad1f7b3c198325ee0cc5bfccc452c08d15b50cb"
     }
   }
 }

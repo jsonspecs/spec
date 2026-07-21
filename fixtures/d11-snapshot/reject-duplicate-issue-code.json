@@ -3,14 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "13a0153bc5e32feb86e4c2986ec4b2e10eab880b5a638afdff3eae01d71e0cac",
-    "artifacts": [
-      {
-        "id": "library.x.d1",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.d1",
+          "library.x.d2"
+        ]
+      },
+      "library.x.d1": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -20,8 +25,7 @@
           "message": "failed"
         }
       },
-      {
-        "id": "library.x.d2",
+      "library.x.d2": {
         "type": "rule",
         "operator": "not_empty",
         "field": "b",
@@ -30,21 +34,9 @@
           "code": "DUP",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.d1"
-          },
-          {
-            "rule": "library.x.d2"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "0322dba159bc8705fa398ef3d991581d9577cc9fad3651d7f6f95d89c5bca537"
   },
   "operators": [],
   "expected": {

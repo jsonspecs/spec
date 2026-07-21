@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "c2bd442ab1a00fc79d43f5169f060964f49ecda3ebed3563788bac8d8d3726f4",
-    "artifacts": [
-      {
-        "id": "library.a.fef",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.a.fef"
+        ]
+      },
+      "library.a.fef": {
         "type": "rule",
         "operator": "field_equals_field",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "A6",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.a.fef"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "6541e079863a80b6e1f4bb0e9f6da82abb2559ef0b97f66dbd3777beab4e267c"
   },
   "operators": [],
   "input": {
@@ -42,11 +37,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "c2bd442ab1a00fc79d43f5169f060964f49ecda3ebed3563788bac8d8d3726f4"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "6541e079863a80b6e1f4bb0e9f6da82abb2559ef0b97f66dbd3777beab4e267c"
     }
   }
 }

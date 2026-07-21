@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "070e508896f2fe676547d9dc4d05417c15f06a724c4453717425599753c6c574",
-    "artifacts": [
-      {
-        "id": "library.x.ctx",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.ctx"
+        ]
+      },
+      "library.x.ctx": {
         "type": "rule",
         "operator": "not_empty",
         "field": "$context.currentDate",
@@ -19,18 +23,9 @@
           "code": "CTX.CURRENT_DATE.REQUIRED",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.ctx"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "0d68b2c4622fc696649de431f4689bb0bb0b27ca485b17c2db636e9160b43b2e"
   },
   "operators": [],
   "input": {
@@ -43,10 +38,8 @@
   },
   "expected": {
     "status": "EXCEPTION",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "EXCEPTION",
         "code": "CTX.CURRENT_DATE.REQUIRED",
         "message": "failed",
@@ -56,8 +49,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "070e508896f2fe676547d9dc4d05417c15f06a724c4453717425599753c6c574"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "0d68b2c4622fc696649de431f4689bb0bb0b27ca485b17c2db636e9160b43b2e"
     }
   }
 }

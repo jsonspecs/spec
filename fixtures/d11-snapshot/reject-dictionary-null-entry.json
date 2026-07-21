@@ -3,46 +3,37 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "bea8b114e6fc25492d80acd0b3b6a102634116322c4868acb3230f88fceb5b5a",
-    "artifacts": [
-      {
-        "id": "library.dict.bad",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.di"
+        ]
+      },
+      "library.dict.bad": {
         "type": "dictionary",
         "entries": [
           "X",
           null
         ]
       },
-      {
-        "id": "library.x.di",
+      "library.x.di": {
         "type": "rule",
         "operator": "in_dictionary",
         "field": "a",
-        "dictionary": {
-          "type": "static",
-          "id": "library.dict.bad"
-        },
+        "dictionary": "library.dict.bad",
         "issue": {
           "level": "ERROR",
           "code": "X10",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.di"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "2b4a106af57d3aca779ca86e2482119c7433ac2e00db92f3fd9d8c36617bf7a5"
   },
   "operators": [],
   "expected": {

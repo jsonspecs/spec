@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "aeecf6e9291e51b181f7429549066058b86c89da0a9f6f0b0210b83a99fd1028",
-    "artifacts": [
-      {
-        "id": "library.r.d",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.d"
+        ]
+      },
+      "library.r.d": {
         "type": "rule",
         "operator": "matches_regex",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "R4",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.r.d"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "af6b6e07ace81aed867580eec9b7550258437cc60f32864813cf07d7783e73e5"
   },
   "operators": [],
   "expected": {

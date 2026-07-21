@@ -3,39 +3,32 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "65c29390e2ee21801712008bcaefe5d3efe5eafb8402f0ddaa0a223cc7930486",
-    "artifacts": [
-      {
-        "id": "library.d21.mixed.guard",
-        "type": "rule",
-        "operator": "is_true",
-        "field": "go"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "mixed.condition"
+        ]
       },
-      {
-        "id": "mixed.condition",
+      "library.d21.mixed.guard": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "go",
+        "value": true
+      },
+      "mixed.condition": {
         "type": "condition",
         "when": "library.d21.mixed.guard",
         "steps": [
-          {
-            "pipeline": "checks.main"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "mixed.condition"
-          }
+          "checks.main"
         ]
       }
-    ]
+    },
+    "sourceHash": "392ed68031afe7e42a67a94845962f50dfc85956caf90913d89e4ff9feda650f"
   },
   "operators": [],
   "expected": {

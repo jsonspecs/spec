@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "492892fc6ad143d36eea681d49e8b7ea7120e29d1d731803e651535859920cb8",
-    "artifacts": [
-      {
-        "id": "library.se.ab",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.ab"
+        ]
+      },
+      "library.se.ab": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "SE19",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.ab"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "8184776dcc2984cfc48a4e9021166ce76f02ffe15339d036e5592262c7c9f0a6"
   },
   "operators": [],
   "input": {
@@ -41,7 +36,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "PIPELINE_NOT_FOUND",
@@ -50,8 +44,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "492892fc6ad143d36eea681d49e8b7ea7120e29d1d731803e651535859920cb8"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "8184776dcc2984cfc48a4e9021166ce76f02ffe15339d036e5592262c7c9f0a6"
     }
   }
 }

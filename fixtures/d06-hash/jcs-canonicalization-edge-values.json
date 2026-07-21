@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "eee8254f76c1d09b4277d6fc6a1763622f9973f34029e3e9e9e2f449be67cdb8",
-    "artifacts": [
-      {
-        "id": "library.j.edge",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.j.edge"
+        ]
+      },
+      "library.j.edge": {
         "type": "rule",
         "operator": "equals",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "J1",
           "message": "JCS edge: \"Пётр\"\t\\backslash"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.j.edge"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "b01d49176d02e06f0fb719b5032e8de093e6b34a93572e60b847b6b42268888a"
   },
   "operators": [],
   "input": {
@@ -42,11 +37,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "eee8254f76c1d09b4277d6fc6a1763622f9973f34029e3e9e9e2f449be67cdb8"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "b01d49176d02e06f0fb719b5032e8de093e6b34a93572e60b847b6b42268888a"
     }
   }
 }

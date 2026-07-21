@@ -3,14 +3,24 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.a"
     ],
-    "sourceHash": "71360a4f60862a39861738134ed7284b00739fa5d34862f24661e385d2a3fd75",
-    "artifacts": [
-      {
-        "id": "library.x.c2",
+    "artifacts": {
+      "checks.a": {
+        "type": "pipeline",
+        "steps": [
+          "checks.b"
+        ]
+      },
+      "checks.b": {
+        "type": "pipeline",
+        "steps": [
+          "checks.a"
+        ]
+      },
+      "library.x.c2": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,28 +29,9 @@
           "code": "X8",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.a",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "pipeline": "checks.b"
-          }
-        ]
-      },
-      {
-        "id": "checks.b",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "pipeline": "checks.a"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "929d1bad02e4bf998531f544f09ff201512bfacc4e9b4f33b17351082c5e4b55"
   },
   "operators": [],
   "expected": {

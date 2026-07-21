@@ -3,25 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "db57fc01844b63c5e20d8e7a131ccde54aaf19a7897588f5a6e96b38a07e4310",
-    "artifacts": [
-      {
-        "id": "library.se.w2",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "a",
-        "issue": {
-          "level": "WARNING",
-          "code": "SE8",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.w2",
+          "library.se.e3"
+        ]
       },
-      {
-        "id": "library.se.e3",
+      "library.se.e3": {
         "type": "rule",
         "operator": "not_empty",
         "field": "b",
@@ -31,20 +25,18 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.w2"
-          },
-          {
-            "rule": "library.se.e3"
-          }
-        ]
+      "library.se.w2": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "WARNING",
+          "code": "SE8",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "1a5ae002efeb6b178cce9f2cf2e7d3729d8b8fda27eff32f6d21e864bbd947de"
   },
   "operators": [],
   "input": {
@@ -53,10 +45,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "WARNING",
         "code": "SE8",
         "message": "failed",
@@ -65,7 +55,6 @@
         "pipelineId": "checks.main"
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "SE9",
         "message": "failed",
@@ -75,8 +64,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "db57fc01844b63c5e20d8e7a131ccde54aaf19a7897588f5a6e96b38a07e4310"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "1a5ae002efeb6b178cce9f2cf2e7d3729d8b8fda27eff32f6d21e864bbd947de"
     }
   }
 }

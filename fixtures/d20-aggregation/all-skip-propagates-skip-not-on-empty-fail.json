@@ -3,19 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.tri"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "70bdd3e5560a4acba39bdc73d077363aea92e528849af725e8e923adb19fc9d5",
-    "artifacts": [
-      {
-        "id": "library.d20.skip",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d20.skip"
+        ]
+      },
+      "library.d20.skip": {
         "type": "rule",
         "operator": "conformance.rule.tri",
         "field": "items[*].result",
@@ -29,18 +28,9 @@
           "code": "D20.5",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d20.skip"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "727167c9c61fd25313bbe8a9e39dff21cabffccebc83a04d80b521c56025b594"
   },
   "operators": [
     "conformance.rule.tri"
@@ -60,11 +50,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "70bdd3e5560a4acba39bdc73d077363aea92e528849af725e8e923adb19fc9d5"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "727167c9c61fd25313bbe8a9e39dff21cabffccebc83a04d80b521c56025b594"
     }
   }
 }

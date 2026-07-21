@@ -3,25 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "5a6ed725bc18a1d21e8b1cf963f98221c42f27a67b6654276def7b8f8ef21357",
-    "artifacts": [
-      {
-        "id": "library.a.cg",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "$context.currentDate",
-        "issue": {
-          "level": "EXCEPTION",
-          "code": "A7",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.a.cg",
+          "library.a.cd"
+        ]
       },
-      {
-        "id": "library.a.cd",
+      "library.a.cd": {
         "type": "rule",
         "operator": "field_less_or_equal_than_field",
         "field": "doc.issueDate",
@@ -32,20 +26,18 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.a.cg"
-          },
-          {
-            "rule": "library.a.cd"
-          }
-        ]
+      "library.a.cg": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "$context.currentDate",
+        "issue": {
+          "level": "EXCEPTION",
+          "code": "A7",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "a9743da258b3df5987f573ce19379cbe9118707b4283be4f404ad8bf2f743d97"
   },
   "operators": [],
   "input": {
@@ -61,10 +53,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "A8",
         "message": "failed",
@@ -76,8 +66,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "5a6ed725bc18a1d21e8b1cf963f98221c42f27a67b6654276def7b8f8ef21357"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "a9743da258b3df5987f573ce19379cbe9118707b4283be4f404ad8bf2f743d97"
     }
   }
 }

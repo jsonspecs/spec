@@ -3,26 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "7e2db6a7dfdeb3ea58831894b8398a637dad6bb549402ee9f27445fd99c28691",
-    "artifacts": [
-      {
-        "id": "library.l.max",
-        "type": "rule",
-        "operator": "length_max",
-        "field": "emoji",
-        "value": 1,
-        "issue": {
-          "level": "ERROR",
-          "code": "L1",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.l.max",
+          "library.l.eq"
+        ]
       },
-      {
-        "id": "library.l.eq",
+      "library.l.eq": {
         "type": "rule",
         "operator": "length_equals",
         "field": "name",
@@ -33,20 +26,19 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.l.max"
-          },
-          {
-            "rule": "library.l.eq"
-          }
-        ]
+      "library.l.max": {
+        "type": "rule",
+        "operator": "length_max",
+        "field": "emoji",
+        "value": 1,
+        "issue": {
+          "level": "ERROR",
+          "code": "L1",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "e363d5cbe28208a486c6894fa94b2144466188270e7f74e6496c9d576a33f6b7"
   },
   "operators": [],
   "input": {
@@ -58,11 +50,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "7e2db6a7dfdeb3ea58831894b8398a637dad6bb549402ee9f27445fd99c28691"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "e363d5cbe28208a486c6894fa94b2144466188270e7f74e6496c9d576a33f6b7"
     }
   }
 }

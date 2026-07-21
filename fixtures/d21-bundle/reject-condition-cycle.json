@@ -3,20 +3,39 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "33a401df2c6f18deb19d284e0cc89ddcb55fa1c04d64d77dbc8209efd6ede87c",
-    "artifacts": [
-      {
-        "id": "library.d21.guard",
-        "type": "rule",
-        "operator": "is_true",
-        "field": "go"
+    "artifacts": {
+      "c1": {
+        "type": "condition",
+        "when": "library.d21.guard",
+        "steps": [
+          "c2"
+        ]
       },
-      {
-        "id": "library.d21.hit",
+      "c2": {
+        "type": "condition",
+        "when": "library.d21.guard",
+        "steps": [
+          "c1"
+        ]
+      },
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "c1",
+          "library.d21.hit"
+        ]
+      },
+      "library.d21.guard": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "go",
+        "value": true
+      },
+      "library.d21.hit": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -25,41 +44,9 @@
           "code": "D21.X8",
           "message": "failed"
         }
-      },
-      {
-        "id": "c1",
-        "type": "condition",
-        "when": "library.d21.guard",
-        "steps": [
-          {
-            "condition": "c2"
-          }
-        ]
-      },
-      {
-        "id": "c2",
-        "type": "condition",
-        "when": "library.d21.guard",
-        "steps": [
-          {
-            "condition": "c1"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "c1"
-          },
-          {
-            "rule": "library.d21.hit"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "33cfc9e03d5ed4afbed3003c611bcb180b0f032fca8aef82c9c88c63aa4f873f"
   },
   "operators": [],
   "expected": {

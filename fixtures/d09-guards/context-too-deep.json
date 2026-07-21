@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "5066186547ab9f5079b076365e7bf698de3c88ce1ba399330e549c7d2526be28",
-    "artifacts": [
-      {
-        "id": "library.i.r",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.i.r"
+        ]
+      },
+      "library.i.r": {
         "type": "rule",
         "operator": "not_empty",
         "field": "ok",
@@ -19,18 +23,9 @@
           "code": "I1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.i.r"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "919fbdf8a29ac0f17ee630c70991d244222e5fddc376b3c52573782952ab6248"
   },
   "operators": [],
   "input": {
@@ -554,7 +549,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "CONTEXT_TOO_DEEP",
@@ -563,8 +557,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "5066186547ab9f5079b076365e7bf698de3c88ce1ba399330e549c7d2526be28"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "919fbdf8a29ac0f17ee630c70991d244222e5fddc376b3c52573782952ab6248"
     }
   }
 }

@@ -3,15 +3,32 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.guard",
       "checks.hard"
     ],
-    "sourceHash": "883a09612356310b38723f1534b58953b837f871235fb7dc0f3bdd07f60c438f",
-    "artifacts": [
-      {
-        "id": "library.d19.reusable",
+    "artifacts": {
+      "checks.guard": {
+        "type": "pipeline",
+        "steps": [
+          "library.d19.condition"
+        ]
+      },
+      "checks.hard": {
+        "type": "pipeline",
+        "steps": [
+          "library.d19.reusable"
+        ]
+      },
+      "library.d19.condition": {
+        "type": "condition",
+        "when": "library.d19.reusable",
+        "steps": [
+          "library.d19.target"
+        ]
+      },
+      "library.d19.reusable": {
         "type": "rule",
         "operator": "not_empty",
         "field": "trigger",
@@ -21,8 +38,7 @@
           "message": "failed"
         }
       },
-      {
-        "id": "library.d19.target",
+      "library.d19.target": {
         "type": "rule",
         "operator": "not_empty",
         "field": "required",
@@ -31,38 +47,9 @@
           "code": "D19.2",
           "message": "failed"
         }
-      },
-      {
-        "id": "library.d19.condition",
-        "type": "condition",
-        "when": "library.d19.reusable",
-        "steps": [
-          {
-            "rule": "library.d19.target"
-          }
-        ]
-      },
-      {
-        "id": "checks.guard",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "library.d19.condition"
-          }
-        ]
-      },
-      {
-        "id": "checks.hard",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d19.reusable"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "c2a33cd3d52b51fb80e3ceef11bb65287e7f71f29a9c692888df9d5ea68f8b57"
   },
   "operators": [],
   "input": {
@@ -71,10 +58,8 @@
   },
   "expected": {
     "status": "EXCEPTION",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "EXCEPTION",
         "code": "D19.1",
         "message": "failed",
@@ -84,8 +69,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "883a09612356310b38723f1534b58953b837f871235fb7dc0f3bdd07f60c438f"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "c2a33cd3d52b51fb80e3ceef11bb65287e7f71f29a9c692888df9d5ea68f8b57"
     }
   }
 }

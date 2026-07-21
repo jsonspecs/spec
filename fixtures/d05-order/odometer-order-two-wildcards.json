@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "d621b62fa5fd5133f77ed27897ecb028262f8bf0f09e8187ffeeb85f0cf067cd",
-    "artifacts": [
-      {
-        "id": "library.o.odo",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.o.odo"
+        ]
+      },
+      "library.o.odo": {
         "type": "rule",
         "operator": "greater_than",
         "field": "m[*].n[*].v",
@@ -24,18 +28,9 @@
           "code": "O2",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.o.odo"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "9458a0d8216880db94d58c0680afc3740f4fd411a60cf8e91e40ef3b0833a12d"
   },
   "operators": [],
   "input": {
@@ -64,10 +59,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O2",
         "message": "failed",
@@ -78,7 +71,6 @@
         "actual": 1
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O2",
         "message": "failed",
@@ -89,7 +81,6 @@
         "actual": 2
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O2",
         "message": "failed",
@@ -101,8 +92,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "d621b62fa5fd5133f77ed27897ecb028262f8bf0f09e8187ffeeb85f0cf067cd"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "9458a0d8216880db94d58c0680afc3740f4fd411a60cf8e91e40ef3b0833a12d"
     }
   }
 }

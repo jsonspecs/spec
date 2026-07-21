@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "57486c9db85c8ad479f24f215d32599c93b225ea9f8a2d069ee6a6bc01e1ac39",
-    "artifacts": [
-      {
-        "id": "library.s.ct",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.s.ct"
+        ]
+      },
+      "library.s.ct": {
         "type": "rule",
         "operator": "contains",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "S3",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.s.ct"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "ccd7232fcc99cb340b194e7f17cac4c7d5782b1d199a7c1890cb4215423b9a5d"
   },
   "operators": [],
   "input": {
@@ -42,10 +37,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "S3",
         "message": "failed",
@@ -57,8 +50,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "57486c9db85c8ad479f24f215d32599c93b225ea9f8a2d069ee6a6bc01e1ac39"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "ccd7232fcc99cb340b194e7f17cac4c7d5782b1d199a7c1890cb4215423b9a5d"
     }
   }
 }

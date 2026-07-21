@@ -3,52 +3,38 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.throw"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "57386fd5488e858ac7b5f01f422d5a79624e738043cf7b5b163f808c9afe8056",
-    "artifacts": [
-      {
-        "id": "library.co.r",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.co.r"
+        ]
+      },
+      "library.co.r": {
         "type": "rule",
         "operator": "conformance.rule.throw",
-        "field": "a",
         "issue": {
           "level": "ERROR",
           "code": "CO1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.co.r"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "7f091eb5f3b248103596381e34a5286c114ffd2e93e463c75b8717a87d965a01"
   },
   "operators": [
     "conformance.rule.throw"
   ],
   "input": {
     "pipelineId": "checks.main",
-    "payload": {
-      "a": 1
-    }
+    "payload": {}
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "OPERATOR_FAULT",
@@ -58,8 +44,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "57386fd5488e858ac7b5f01f422d5a79624e738043cf7b5b163f808c9afe8056"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "7f091eb5f3b248103596381e34a5286c114ffd2e93e463c75b8717a87d965a01"
     }
   }
 }

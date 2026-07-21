@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "9f8d2cab8a278a2ebf5d9850b01b395d5b2086fc607aad0de65c95841c0f4358",
-    "artifacts": [
-      {
-        "id": "library.d20.bad3",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d20.ok"
+        ]
+      },
+      "library.d20.bad3": {
         "type": "rule",
         "operator": "greater_than",
         "field": "x[*].v",
@@ -20,8 +24,7 @@
           "issueMode": "EACH"
         }
       },
-      {
-        "id": "library.d20.ok",
+      "library.d20.ok": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -30,18 +33,9 @@
           "code": "D20.X3",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d20.ok"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "dac8b3fb1d3fc43be3271fe403dde34241f6b5d5c9a413217df6636cb934ebc3"
   },
   "operators": [],
   "expected": {

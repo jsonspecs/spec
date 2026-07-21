@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "bc1b89d6ea2b30f5b4fd282d1a2746a11d3850d8346bb6a11415fb028c00da4f",
-    "artifacts": [
-      {
-        "id": "library.d21.desc",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d21.desc"
+        ]
+      },
+      "library.d21.desc": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -20,18 +24,9 @@
           "message": "failed"
         },
         "description": "authoring only"
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d21.desc"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "0925de776a21cc40aa4547b9336d43e1b9d6af8675c6b614e05c449b8e17493b"
   },
   "operators": [],
   "expected": {

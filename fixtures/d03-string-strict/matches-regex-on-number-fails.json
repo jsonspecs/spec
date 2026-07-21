@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "f2851183fc3c46e39f7afe40d925f516de5b44c15dee333923551564f0686fb7",
-    "artifacts": [
-      {
-        "id": "library.s.rx",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.s.rx"
+        ]
+      },
+      "library.s.rx": {
         "type": "rule",
         "operator": "matches_regex",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "S1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.s.rx"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "6be7f22afd769c633b1899dfd930dc3cf1707db588192139d2a226557977ac3b"
   },
   "operators": [],
   "input": {
@@ -42,10 +37,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "S1",
         "message": "failed",
@@ -57,8 +50,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "f2851183fc3c46e39f7afe40d925f516de5b44c15dee333923551564f0686fb7"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "6be7f22afd769c633b1899dfd930dc3cf1707db588192139d2a226557977ac3b"
     }
   }
 }

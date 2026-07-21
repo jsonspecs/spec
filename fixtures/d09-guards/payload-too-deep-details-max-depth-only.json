@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "6ae50094e553f8e1490206ec02aa4914fae82b00f884c16f0ac0b6c595b1152c",
-    "artifacts": [
-      {
-        "id": "library.g.d",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.g.d"
+        ]
+      },
+      "library.g.d": {
         "type": "rule",
         "operator": "not_empty",
         "field": "ok",
@@ -19,18 +23,9 @@
           "code": "G2",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.g.d"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "4e75cc05ac521775e1830b487146b7505823fa85a55277d69547727ad08056f1"
   },
   "operators": [],
   "input": {
@@ -552,7 +547,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "PAYLOAD_TOO_DEEP",
@@ -561,8 +555,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "6ae50094e553f8e1490206ec02aa4914fae82b00f884c16f0ac0b6c595b1152c"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "4e75cc05ac521775e1830b487146b7505823fa85a55277d69547727ad08056f1"
     }
   }
 }

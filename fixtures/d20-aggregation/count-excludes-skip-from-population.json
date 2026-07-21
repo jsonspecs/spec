@@ -3,19 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.tri"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "6ac5f8082bae15f2c14322283b7bedfe66c3212283518c2e3178cc3610e7804b",
-    "artifacts": [
-      {
-        "id": "library.d20.count",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d20.count"
+        ]
+      },
+      "library.d20.count": {
         "type": "rule",
         "operator": "conformance.rule.tri",
         "field": "items[*].result",
@@ -29,18 +28,9 @@
           "code": "D20.4",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d20.count"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "d023048d67a64b63da1ee1c722ec771466e35d237cad322f5d261770fcc9e44b"
   },
   "operators": [
     "conformance.rule.tri"
@@ -63,10 +53,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "D20.4",
         "message": "failed",
@@ -86,8 +74,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "6ac5f8082bae15f2c14322283b7bedfe66c3212283518c2e3178cc3610e7804b"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "d023048d67a64b63da1ee1c722ec771466e35d237cad322f5d261770fcc9e44b"
     }
   }
 }

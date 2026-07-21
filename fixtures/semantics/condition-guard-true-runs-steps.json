@@ -3,20 +3,25 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "4306dd53c1e38509aa35bfe69ff5d4fde8f722c19b4d9a55d8f13b80c76b0444",
-    "artifacts": [
-      {
-        "id": "library.se.p1",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "trigger"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.cond.g"
+        ]
       },
-      {
-        "id": "library.se.c1",
+      "library.cond.g": {
+        "type": "condition",
+        "when": "library.se.p1",
+        "steps": [
+          "library.se.c1"
+        ]
+      },
+      "library.se.c1": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -26,27 +31,13 @@
           "message": "failed"
         }
       },
-      {
-        "id": "library.cond.g",
-        "type": "condition",
-        "when": "library.se.p1",
-        "steps": [
-          {
-            "rule": "library.se.c1"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "library.cond.g"
-          }
-        ]
+      "library.se.p1": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "trigger"
       }
-    ]
+    },
+    "sourceHash": "f0e907dd80c994f5b3e11884aede1985231080f5d49431bf116600f4cfc6e28a"
   },
   "operators": [],
   "input": {
@@ -57,10 +48,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "SE1",
         "message": "failed",
@@ -70,8 +59,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "4306dd53c1e38509aa35bfe69ff5d4fde8f722c19b4d9a55d8f13b80c76b0444"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "f0e907dd80c994f5b3e11884aede1985231080f5d49431bf116600f4cfc6e28a"
     }
   }
 }

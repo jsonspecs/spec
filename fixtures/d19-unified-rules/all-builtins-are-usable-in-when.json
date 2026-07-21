@@ -3,29 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "65bb100df034c8f20e61eb6231b27b2327a62792073c42b330d1d0be9ea6a050",
-    "artifacts": [
-      {
-        "id": "library.d19.any",
-        "type": "rule",
-        "operator": "any_filled",
-        "fields": [
-          "email",
-          "phone"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d19.formerly-blocked"
         ]
       },
-      {
-        "id": "library.d19.nottrue",
-        "type": "rule",
-        "operator": "not_true",
-        "field": "blocked"
-      },
-      {
-        "id": "library.d19.allowed",
+      "library.d19.allowed": {
         "type": "rule",
         "operator": "not_empty",
         "field": "required",
@@ -35,8 +24,15 @@
           "message": "failed"
         }
       },
-      {
-        "id": "library.d19.formerly-blocked",
+      "library.d19.any": {
+        "type": "rule",
+        "operator": "any_filled",
+        "fields": [
+          "email",
+          "phone"
+        ]
+      },
+      "library.d19.formerly-blocked": {
         "type": "condition",
         "when": {
           "all": [
@@ -45,22 +41,16 @@
           ]
         },
         "steps": [
-          {
-            "rule": "library.d19.allowed"
-          }
+          "library.d19.allowed"
         ]
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "library.d19.formerly-blocked"
-          }
-        ]
+      "library.d19.nottrue": {
+        "type": "rule",
+        "operator": "not_true",
+        "field": "blocked"
       }
-    ]
+    },
+    "sourceHash": "9d7767cd9a3a94ea36711625767c6c3a42aba790399c4c0ebd1b0d92e59d7d23"
   },
   "operators": [],
   "input": {
@@ -71,10 +61,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "D19.4",
         "message": "failed",
@@ -84,8 +72,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "65bb100df034c8f20e61eb6231b27b2327a62792073c42b330d1d0be9ea6a050"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "9d7767cd9a3a94ea36711625767c6c3a42aba790399c4c0ebd1b0d92e59d7d23"
     }
   }
 }

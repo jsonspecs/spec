@@ -3,19 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.tri"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "1e891b3c692d85f8f8cf89ba2b240490eb6b50654e7c8d86e3189228846d8297",
-    "artifacts": [
-      {
-        "id": "library.d20.any.pass",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d20.any.pass"
+        ]
+      },
+      "library.d20.any.pass": {
         "type": "rule",
         "operator": "conformance.rule.tri",
         "field": "items[*].result",
@@ -28,18 +27,9 @@
           "code": "D20.2",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d20.any.pass"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "0cd44a6b2fd18320a40c5275feab95f884e78c5e9969b2b3d4b552efe0ca9018"
   },
   "operators": [
     "conformance.rule.tri"
@@ -62,11 +52,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "1e891b3c692d85f8f8cf89ba2b240490eb6b50654e7c8d86e3189228846d8297"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "0cd44a6b2fd18320a40c5275feab95f884e78c5e9969b2b3d4b552efe0ca9018"
     }
   }
 }

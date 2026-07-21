@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "e1e76800d520c61ec27ade2ba7d6705c62e12710134d93145154b263f75a5df3",
-    "artifacts": [
-      {
-        "id": "library.p.any",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.p.any"
+        ]
+      },
+      "library.p.any": {
         "type": "rule",
         "operator": "any_filled",
         "fields": [
@@ -22,18 +26,9 @@
           "code": "P4",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.p.any"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "fa1a9fec6750423683026a26a1485816e053022ac004e6259c7186b8dcdb7f46"
   },
   "operators": [],
   "input": {
@@ -44,10 +39,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "P4",
         "message": "failed",
@@ -57,8 +50,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "e1e76800d520c61ec27ade2ba7d6705c62e12710134d93145154b263f75a5df3"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "fa1a9fec6750423683026a26a1485816e053022ac004e6259c7186b8dcdb7f46"
     }
   }
 }

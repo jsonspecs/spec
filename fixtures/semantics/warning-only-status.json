@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "617f23272482b99669d852c72b5e84e6aaeabedadb4b9ce4ba9dea729088ea3f",
-    "artifacts": [
-      {
-        "id": "library.se.w",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.w"
+        ]
+      },
+      "library.se.w": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "SE7",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.w"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "b6026edf2ff7c6e2d0d961bd0d74b9db9eb48a9bd2321ab3cfd7f5f95277136b"
   },
   "operators": [],
   "input": {
@@ -39,10 +34,8 @@
   },
   "expected": {
     "status": "OK_WITH_WARNINGS",
-    "control": "CONTINUE",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "WARNING",
         "code": "SE7",
         "message": "failed",
@@ -52,8 +45,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "617f23272482b99669d852c72b5e84e6aaeabedadb4b9ce4ba9dea729088ea3f"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "b6026edf2ff7c6e2d0d961bd0d74b9db9eb48a9bd2321ab3cfd7f5f95277136b"
     }
   }
 }

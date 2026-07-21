@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "f7a5cb79b4be1c514d8bab818d144eb113b7fa3048c147e8d0440c59c8725628",
-    "artifacts": [
-      {
-        "id": "library.d23.snapshot",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d23.snapshot"
+        ]
+      },
+      "library.d23.snapshot": {
         "type": "rule",
         "operator": "equals",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "D23.X1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d23.snapshot"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "a18acf8bccd6d74fbbd25776ebc9af133c30751c38b04c7129f437fb27d63b1e"
   },
   "operators": [],
   "expected": {

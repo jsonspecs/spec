@@ -11,11 +11,19 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
+      - name: Validate full Russian SPEC translation parity
+        run: node tools/validate-doc-parity.mjs
       - name: Fixtures exactly match the generator (full tree diff, sees untracked/stale files)
         run: |
           rm -rf /tmp/fixgen && mkdir -p /tmp/fixgen/fixtures
           cp -r tools /tmp/fixgen/
           node /tmp/fixgen/tools/generate-fixtures.mjs
           diff -ru --exclude=README.md /tmp/fixgen/fixtures fixtures
+      - name: Cross-check JCS UTF-16 ordering on Java
+        run: java tools/JcsUtf16Check.java

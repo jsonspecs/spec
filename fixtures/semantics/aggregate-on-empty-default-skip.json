@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "4c7e483541fa85daf4b90426b4c771e75ca50fc9ac08b41dceb67629629889b1",
-    "artifacts": [
-      {
-        "id": "library.se.oe1",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.oe1"
+        ]
+      },
+      "library.se.oe1": {
         "type": "rule",
         "operator": "greater_than",
         "field": "x[*].v",
@@ -24,18 +28,9 @@
           "code": "SE16",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.oe1"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "f2c0a6e7c2960e2149d888d09e89023e126f1461515ab504cae2f9ab1363b1f6"
   },
   "operators": [],
   "input": {
@@ -44,11 +39,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "4c7e483541fa85daf4b90426b4c771e75ca50fc9ac08b41dceb67629629889b1"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "f2c0a6e7c2960e2149d888d09e89023e126f1461515ab504cae2f9ab1363b1f6"
     }
   }
 }

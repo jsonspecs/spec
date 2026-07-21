@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "ab85492ba4b3cd036d924d694ef893e1c1a872b4f8106ab45a44703cba57a68d",
-    "artifacts": [
-      {
-        "id": "library.d23.fraction",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d23.fraction"
+        ]
+      },
+      "library.d23.fraction": {
         "type": "rule",
         "operator": "equals",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "D23.1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d23.fraction"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "5c1d0855738c88d8d140965a298c08b6ce27af4f00c0005fc3a331de631083c4"
   },
   "operators": [],
   "input": {
@@ -42,11 +37,10 @@
   },
   "expected": {
     "status": "OK",
-    "control": "CONTINUE",
     "issues": [],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "ab85492ba4b3cd036d924d694ef893e1c1a872b4f8106ab45a44703cba57a68d"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "5c1d0855738c88d8d140965a298c08b6ce27af4f00c0005fc3a331de631083c4"
     }
   }
 }

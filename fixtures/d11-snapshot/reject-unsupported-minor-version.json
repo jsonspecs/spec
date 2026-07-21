@@ -7,10 +7,14 @@
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "b262df4032b015c54a634fa2411f79adf5a9a4b2ef90315cef4aed70faa0bb60",
-    "artifacts": [
-      {
-        "id": "library.x.mv",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.mv"
+        ]
+      },
+      "library.x.mv": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,18 +23,9 @@
           "code": "X13",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.mv"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "1aa8dbceed403a537c26a73e7dc7acc92f89baf359006036b25d1dadd723af84"
   },
   "operators": [],
   "expected": {

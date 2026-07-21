@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "0874c0dce8ef21a0f72b31dd280e659e7930dc5049d8b62d82fd30fb914e9922",
-    "artifacts": [
-      {
-        "id": "dictionary",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d24.dictentry"
+        ]
+      },
+      "dictionary": {
         "type": "dictionary",
         "entries": [
           {
@@ -19,32 +23,19 @@
           }
         ]
       },
-      {
-        "id": "library.d24.dictentry",
+      "library.d24.dictentry": {
         "type": "rule",
         "operator": "in_dictionary",
         "field": "a",
-        "dictionary": {
-          "type": "static",
-          "id": "dictionary"
-        },
+        "dictionary": "dictionary",
         "issue": {
           "level": "ERROR",
           "code": "D24.X7",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d24.dictentry"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "5a5f30baf88094f78ac2b6ea0116e98c29b727816cb132b17c7075ff5c82a4e6"
   },
   "operators": [],
   "expected": {

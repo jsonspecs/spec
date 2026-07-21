@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "7af9d31078157507ae1c2b6f2d0399c3ac8a63e6907d7d5ba460de67d7bf6d96",
-    "artifacts": [
-      {
-        "id": "library.x.af",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.af"
+        ]
+      },
+      "library.x.af": {
         "type": "rule",
         "operator": "any_filled",
         "issue": {
@@ -22,18 +26,9 @@
           "a",
           "b"
         ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.af"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "f23dde29a7415199fb85430c6beb27ba61fa4959951fc92e71e3f99d795e4a5e"
   },
   "operators": [],
   "expected": {

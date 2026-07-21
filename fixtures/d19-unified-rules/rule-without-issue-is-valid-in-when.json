@@ -3,21 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "afc1b94f71ba59353a7d501e6b45ba8515d41f4fd24af164aba192141284e58e",
-    "artifacts": [
-      {
-        "id": "library.d19.noissue",
-        "type": "rule",
-        "operator": "length_equals",
-        "field": "kind",
-        "value": 2
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d19.noissue.condition"
+        ]
       },
-      {
-        "id": "library.d19.hit",
+      "library.d19.hit": {
         "type": "rule",
         "operator": "not_empty",
         "field": "required",
@@ -27,27 +24,21 @@
           "message": "failed"
         }
       },
-      {
-        "id": "library.d19.noissue.condition",
+      "library.d19.noissue": {
+        "type": "rule",
+        "operator": "length_equals",
+        "field": "kind",
+        "value": 2
+      },
+      "library.d19.noissue.condition": {
         "type": "condition",
         "when": "library.d19.noissue",
         "steps": [
-          {
-            "rule": "library.d19.hit"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "library.d19.noissue.condition"
-          }
+          "library.d19.hit"
         ]
       }
-    ]
+    },
+    "sourceHash": "89a88e4eff447f3ff8a06482b201f4e913ce729384a7ace568076b0a5b236a19"
   },
   "operators": [],
   "input": {
@@ -58,10 +49,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "D19.3",
         "message": "failed",
@@ -71,8 +60,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "afc1b94f71ba59353a7d501e6b45ba8515d41f4fd24af164aba192141284e58e"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "89a88e4eff447f3ff8a06482b201f4e913ce729384a7ace568076b0a5b236a19"
     }
   }
 }

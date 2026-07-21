@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "31e3150b7621bee994513a228988204c5a1a82c06303efaf3b42c226ca15e19e",
-    "artifacts": [
-      {
-        "id": "library.x.p3",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.p3"
+        ]
+      },
+      "library.x.p3": {
         "type": "rule",
         "operator": "field_equals_field",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "X19",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.p3"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "3c51b33674c6ae6f59ca3631ebcd3b578180ec83da171688df18bb365a956156"
   },
   "operators": [],
   "expected": {

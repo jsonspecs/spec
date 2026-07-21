@@ -3,19 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.params"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "e610ba8368a06f89d3b6d7edc24fc59b3192997b03f0019184abc5517d647793",
-    "artifacts": [
-      {
-        "id": "library.d24.params.bad",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d24.params.bad"
+        ]
+      },
+      "library.d24.params.bad": {
         "type": "rule",
         "operator": "conformance.rule.params",
         "params": {
@@ -26,18 +25,9 @@
           "code": "D24.X2",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d24.params.bad"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "795977fbad7a93c3b2a3dbe4a32daab6eac170a2621bc9d7432a486743590495"
   },
   "operators": [
     "conformance.rule.params"

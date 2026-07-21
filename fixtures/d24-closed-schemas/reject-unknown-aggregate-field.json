@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "726aee75d2ce41c2a4cd342b99863b290ab642ba004cc75c6f2f8e700de3166d",
-    "artifacts": [
-      {
-        "id": "library.d24.aggregate",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d24.aggregate"
+        ]
+      },
+      "library.d24.aggregate": {
         "type": "rule",
         "operator": "greater_than",
         "field": "x[*].v",
@@ -25,18 +29,9 @@
           "code": "D24.X5",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d24.aggregate"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "983687d593ce939eb7ac41bc5d26463ebdef366a53d35fdc203232d69692b720"
   },
   "operators": [],
   "expected": {

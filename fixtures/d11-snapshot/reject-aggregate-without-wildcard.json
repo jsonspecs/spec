@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "b8534b0311616d7a7b62947017369eac6bd3916cf4e64831fd5fa66a0295ca8e",
-    "artifacts": [
-      {
-        "id": "library.x.aw",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.x.aw"
+        ]
+      },
+      "library.x.aw": {
         "type": "rule",
         "operator": "greater_than",
         "field": "a",
@@ -24,18 +28,9 @@
           "code": "X14",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.x.aw"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "a7ca7bbee555523cd314155858aeb4c757420d8836abdc9379bf621411e6c10b"
   },
   "operators": [],
   "expected": {

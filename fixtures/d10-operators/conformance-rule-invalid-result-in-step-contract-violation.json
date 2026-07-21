@@ -3,52 +3,38 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
-    "requires": {
-      "operators": [
-        "conformance.rule.invalid_result"
-      ]
-    },
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "519570a6aebe8e794308a44a800c06ee92e31b71b0037a88b5580be40e109e8a",
-    "artifacts": [
-      {
-        "id": "library.co.r",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.co.r"
+        ]
+      },
+      "library.co.r": {
         "type": "rule",
         "operator": "conformance.rule.invalid_result",
-        "field": "a",
         "issue": {
           "level": "ERROR",
           "code": "CO1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.co.r"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "97d160bdd55896e9925a919b464b3555a79ed78b017423357da334afa5006cde"
   },
   "operators": [
     "conformance.rule.invalid_result"
   ],
   "input": {
     "pipelineId": "checks.main",
-    "payload": {
-      "a": 1
-    }
+    "payload": {}
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "OPERATOR_CONTRACT_VIOLATION",
@@ -58,8 +44,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "519570a6aebe8e794308a44a800c06ee92e31b71b0037a88b5580be40e109e8a"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "97d160bdd55896e9925a919b464b3555a79ed78b017423357da334afa5006cde"
     }
   }
 }

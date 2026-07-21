@@ -3,20 +3,30 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "6ecc93000a43c29a597710edac827a65880ff329f653bd777266c1ef3d8a7b4d",
-    "artifacts": [
-      {
-        "id": "library.d24.when.p",
-        "type": "rule",
-        "operator": "is_true",
-        "field": "go"
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "condition"
+        ]
       },
-      {
-        "id": "library.d24.when.hit",
+      "condition": {
+        "type": "condition",
+        "when": {
+          "all": [
+            "library.d24.when.p"
+          ],
+          "unknown": true
+        },
+        "steps": [
+          "library.d24.when.hit"
+        ]
+      },
+      "library.d24.when.hit": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -26,32 +36,14 @@
           "message": "failed"
         }
       },
-      {
-        "id": "condition",
-        "type": "condition",
-        "when": {
-          "all": [
-            "library.d24.when.p"
-          ],
-          "unknown": true
-        },
-        "steps": [
-          {
-            "rule": "library.d24.when.hit"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "condition": "condition"
-          }
-        ]
+      "library.d24.when.p": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "go",
+        "value": true
       }
-    ]
+    },
+    "sourceHash": "c279f102e46351141ee08caa49af1f495ab7b2f4b81b74095f843ecf84cfc0cd"
   },
   "operators": [],
   "expected": {

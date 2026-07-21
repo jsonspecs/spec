@@ -18,11 +18,10 @@ function jcs(v) {
   return '{' + keys.map(k => JSON.stringify(k) + ':' + jcs(v[k])).join(',') + '}';
 }
 const sha = s => createHash('sha256').update(s, 'utf8').digest('hex');
-const projection = s => ({
-  requires: { operators: [...(s.requires?.operators ?? [])].sort() },
-  exports: [...(s.exports ?? [])].sort(),
-  artifacts: [...s.artifacts].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-});
+const snapshotHash = s => {
+  const { sourceHash: _ignored, ...body } = s;
+  return sha(jcs(body));
+};
 
 function ruleRefs(when, out = []) {
   if (typeof when === 'string') out.push(when);
@@ -35,7 +34,7 @@ function ruleRefs(when, out = []) {
 }
 
 function reachableArtifacts(snapshot) {
-  const byId = new Map(snapshot.artifacts.map(a => [a.id, a]));
+  const byId = new Map(Object.entries(snapshot.artifacts));
   const seen = new Set();
   const visit = id => {
     if (seen.has(id)) return;
@@ -43,11 +42,10 @@ function reachableArtifacts(snapshot) {
     const a = byId.get(id);
     if (!a) return;
     if (a.type === 'pipeline' || a.type === 'condition') {
-      const steps = a.type === 'pipeline' ? a.flow : a.steps;
-      for (const step of steps ?? []) visit(step.rule ?? step.condition ?? step.pipeline);
+      for (const step of a.steps ?? []) visit(step);
     }
     if (a.type === 'condition') for (const id of ruleRefs(a.when)) visit(id);
-    if (a.type === 'rule' && a.dictionary?.id) visit(a.dictionary.id);
+    if (a.type === 'rule' && typeof a.dictionary === 'string') visit(a.dictionary);
   };
   for (const id of snapshot.exports) visit(id);
   return seen;
@@ -78,21 +76,28 @@ for (const p of files) {
   else if (names.has(fx.name)) err(`duplicate name ${fx.name}`);
   else names.add(fx.name);
   if (!Array.isArray(fx.operators)) err('operators must be an array');
-  if (!fx.snapshot || typeof fx.snapshot !== 'object') { err('missing snapshot'); continue; }
   if (!fx.expected || typeof fx.expected !== 'object') { err('missing expected'); continue; }
 
   const rejection = fx.expected.verdict === 'reject';
+  if (typeof fx.snapshotText === 'string') {
+    if (!rejection) err('snapshotText is only valid in rejection fixtures');
+    if (fx.snapshot !== undefined) err('snapshotText fixture must not also contain snapshot');
+    if (fx.input !== undefined) err('rejection fixture must not have input');
+    rejN++;
+    continue;
+  }
+  if (!fx.snapshot || typeof fx.snapshot !== 'object') { err('missing snapshot'); continue; }
+
   // sourceHash integrity holds for ALL fixtures except the one that tests hash mismatch itself:
   // otherwise a rejection fixture could pass for the wrong reason (accidentally broken hash).
   const hashExempt = new Set([
     'd06/reject-source-hash-mismatch',
-    'd21/reject-missing-exports',
-    'd21/reject-legacy-exports-object',
+    'd10/unknown-operator-with-bad-hash-has-no-operator-identifier',
     'd23/reject-snapshot-number-overflow',
   ]);
-  if (!hashExempt.has(fx.name) && Array.isArray(fx.snapshot.artifacts)) {
+  if (!hashExempt.has(fx.name)) {
     try {
-      const h = sha(jcs(projection(fx.snapshot)));
+      const h = snapshotHash(fx.snapshot);
       if (fx.snapshot.sourceHash !== h) err(`sourceHash mismatch: ${fx.snapshot.sourceHash} != ${h}`);
     } catch (e) { err(`cannot compute sourceHash: ${e.message}`); }
   }
@@ -106,20 +111,24 @@ for (const p of files) {
   if (s.format !== 'jsonspecs-snapshot') err('bad snapshot.format');
   if (s.formatVersion !== 2) err('bad snapshot.formatVersion');
   if (typeof s.specVersion !== 'string') err('bad snapshot.specVersion');
-  if (!Array.isArray(s.artifacts)) err('snapshot.artifacts must be an array');
+  if (!s.artifacts || typeof s.artifacts !== 'object' || Array.isArray(s.artifacts)) err('snapshot.artifacts must be an object');
   if (!Array.isArray(s.exports) || s.exports.length === 0) err('snapshot.exports must be a non-empty array');
   else {
-    const byId = new Map(s.artifacts.map(a => [a.id, a]));
+    const byId = new Map(Object.entries(s.artifacts));
     if (new Set(s.exports).size !== s.exports.length) err('snapshot.exports must be unique');
+    if (s.exports.some((id, i) => i > 0 && s.exports[i - 1] >= id)) err('snapshot.exports must be strictly UTF-16 sorted');
     for (const id of s.exports) if (byId.get(id)?.type !== 'pipeline') err(`export ${id} is not a pipeline`);
     const reachable = reachableArtifacts(s);
-    const all = new Set(s.artifacts.map(a => a.id));
+    const all = new Set(Object.keys(s.artifacts));
     if (reachable.size !== all.size || [...all].some(id => !reachable.has(id)))
       err(`artifact closure mismatch: reachable ${reachable.size}, artifacts ${all.size}`);
   }
-  for (const a of s.artifacts) {
-    if ('description' in a) err(`artifact ${a.id} has legacy description`);
-    if (a.type === 'pipeline' && 'entrypoint' in a) err(`pipeline ${a.id} has legacy entrypoint`);
+  for (const [id, a] of Object.entries(s.artifacts)) {
+    if ('id' in a) err(`artifact ${id} repeats its id`);
+    if ('description' in a) err(`artifact ${id} has legacy description`);
+    if (a.type === 'pipeline' && 'entrypoint' in a) err(`pipeline ${id} has legacy entrypoint`);
+    if ((a.type === 'pipeline' || a.type === 'condition') && (!Array.isArray(a.steps) || a.steps.some(step => typeof step !== 'string')))
+      err(`artifact ${id} steps must be string references`);
   }
   if (!fx.input || typeof fx.input !== 'object') err('missing input');
   // input.payload type is the tested runtime's business (INVALID_PAYLOAD fixtures carry
@@ -130,21 +139,63 @@ for (const p of files) {
       err('input.pipelineId must be present');
   }
   const e = fx.expected;
+  const expectedKeys = new Set(['status', 'issues', 'ruleset', 'error']);
+  for (const key of Object.keys(e)) if (!expectedKeys.has(key)) err(`expected result has unknown field ${key}`);
   if (!STATUSES.has(e.status)) err(`bad expected.status ${e.status}`);
-  if (e.control !== 'CONTINUE' && e.control !== 'STOP') err(`bad expected.control ${e.control}`);
+  if ('control' in e) err('expected.control is not part of the normative result');
+  if ('trace' in e || 'engineVersion' in e) err('trace/engineVersion are not part of the normative result');
   if (!Array.isArray(e.issues)) err('expected.issues must be an array');
   if (e.status === 'ABORT') {
     if (!e.error || typeof e.error.code !== 'string' || typeof e.error.details !== 'object') err('ABORT needs error.code + error.details');
     if (e.issues && e.issues.length) err('ABORT must have empty issues');
+    if (e.error) for (const key of Object.keys(e.error))
+      if (!['code', 'details', 'message'].includes(key)) err(`expected.error has unknown field ${key}`);
   } else if (e.error !== undefined) err('error only on ABORT');
   if (!e.ruleset || e.ruleset.sourceHash !== s.sourceHash || e.ruleset.specVersion !== s.specVersion)
     err('expected.ruleset must echo snapshot specVersion + sourceHash');
+  else if (Object.keys(e.ruleset).sort().join(',') !== 'sourceHash,specVersion')
+    err('expected.ruleset must be closed');
   for (const [i, is] of (e.issues || []).entries()) {
-    for (const k of ['kind', 'level', 'code', 'message', 'ruleId', 'pipelineId'])
+    for (const k of ['level', 'code', 'message', 'ruleId', 'pipelineId'])
       if (is[k] === undefined) err(`issues[${i}] missing ${k}`);
+    if ('kind' in is || 'stepId' in is) err(`issues[${i}] has a removed field`);
     if (!('field' in is)) err(`issues[${i}] missing field (may be null, not absent)`);
+    for (const key of Object.keys(is))
+      if (!['level', 'code', 'message', 'field', 'ruleId', 'pipelineId', 'expected', 'actual', 'details', 'meta'].includes(key))
+        err(`issues[${i}] has unknown field ${key}`);
   }
 }
+
+const BUILT_INS = [
+  'not_empty', 'is_empty', 'not_true', 'any_filled', 'is_boolean', 'is_string',
+  'is_number', 'is_integer', 'equals', 'not_equals', 'contains', 'matches_regex',
+  'not_matches_regex', 'greater_than', 'less_than', 'length_equals', 'length_max',
+  'field_equals_field', 'field_not_equals_field', 'field_greater_than_field',
+  'field_less_than_field', 'field_greater_or_equal_than_field',
+  'field_less_or_equal_than_field', 'in_dictionary', 'not_in_dictionary',
+];
+const NO_SKIP = new Set(['not_empty', 'is_empty', 'not_true', 'any_filled']);
+for (const operator of BUILT_INS) {
+  for (const outcome of ['pass', 'fail', ...(!NO_SKIP.has(operator) ? ['skip'] : [])]) {
+    const name = `operators/${operator}-${outcome}`;
+    if (!names.has(name)) errors.push(`missing built-in coverage fixture ${name}`);
+  }
+}
+
+for (const name of [
+  'd04/dollar-is-absolute-end-not-before-final-newline',
+  'd04/dot-matches-line-separator',
+  'd20/any-pass-still-evaluates-later-throw',
+  'd20/all-fail-still-evaluates-later-throw',
+  'd20/each-exception-materializes-all-current-rule-issues-before-stop',
+  'd24/custom-operator-without-field-uses-null-issue-field',
+  'd10/unknown-operator-with-bad-hash-has-no-operator-identifier',
+  'd09/dangerous-key-selection-uses-code-point-order-not-utf16',
+  'd10/unknown-operator-contract-specific-shape-still-not-found',
+  'd27/custom-standard-field-absence-skips-before-invocation',
+  'd24/reject-empty-operator-name',
+  'd22/abort-discards-previous-business-issues',
+]) if (!names.has(name)) errors.push(`missing RC.5 erratum fixture ${name}`);
 
 if (errors.length) {
   console.error(`FAIL: ${errors.length} problem(s)`);

@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "e700152f4769699241b52d993c752190b23029b66c024e71c04d03ef3ba4f2f1",
-    "artifacts": [
-      {
-        "id": "library.g.p",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.g.p"
+        ]
+      },
+      "library.g.p": {
         "type": "rule",
         "operator": "not_empty",
         "field": "ok",
@@ -19,18 +23,9 @@
           "code": "G3",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.g.p"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "eac10a06c6dd14ce959ab44727a5b46e99b8f5151678cd3a02f0c013102639a5"
   },
   "operators": [],
   "input": {
@@ -44,7 +39,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "DANGEROUS_PAYLOAD_KEY",
@@ -54,8 +48,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "e700152f4769699241b52d993c752190b23029b66c024e71c04d03ef3ba4f2f1"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "eac10a06c6dd14ce959ab44727a5b46e99b8f5151678cd3a02f0c013102639a5"
     }
   }
 }

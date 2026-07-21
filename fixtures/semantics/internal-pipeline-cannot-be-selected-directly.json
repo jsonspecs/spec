@@ -3,14 +3,24 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "3089fc0706e82e67386f15df255da2f8382a94b1f0943ab2a164949ca8329fd3",
-    "artifacts": [
-      {
-        "id": "library.se.sub",
+    "artifacts": {
+      "checks.inner": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.sub"
+        ]
+      },
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "checks.inner"
+        ]
+      },
+      "library.se.sub": {
         "type": "rule",
         "operator": "not_empty",
         "field": "a",
@@ -19,28 +29,9 @@
           "code": "SE22",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.inner",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.sub"
-          }
-        ]
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "pipeline": "checks.inner"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "dde5bc3f29fd96a8849d52e7f4ae63d9f49290d8a7fbf45f588b20b16f3d140d"
   },
   "operators": [],
   "input": {
@@ -49,7 +40,6 @@
   },
   "expected": {
     "status": "ABORT",
-    "control": "STOP",
     "issues": [],
     "error": {
       "code": "PIPELINE_NOT_FOUND",
@@ -58,8 +48,8 @@
       }
     },
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "3089fc0706e82e67386f15df255da2f8382a94b1f0943ab2a164949ca8329fd3"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "dde5bc3f29fd96a8849d52e7f4ae63d9f49290d8a7fbf45f588b20b16f3d140d"
     }
   }
 }

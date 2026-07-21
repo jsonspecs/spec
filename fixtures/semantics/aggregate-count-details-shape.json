@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "20f499cd6e36e592bba9888688f47ef509f8b22a97294bf008e49ba8938af0c1",
-    "artifacts": [
-      {
-        "id": "library.se.cnt",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.se.cnt"
+        ]
+      },
+      "library.se.cnt": {
         "type": "rule",
         "operator": "greater_than",
         "field": "x[*].v",
@@ -25,18 +29,9 @@
           "code": "SE14",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.se.cnt"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "4a1d06f12651ba0dc86c3f98cbac3f90195fc09d30dc97c2f32310ae0fac303b"
   },
   "operators": [],
   "input": {
@@ -57,10 +52,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "SE14",
         "message": "failed",
@@ -80,8 +73,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "20f499cd6e36e592bba9888688f47ef509f8b22a97294bf008e49ba8938af0c1"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "4a1d06f12651ba0dc86c3f98cbac3f90195fc09d30dc97c2f32310ae0fac303b"
     }
   }
 }

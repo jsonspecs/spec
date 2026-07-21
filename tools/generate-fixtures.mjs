@@ -6,8 +6,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SPEC = '1.0.0-rc.4';
+const SPEC = '1.0.0-rc.5';
 const deep = n => n <= 1 ? 1 : { n: deep(n - 1) };
+const jsonDepth = value => {
+  if (value === null || typeof value !== 'object') return 1;
+  const children = Array.isArray(value) ? value : Object.values(value);
+  return children.length === 0 ? 1 : 1 + Math.max(...children.map(jsonDepth));
+};
 const EXPORTED = Symbol('exported');
 
 // RFC 8785 (JCS) canonicalization — sufficient for fixture content
@@ -20,29 +25,53 @@ export function jcs(v) {
   return '{' + keys.map(k => JSON.stringify(k) + ':' + jcs(v[k])).join(',') + '}';
 }
 const sha = s => createHash('sha256').update(s, 'utf8').digest('hex');
+function rehash(snapshot) {
+  const { sourceHash: _ignored, ...body } = snapshot;
+  snapshot.sourceHash = sha(jcs(body));
+  return snapshot;
+}
 
 function snap(artifacts, opts = {}) {
   const s = { format: 'jsonspecs-snapshot', formatVersion: 2, specVersion: SPEC };
-  if (opts.requires) s.requires = opts.requires;
-  const exported = opts.exports ?? artifacts
-    .filter(a => a.type === 'pipeline' && a[EXPORTED] !== false)
-    .map(a => a.id);
-  s.exports = exported;
-  const projection = {
-    requires: { operators: [...(s.requires?.operators ?? [])].sort() },
-    exports: [...exported].sort(),
-    artifacts: [...artifacts].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-  };
-  s.sourceHash = opts.badHash ? '0'.repeat(64) : sha(jcs(projection));
-  s.artifacts = artifacts;
   if (opts.formatVersion !== undefined) s.formatVersion = opts.formatVersion;
   if (opts.specVersion !== undefined) s.specVersion = opts.specVersion;
+  let exported = opts.exports ?? artifacts
+    .filter(a => a.type === 'pipeline' && a[EXPORTED] !== false)
+    .map(a => a.id);
+  if (opts.sortExports !== false && Array.isArray(exported)) exported = [...exported].sort();
+  s.exports = exported;
+  const stepRef = step => {
+    if (typeof step === 'string') return step;
+    if (!step || typeof step !== 'object') return step;
+    const keys = Object.keys(step);
+    if (keys.length !== 1) return step;
+    return step.rule ?? step.condition ?? step.pipeline ?? step;
+  };
+  const normalized = new Map();
+  for (const artifact of artifacts) {
+    const { id, ...value } = artifact;
+    if (value.type === 'pipeline' || value.type === 'condition') {
+      if (Array.isArray(value.flow)) {
+        value.steps = value.flow.map(stepRef);
+        delete value.flow;
+      } else if (Array.isArray(value.steps)) value.steps = value.steps.map(stepRef);
+    }
+    if (value.type === 'rule' && value.dictionary && typeof value.dictionary === 'object') {
+      const keys = Object.keys(value.dictionary);
+      if (keys.length === 2 && value.dictionary.type === 'static' && typeof value.dictionary.id === 'string')
+        value.dictionary = value.dictionary.id;
+    }
+    normalized.set(id, value);
+  }
+  s.artifacts = Object.fromEntries([...normalized].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  s.sourceHash = opts.badHash ? '0'.repeat(64) : sha(jcs(s));
   return s;
 }
 const chk = (id, operator, o = {}) => ({ id, type: 'rule',
   operator, ...o.x,
   ...(o.field !== undefined ? { field: o.field } : {}), ...(o.fields ? { fields: o.fields } : {}),
   ...(o.value !== undefined ? { value: o.value } : {}), ...(o.value_field ? { value_field: o.value_field } : {}),
+  ...(o.inputs ? { inputs: o.inputs } : {}),
   ...(o.flags ? { flags: o.flags } : {}), ...(o.dictionary ? { dictionary: o.dictionary } : {}),
   ...(o.params ? { params: o.params } : {}),
   ...(o.aggregate ? { aggregate: o.aggregate } : {}),
@@ -50,14 +79,14 @@ const chk = (id, operator, o = {}) => ({ id, type: 'rule',
 const pred = (id, operator, o = {}) => ({ id, type: 'rule',
   operator, ...(o.field !== undefined ? { field: o.field } : {}), ...(o.fields ? { fields: o.fields } : {}),
   ...(o.value !== undefined ? { value: o.value } : {}), ...(o.value_field ? { value_field: o.value_field } : {}),
+  ...(o.inputs ? { inputs: o.inputs } : {}),
   ...(o.flags ? { flags: o.flags } : {}), ...(o.dictionary ? { dictionary: o.dictionary } : {}),
   ...(o.params ? { params: o.params } : {}),
   ...(o.aggregate ? { aggregate: o.aggregate } : {}), ...o.x });
-const pipe = (id, flow, o = {}) => ({ id, type: 'pipeline', [EXPORTED]: o.exported ?? true,
-  strict: o.strict ?? false,
-  ...(o.message ? { message: o.message } : {}), ...(o.strictCode ? { strictCode: o.strictCode } : {}), ...o.x, flow });
+const pipe = (id, steps, o = {}) => ({ id, type: 'pipeline', [EXPORTED]: o.exported ?? true,
+  ...o.x, steps: steps.map(step => typeof step === 'string' ? step : step.rule ?? step.condition ?? step.pipeline ?? step) });
 const issue = (level, code, message, field, ruleId, pipelineId, extra = {}) =>
-  ({ kind: 'ISSUE', level, code, message, field, ruleId, pipelineId, ...extra });
+  ({ level, code, message, field, ruleId, pipelineId, ...extra });
 const M = 'failed';
 
 const out = [];
@@ -73,14 +102,19 @@ function rejFx(dir, name, snapshot, identifier, operators = []) {
   out.push({ dir, file: name.split('/').pop() + '.json',
     doc: { name, snapshot, operators, expected: { verdict: 'reject', ...(identifier ? { identifier } : {}) } } });
 }
+function rawSnapshotFx(dir, name, snapshotText, identifier) {
+  out.push({ dir, file: name.split('/').pop() + '.json',
+    doc: { name, snapshotText, operators: [],
+      expected: { verdict: 'reject', ...(identifier ? { identifier } : {}) } } });
+}
 function raw(name, replacements) {
   const fixture = out.findLast(f => f.doc.name === name);
   if (!fixture) throw new Error(`unknown fixture ${name}`);
   fixture.rawReplacements = replacements;
 }
-const one = (rule, pid = 'checks.main') => [rule, pipe(pid, [{ rule: rule.id }])];
-const OKR = { status: 'OK', control: 'CONTINUE', issues: [] };
-const ERR = issues => ({ status: 'ERROR', control: 'STOP', issues });
+const one = (rule, pid = 'checks.main') => [rule, pipe(pid, [rule.id])];
+const OKR = { status: 'OK', issues: [] };
+const ERR = issues => ({ status: 'ERROR', issues });
 
 /* ---------------- d01-numbers ---------------- */
 {
@@ -146,19 +180,37 @@ rejFx('d04-regex', 'd04/reject-backreference', snap(one(chk('library.r.b', 'matc
 rejFx('d04-regex', 'd04/reject-word-boundary', snap(one(chk('library.r.c', 'matches_regex', { code: 'R3', field: 'a', value: '\\bfoo' }))));
 rejFx('d04-regex', 'd04/reject-quantifier-over-1000', snap(one(chk('library.r.d', 'matches_regex', { code: 'R4', field: 'a', value: 'a{1001}' }))));
 rejFx('d04-regex', 'd04/reject-pattern-over-1024-codepoints', snap(one(chk('library.r.e', 'matches_regex', { code: 'R5', field: 'a', value: '^' + 'a'.repeat(1030) + '$' }))));
-rejFx('d04-regex', 'd04/reject-unknown-flag', snap(one(chk('library.r.f', 'matches_regex', { code: 'R6', field: 'a', value: '^a$', flags: 'g' }))));
+rejFx('d04-regex', 'd04/reject-legacy-flags-field', snap(one(chk('library.r.f', 'matches_regex', { code: 'R6', field: 'a', value: '^a$', flags: 'i' }))));
 {
-  const arts = [chk('library.r.pp1', 'matches_regex', { code: 'R7', field: 'a', value: '^\\\\d+$' }),
-    chk('library.r.pp2', 'matches_regex', { code: 'R8', field: 'a', value: '^\\d+$' }),
-    pipe('checks.main', [{ rule: 'library.r.pp1' }, { rule: 'library.r.pp2' }])];
-  evalFx('d04-regex', 'd04/preprocessing-collapses-double-backslash', snap(arts), { pipelineId: 'checks.main', payload: { a: '123' } }, OKR);
+  const r = chk('library.r.exact', 'matches_regex', { code: 'R7', field: 'a', value: '^\\\\d+$' });
+  evalFx('d04-regex', 'd04/decoded-pattern-is-used-without-backslash-collapse', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: '123' } },
+    ERR([issue('ERROR', 'R7', M, 'a', r.id, 'checks.main', { expected: '^\\\\d+$', actual: '123' })]));
 }
-evalFx('d04-regex', 'd04/flag-i-unicode-simple-folding-cyrillic',
-  snap(one(chk('library.r.i', 'matches_regex', { code: 'R9', field: 'a', value: '^иван$', flags: 'i' }))),
-  { pipelineId: 'checks.main', payload: { a: 'ИВАН' } }, OKR);
 evalFx('d04-regex', 'd04/dot-matches-one-code-point',
   snap(one(chk('library.r.dot', 'matches_regex', { code: 'R10', field: 'a', value: '^.$' }))),
   { pipelineId: 'checks.main', payload: { a: '\u{1F600}' } }, OKR);
+{
+  const r = chk('library.r.anchor', 'matches_regex', { code: 'R14', field: 'a', value: 'a$' });
+  evalFx('d04-regex', 'd04/dollar-is-absolute-end-not-before-final-newline', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: 'a\n' } },
+    ERR([issue('ERROR', 'R14', M, 'a', r.id, 'checks.main', { expected: 'a$', actual: 'a\n' })]));
+}
+{
+  const r = chk('library.r.dot-lines', 'matches_regex', { code: 'R15', field: 'a', value: '^.$' });
+  evalFx('d04-regex', 'd04/dot-excludes-only-line-feed', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: '\n' } },
+    ERR([issue('ERROR', 'R15', M, 'a', r.id, 'checks.main', { expected: '^.$', actual: '\n' })]));
+  for (const [name, value] of [['carriage-return', '\r'], ['line-separator', '\u2028'], ['paragraph-separator', '\u2029']]) {
+    evalFx('d04-regex', `d04/dot-matches-${name}`, snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: value } }, OKR);
+  }
+}
+rejFx('d04-regex', 'd04/reject-unescaped-hyphen-at-class-edge',
+  snap(one(chk('library.r.hyphen.bad', 'matches_regex', { code: 'R16', field: 'a', value: '^[-a]$' }))));
+evalFx('d04-regex', 'd04/escaped-hyphen-in-class-is-literal',
+  snap(one(chk('library.r.hyphen.ok', 'matches_regex', { code: 'R17', field: 'a', value: '^[\\-a]$' }))),
+  { pipelineId: 'checks.main', payload: { a: '-' } }, OKR);
 {
   const r = chk('library.r.d2', 'matches_regex', { code: 'R11', field: 'a', value: '^\\d+$' });
   evalFx('d04-regex', 'd04/digit-class-is-ascii-only', snap(one(r)), { pipelineId: 'checks.main', payload: { a: '\u0663' } },
@@ -233,20 +285,31 @@ rejFx('d06-hash', 'd06/reject-source-hash-mismatch', snap(one(chk('library.h.r',
   evalFx('d09-guards', 'd09/dangerous-key-lexicographically-smallest-path',
     snap(one(r)),
     { pipelineId: 'checks.main', payload: JSON.parse('{"z":{"constructor":1},"a":{"constructor":2},"ok":1}') },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'DANGEROUS_PAYLOAD_KEY', details: { parentPath: 'a', key: 'constructor' } } });
+    { status: 'ABORT', issues: [], error: { code: 'DANGEROUS_PAYLOAD_KEY', details: { parentPath: 'a', key: 'constructor' } } });
+  evalFx('d09-guards', 'd09/dangerous-key-selection-uses-code-point-order-not-utf16',
+    snap(one(r)),
+    { pipelineId: 'checks.main', payload: JSON.parse('{"\ud800\udc00":{"constructor":1},"\ue000":{"constructor":2},"ok":1}') },
+    { status: 'ABORT', issues: [], error: { code: 'DANGEROUS_PAYLOAD_KEY', details: { parentPath: '\ue000', key: 'constructor' } } });
   evalFx('d09-guards', 'd09/payload-too-deep-details-max-depth-only', snap(one(chk('library.g.d', 'not_empty', { code: 'G2', field: 'ok' }))),
     { pipelineId: 'checks.main', payload: { ok: 1, d: deep(256) } },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'PAYLOAD_TOO_DEEP', details: { maxDepth: 256 } } });
+    { status: 'ABORT', issues: [], error: { code: 'PAYLOAD_TOO_DEEP', details: { maxDepth: 256 } } });
   evalFx('d09-guards', 'd09/proto-key-rejected', snap(one(chk('library.g.p', 'not_empty', { code: 'G3', field: 'ok' }))),
     { pipelineId: 'checks.main', payload: JSON.parse('{"x":{"__proto__":1},"ok":1}') },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'DANGEROUS_PAYLOAD_KEY', details: { parentPath: 'x', key: '__proto__' } } });
+    { status: 'ABORT', issues: [], error: { code: 'DANGEROUS_PAYLOAD_KEY', details: { parentPath: 'x', key: '__proto__' } } });
 }
 
 /* ---------------- d10-operators ---------------- */
-rejFx('d10-operators', 'd10/reject-unknown-operator-not-declared', snap(one(chk('library.c.u', 'custom_x', { code: 'C1', field: 'a' }))));
-rejFx('d10-operators', 'd10/reject-operator-not-found',
-  snap(one(chk('library.c.i', 'valid_inn', { code: 'C2', field: 'inn' })), { requires: { operators: ['valid_inn'] } }),
-  'OPERATOR_NOT_FOUND', []);
+rejFx('d10-operators', 'd10/reject-derived-custom-operator-not-found',
+  snap(one(chk('library.c.u', 'custom_x', { code: 'C1', field: 'a' }))), 'OPERATOR_NOT_FOUND');
+rejFx('d10-operators', 'd10/unknown-operator-contract-specific-shape-still-not-found',
+  snap(one(chk('library.c.unknown-shape', 'custom_x', { code: 'C1S', field: 'a',
+    inputs: { unknownName: 'b' }, params: { unknownSetting: true } }))), 'OPERATOR_NOT_FOUND');
+{
+  const badHash = snap(one(chk('library.c.bad-hash', 'custom_x', { code: 'C2', field: 'a' })), { badHash: true });
+  rejFx('d10-operators', 'd10/unknown-operator-with-bad-hash-has-no-operator-identifier', badHash);
+}
+rejFx('d10-operators', 'd10/unknown-operator-with-broken-reference-has-no-operator-identifier',
+  snap([chk('library.c.bad-ref', 'custom_x', { code: 'C3', field: 'a' }), pipe('checks.main', ['missing.rule'])]));
 
 /* ---------------- d11-snapshot ---------------- */
 rejFx('d11-snapshot', 'd11/reject-any-filled-paths-alias',
@@ -254,7 +317,7 @@ rejFx('d11-snapshot', 'd11/reject-any-filled-paths-alias',
     issue: { level: 'ERROR', code: 'X1', message: M }, paths: ['a', 'b'] })));
 rejFx('d11-snapshot', 'd11/reject-required-context-field',
   snap([chk('library.x.r', 'not_empty', { code: 'X2', field: 'a' }),
-    { id: 'checks.main', type: 'pipeline', strict: false, required_context: ['currentDate'], flow: [{ rule: 'library.x.r' }] }]));
+    { id: 'checks.main', type: 'pipeline', required_context: ['currentDate'], steps: ['library.x.r'] }]));
 rejFx('d11-snapshot', 'd11/reject-unknown-artifact-field',
   snap(one({ ...chk('library.x.u', 'not_empty', { code: 'X3', field: 'a' }), note: 'oops' })));
 rejFx('d11-snapshot', 'd11/reject-format-version-1',
@@ -265,7 +328,7 @@ rejFx('d11-snapshot', 'd11/reject-unsupported-spec-version',
   const r = chk('library.x.ctx', 'not_empty', { code: 'CTX.CURRENT_DATE.REQUIRED', field: '$context.currentDate', level: 'EXCEPTION' });
   evalFx('d11-snapshot', 'd11/payload-context-key-has-no-special-meaning', snap(one(r)),
     { pipelineId: 'checks.main', payload: { __context: { currentDate: '2026-01-01' } } },
-    { status: 'EXCEPTION', control: 'STOP',
+    { status: 'EXCEPTION',
       issues: [issue('EXCEPTION', 'CTX.CURRENT_DATE.REQUIRED', M, '$context.currentDate', 'library.x.ctx', 'checks.main')] });
 }
 rejFx('d11-snapshot', 'd11/reject-duplicate-issue-code',
@@ -353,39 +416,20 @@ evalFx('d13-absence', 'd13/field-op-skips-if-either-operand-absent',
     ERR([issue('ERROR', 'SE2', M, 'passport', 'library.se.c2', 'checks.main')]));
 }
 {
-  const arts = [chk('library.se.e1', 'not_empty', { code: 'SE3', field: 'a' }),
-    pipe('checks.main', [{ rule: 'library.se.e1' }], { strict: true, message: 'Block failed', strictCode: 'BLK' })];
-  evalFx('semantics', 'sem/strict-summary-shape-and-order', snap(arts),
-    { pipelineId: 'checks.main', payload: {} },
-    { status: 'EXCEPTION', control: 'STOP',
-      issues: [issue('ERROR', 'SE3', M, 'a', 'library.se.e1', 'checks.main'),
-        issue('EXCEPTION', 'BLK', 'Block failed', null, 'pipeline:checks.main', 'checks.main')] });
-}
-{
-  const arts = [chk('library.se.e2', 'not_empty', { code: 'SE4', field: 'a' }),
-    pipe('checks.inner', [{ rule: 'library.se.e2' }], { exported: false }),
-    pipe('checks.outer', [{ pipeline: 'checks.inner' }], { strict: true, message: 'Outer failed', strictCode: 'OUT' })];
-  evalFx('semantics', 'sem/strict-counts-subpipeline-issues', snap(arts),
-    { pipelineId: 'checks.outer', payload: {} },
-    { status: 'EXCEPTION', control: 'STOP',
-      issues: [issue('ERROR', 'SE4', M, 'a', 'library.se.e2', 'checks.inner'),
-        issue('EXCEPTION', 'OUT', 'Outer failed', null, 'pipeline:checks.outer', 'checks.outer')] });
-}
-{
   const arts = [chk('library.se.x', 'not_empty', { code: 'SE5', field: 'a', level: 'EXCEPTION' }),
     chk('library.se.after', 'not_empty', { code: 'SE6', field: 'b' }),
     pipe('checks.inner', [{ rule: 'library.se.x' }], { exported: false }),
     pipe('checks.main', [{ pipeline: 'checks.inner' }, { rule: 'library.se.after' }])];
   evalFx('semantics', 'sem/exception-in-subpipeline-stops-everything', snap(arts),
     { pipelineId: 'checks.main', payload: {} },
-    { status: 'EXCEPTION', control: 'STOP',
+    { status: 'EXCEPTION',
       issues: [issue('EXCEPTION', 'SE5', M, 'a', 'library.se.x', 'checks.inner')] });
 }
 {
   const arts = [chk('library.se.w', 'not_empty', { code: 'SE7', field: 'a', level: 'WARNING' }),
     pipe('checks.main', [{ rule: 'library.se.w' }])];
   evalFx('semantics', 'sem/warning-only-status', snap(arts), { pipelineId: 'checks.main', payload: {} },
-    { status: 'OK_WITH_WARNINGS', control: 'CONTINUE',
+    { status: 'OK_WITH_WARNINGS',
       issues: [issue('WARNING', 'SE7', M, 'a', 'library.se.w', 'checks.main')] });
 }
 {
@@ -397,25 +441,25 @@ evalFx('d13-absence', 'd13/field-op-skips-if-either-operand-absent',
          issue('ERROR', 'SE9', M, 'b', 'library.se.e3', 'checks.main')]));
 }
 {
-  const dict = { id: 'library.dict.countries', type: 'dictionary', entries: [{ code: 'RU', value: 'Россия' }] };
+  const dict = { id: 'library.dict.countries', type: 'dictionary', entries: ['RU', 'Россия'] };
   const arts = [dict,
-    chk('library.se.di1', 'in_dictionary', { code: 'SE10', field: 'a', dictionary: { type: 'static', id: 'library.dict.countries' } }),
-    chk('library.se.di2', 'in_dictionary', { code: 'SE11', field: 'b', dictionary: { type: 'static', id: 'library.dict.countries' } }),
+    chk('library.se.di1', 'in_dictionary', { code: 'SE10', field: 'a', dictionary: 'library.dict.countries' }),
+    chk('library.se.di2', 'in_dictionary', { code: 'SE11', field: 'b', dictionary: 'library.dict.countries' }),
     pipe('checks.main', [{ rule: 'library.se.di1' }, { rule: 'library.se.di2' }])];
-  evalFx('semantics', 'sem/dictionary-object-entry-code-or-value', snap(arts),
+  evalFx('semantics', 'sem/dictionary-scalar-entry', snap(arts),
     { pipelineId: 'checks.main', payload: { a: 'Россия', b: 'DE' } },
     ERR([issue('ERROR', 'SE11', M, 'b', 'library.se.di2', 'checks.main',
-      { expected: { type: 'static', id: 'library.dict.countries' }, actual: 'DE' })]));
+      { expected: 'library.dict.countries', actual: 'DE' })]));
 }
 {
   const dict = { id: 'library.dict.blocked', type: 'dictionary', entries: ['RU'] };
   const arts = [dict,
-    chk('library.se.ni', 'not_in_dictionary', { code: 'SE12', field: 'a', dictionary: { type: 'static', id: 'library.dict.blocked' } }),
+    chk('library.se.ni', 'not_in_dictionary', { code: 'SE12', field: 'a', dictionary: 'library.dict.blocked' }),
     pipe('checks.main', [{ rule: 'library.se.ni' }])];
   evalFx('semantics', 'sem/not-in-dictionary-ok', snap(arts), { pipelineId: 'checks.main', payload: { a: 'DE' } }, OKR);
   evalFx('semantics', 'sem/not-in-dictionary-fail-shape', snap(arts), { pipelineId: 'checks.main', payload: { a: 'RU' } },
     ERR([issue('ERROR', 'SE12', M, 'a', 'library.se.ni', 'checks.main',
-      { expected: { type: 'static', id: 'library.dict.blocked' }, actual: 'RU' })]));
+      { expected: 'library.dict.blocked', actual: 'RU' })]));
 }
 {
   const r = chk('library.se.all', 'greater_than', { code: 'SE13', field: 'x[*].v', value: 10,
@@ -431,13 +475,6 @@ evalFx('d13-absence', 'd13/field-op-skips-if-either-operand-absent',
     { pipelineId: 'checks.main', payload: { x: [{ v: 11 }, { v: 2 }, { v: 3 }] } },
     ERR([issue('ERROR', 'SE14', M, 'x[*].v', 'library.se.cnt', 'checks.main',
       { details: { mode: 'COUNT', op: '>=', value: 2, matched: 3, evaluated: 3, skipped: 0, passed: 1, failed: 2 } })]));
-}
-{
-  const r = chk('library.se.min', 'greater_than', { code: 'SE15', field: 'x[*].v', value: 10, aggregate: { mode: 'MIN' } });
-  evalFx('semantics', 'sem/aggregate-min-extremum-concrete-field', snap(one(r)),
-    { pipelineId: 'checks.main', payload: { x: [{ v: 5 }, { v: 20 }] } },
-    ERR([issue('ERROR', 'SE15', M, 'x[0].v', 'library.se.min', 'checks.main',
-      { expected: 10, actual: 5, details: { mode: 'MIN' } })]));
 }
 evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
   snap(one(chk('library.se.oe1', 'greater_than', { code: 'SE16', field: 'x[*].v', value: 10,
@@ -456,7 +493,7 @@ evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
     aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
   evalFx('semantics', 'sem/on-empty-fail-with-exception-level-composes-hard-stop', snap(one(r)),
     { pipelineId: 'checks.main', payload: {} },
-    { status: 'EXCEPTION', control: 'STOP',
+    { status: 'EXCEPTION',
       issues: [issue('EXCEPTION', 'SE24', M, 'x[*].v', 'library.se.hs', 'checks.main',
         { details: { mode: 'ALL', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })] });
 }
@@ -471,14 +508,14 @@ evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
   const arts = [chk('library.se.ab', 'not_empty', { code: 'SE19', field: 'a' }), pipe('checks.main', [{ rule: 'library.se.ab' }])];
   evalFx('semantics', 'sem/abort-pipeline-not-found', snap(arts),
     { pipelineId: 'checks.nope', payload: { a: 1 } },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'PIPELINE_NOT_FOUND', details: { pipelineId: 'checks.nope' } } });
+    { status: 'ABORT', issues: [], error: { code: 'PIPELINE_NOT_FOUND', details: { pipelineId: 'checks.nope' } } });
 }
 {
   const arts = [chk('library.se.ab2', 'not_empty', { code: 'SE20', field: 'a' }),
     pipe('checks.one', [{ rule: 'library.se.ab2' }]), pipe('checks.two', [{ rule: 'library.se.ab2' }])];
   evalFx('semantics', 'sem/abort-invalid-pipeline-id-missing', snap(arts),
     { payload: { a: 1 } },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'INVALID_PIPELINE_ID', details: { expected: 'non-empty string' } } },
+    { status: 'ABORT', issues: [], error: { code: 'INVALID_PIPELINE_ID', details: { expected: 'non-empty string' } } },
     [], { keepMissingPipelineId: true });
 }
 {
@@ -494,20 +531,12 @@ evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
     ERR([issue('ERROR', 'SE22', M, 'a', 'library.se.sub', 'checks.inner')]));
   evalFx('semantics', 'sem/internal-pipeline-cannot-be-selected-directly', snap(arts),
     { pipelineId: 'checks.inner', payload: {} },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'PIPELINE_NOT_FOUND', details: { pipelineId: 'checks.inner' } } });
+    { status: 'ABORT', issues: [], error: { code: 'PIPELINE_NOT_FOUND', details: { pipelineId: 'checks.inner' } } });
 }
-{
-  const arts = [chk('library.se.sid', 'not_empty', { code: 'SE23', field: 'a' }),
-    pipe('checks.main', [{ rule: 'library.se.sid', stepId: 'step-1' }])];
-  evalFx('semantics', 'sem/step-id-passthrough', snap(arts), { pipelineId: 'checks.main', payload: {} },
-    ERR([issue('ERROR', 'SE23', M, 'a', 'library.se.sid', 'checks.main', { stepId: 'step-1' })]));
-}
-
-
 /* ---------------- rc.2: input types, invalid keys, depth bounds (D15, DR-IV) ---------------- */
 {
   const base = () => snap(one(chk('library.i.r', 'not_empty', { code: 'I1', field: 'ok' })));
-  const AB = (code, details) => ({ status: 'ABORT', control: 'STOP', issues: [], error: { code, details } });
+  const AB = (code, details) => ({ status: 'ABORT', issues: [], error: { code, details } });
   evalFx('d09-guards', 'd09/invalid-payload-null', base(), { pipelineId: 'checks.main', payload: null }, AB('INVALID_PAYLOAD', { expected: 'object' }));
   evalFx('d09-guards', 'd09/invalid-payload-array', base(), { pipelineId: 'checks.main', payload: [1, 2] }, AB('INVALID_PAYLOAD', { expected: 'object' }));
   evalFx('d09-guards', 'd09/invalid-context-string', base(), { pipelineId: 'checks.main', payload: { ok: 1 }, context: 'oops' }, AB('INVALID_CONTEXT', { expected: 'object' }));
@@ -523,8 +552,16 @@ evalFx('semantics', 'sem/aggregate-on-empty-default-skip',
 }
 
 /* ---------------- rc.2: snapshot-level additions (DR-IV) ---------------- */
-rejFx('d11-snapshot', 'd11/reject-artifact-too-deep',
-  snap(one(chk('library.x.deep', 'not_empty', { code: 'X12', field: 'a', meta: deep(256) }))));
+{
+  const make = depth => {
+    const s = snap(one(chk('library.x.deep', 'not_empty', { code: 'X12', field: 'a', meta: deep(depth - 4) })));
+    if (jsonDepth(s) !== depth) throw new Error(`snapshot depth ${jsonDepth(s)} != ${depth}`);
+    return s;
+  };
+  evalFx('d11-snapshot', 'd11/snapshot-depth-256-accepted', make(256),
+    { pipelineId: 'checks.main', payload: { a: 1 } }, OKR);
+  rejFx('d11-snapshot', 'd11/reject-snapshot-depth-257', make(257));
+}
 rejFx('d11-snapshot', 'd11/reject-unsupported-minor-version',
   snap(one(chk('library.x.mv', 'not_empty', { code: 'X13', field: 'a' })), { specVersion: '1.999.0' }));
 rejFx('d11-snapshot', 'd11/reject-aggregate-without-wildcard',
@@ -550,31 +587,6 @@ rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
     { pipelineId: 'checks.main', payload: { a: 1e21 } }, OKR);
 }
 
-/* ---------------- rc.2: case folding set (D18) ---------------- */
-{
-  const F = (nm, pat, subj, ok, code, rid) => {
-    const r = chk(rid, 'matches_regex', { code, field: 'a', value: pat, flags: 'i' });
-    evalFx('d04-regex', nm, snap(one(r)), { pipelineId: 'checks.main', payload: { a: subj } },
-      ok ? OKR : ERR([issue('ERROR', code, M, 'a', rid, 'checks.main', { expected: pat, actual: subj })]));
-  };
-  F('d04/folding-kelvin-sign-equals-k', '^k$', '\u212A', true, 'F1', 'library.f.k');
-  F('d04/folding-long-s-equals-s', '^s$', '\u017F', true, 'F2', 'library.f.s');
-  F('d04/folding-final-sigma-equals-sigma', '^Σ$', 'ς', true, 'F3', 'library.f.sg');
-  F('d04/folding-eszett-equals-capital-eszett', '^ß$', '\u1E9E', true, 'F4', 'library.f.e1');
-  F('d04/folding-eszett-not-equals-ss', '^ss$', 'ß', false, 'F5', 'library.f.e2');
-  F('d04/folding-turkish-dotted-capital-i-no-match', '^i$', '\u0130', false, 'F6', 'library.f.t1');
-  F('d04/folding-turkish-dotless-i-no-match', '^i$', '\u0131', false, 'F7', 'library.f.t2');
-}
-
-/* ---------------- rc.2: MIN tie-break (DR-IV) ---------------- */
-{
-  const r = chk('library.se.tie', 'greater_than', { code: 'SE25', field: 'x[*].v', value: 10, aggregate: { mode: 'MIN' } });
-  evalFx('semantics', 'sem/aggregate-min-tie-break-first-in-order', snap(one(r)),
-    { pipelineId: 'checks.main', payload: { x: [{ v: 5 }, { v: 5 }, { v: 20 }] } },
-    ERR([issue('ERROR', 'SE25', M, 'x[0].v', 'library.se.tie', 'checks.main',
-      { expected: 10, actual: 5, details: { mode: 'MIN' } })]));
-}
-
 /* ---------------- rc.3: unified rule sites and reserved operators (D19) ---------------- */
 {
   const hard = chk('library.d19.reusable', 'not_empty', { code: 'D19.1', field: 'trigger', level: 'EXCEPTION' });
@@ -588,7 +600,7 @@ rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
     { pipelineId: 'checks.guard', payload: {} }, OKR);
   evalFx('d19-unified-rules', 'd19/same-rule-creates-exception-issue-in-step', snap(arts),
     { pipelineId: 'checks.hard', payload: {} },
-    { status: 'EXCEPTION', control: 'STOP',
+    { status: 'EXCEPTION',
       issues: [issue('EXCEPTION', 'D19.1', M, 'trigger', 'library.d19.reusable', 'checks.hard')] });
 }
 {
@@ -616,15 +628,15 @@ rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
 }
 {
   const runFault = (name, op, site, code) => {
-    const r = site === 'step' ? chk('library.co.r', op, { code: 'CO1', field: 'a' }) : pred('library.co.r', op, { field: 'a' });
+    const r = site === 'step' ? chk('library.co.r', op, { code: 'CO1' }) : pred('library.co.r', op);
     const artifacts = site === 'step'
       ? one(r)
       : [r, chk('library.co.after', 'not_empty', { code: 'CO2', field: 'b' }),
           { id: 'library.co.cond', type: 'condition', when: r.id, steps: [{ rule: 'library.co.after' }] },
           pipe('checks.main', [{ condition: 'library.co.cond' }])];
-    evalFx('d10-operators', name, snap(artifacts, { requires: { operators: [op] } }),
-      { pipelineId: 'checks.main', payload: { a: 1 } },
-      { status: 'ABORT', control: 'STOP', issues: [], error: { code, details: { ruleId: r.id, operator: op } } }, [op]);
+    evalFx('d10-operators', name, snap(artifacts),
+      { pipelineId: 'checks.main', payload: {} },
+      { status: 'ABORT', issues: [], error: { code, details: { ruleId: r.id, operator: op } } }, [op]);
   };
   runFault('d10/conformance-rule-throw-in-step-operator-fault', 'conformance.rule.throw', 'step', 'OPERATOR_FAULT');
   runFault('d10/conformance-rule-throw-in-when-operator-fault', 'conformance.rule.throw', 'when', 'OPERATOR_FAULT');
@@ -640,41 +652,72 @@ rejFx('d11-snapshot', 'd11/reject-value-field-wildcard',
 
   const eachAll = tri('library.d20.all.each', { mode: 'ALL', issueMode: 'EACH' }, 'D20.1');
   evalFx('d20-aggregation', 'd20/all-each-ignores-skip-and-reports-failures',
-    snap(one(eachAll), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
-    ERR([issue('ERROR', 'D20.1', M, 'items[2].result', eachAll.id, 'checks.main')]), [op]);
+    snap(one(eachAll)), { pipelineId: 'checks.main', payload },
+    ERR([issue('ERROR', 'D20.1', M, 'items[2].result', eachAll.id, 'checks.main', { actual: 'FAIL' })]), [op]);
 
   const anyPass = tri('library.d20.any.pass', { mode: 'ANY', issueMode: 'EACH' }, 'D20.2');
   evalFx('d20-aggregation', 'd20/any-each-pass-emits-no-partial-issues',
-    snap(one(anyPass), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload }, OKR, [op]);
+    snap(one(anyPass)), { pipelineId: 'checks.main', payload }, OKR, [op]);
 
   const anyFail = tri('library.d20.any.fail', { mode: 'ANY', issueMode: 'EACH' }, 'D20.2F');
   evalFx('d20-aggregation', 'd20/any-each-reports-fails-only-when-none-pass',
-    snap(one(anyFail), { requires: { operators: [op] } }),
+    snap(one(anyFail)),
     { pipelineId: 'checks.main', payload: { items: [{ result: 'SKIP' }, { result: 'FAIL' }] } },
-    ERR([issue('ERROR', 'D20.2F', M, 'items[1].result', anyFail.id, 'checks.main')]), [op]);
+    ERR([issue('ERROR', 'D20.2F', M, 'items[1].result', anyFail.id, 'checks.main', { actual: 'FAIL' })]), [op]);
 
   const allSummary = tri('library.d20.all.summary', { mode: 'ALL', issueMode: 'SUMMARY' }, 'D20.3');
   evalFx('d20-aggregation', 'd20/all-summary-exposes-effective-population',
-    snap(one(allSummary), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
+    snap(one(allSummary)), { pipelineId: 'checks.main', payload },
     ERR([issue('ERROR', 'D20.3', M, 'items[*].result', allSummary.id, 'checks.main',
       { details: { mode: 'ALL', matched: 3, evaluated: 2, skipped: 1, passed: 1, failed: 1 } })]), [op]);
 
   const count = tri('library.d20.count', { mode: 'COUNT', op: '>=', value: 2 }, 'D20.4');
   evalFx('d20-aggregation', 'd20/count-excludes-skip-from-population',
-    snap(one(count), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload },
+    snap(one(count)), { pipelineId: 'checks.main', payload },
     ERR([issue('ERROR', 'D20.4', M, 'items[*].result', count.id, 'checks.main',
       { details: { mode: 'COUNT', op: '>=', value: 2, matched: 3, evaluated: 2, skipped: 1, passed: 1, failed: 1 } })]), [op]);
 
   const allSkip = tri('library.d20.skip', { mode: 'ALL', issueMode: 'SUMMARY', onEmpty: 'FAIL' }, 'D20.5');
   evalFx('d20-aggregation', 'd20/all-skip-propagates-skip-not-on-empty-fail',
-    snap(one(allSkip), { requires: { operators: [op] } }),
+    snap(one(allSkip)),
     { pipelineId: 'checks.main', payload: { items: [{ result: 'SKIP' }, { result: 'SKIP' }] } }, OKR, [op]);
 
   const empty = tri('library.d20.empty', { mode: 'ANY', issueMode: 'SUMMARY', onEmpty: 'FAIL' }, 'D20.6');
   evalFx('d20-aggregation', 'd20/structural-empty-applies-on-empty-fail',
-    snap(one(empty), { requires: { operators: [op] } }), { pipelineId: 'checks.main', payload: {} },
+    snap(one(empty)), { pipelineId: 'checks.main', payload: {} },
     ERR([issue('ERROR', 'D20.6', M, 'items[*].result', empty.id, 'checks.main',
       { details: { mode: 'ANY', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })]), [op]);
+
+  const countEmpty = tri('library.d20.count-empty', { mode: 'COUNT', op: '>=', value: 1, onEmpty: 'FAIL' }, 'D20.7');
+  evalFx('d20-aggregation', 'd20/count-on-empty-fail-omits-op-and-value-details',
+    snap(one(countEmpty)), { pipelineId: 'checks.main', payload: {} },
+    ERR([issue('ERROR', 'D20.7', M, 'items[*].result', countEmpty.id, 'checks.main',
+      { details: { mode: 'COUNT', matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 } })]), [op]);
+
+  for (const [name, mode, values] of [
+    ['any-pass-still-evaluates-later-throw', 'ANY', ['PASS', 'THROW']],
+    ['all-fail-still-evaluates-later-throw', 'ALL', ['FAIL', 'THROW']],
+    ['count-still-evaluates-later-throw', 'COUNT', ['PASS', 'THROW']],
+  ]) {
+    const aggregate = mode === 'COUNT'
+      ? { mode, op: '>=', value: 1 }
+      : { mode, issueMode: 'SUMMARY' };
+    const r = tri(`library.d20.${name}`, aggregate, `D20.${name}`);
+    evalFx('d20-aggregation', `d20/${name}`, snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: values.map(result => ({ result })) } },
+      { status: 'ABORT', issues: [], error: { code: 'OPERATOR_FAULT', details: { ruleId: r.id, operator: op } } }, [op]);
+  }
+
+  const atomic = tri('library.d20.exception-each', { mode: 'ALL', issueMode: 'EACH' }, 'D20.8');
+  atomic.issue.level = 'EXCEPTION';
+  const after = chk('library.d20.after-exception', 'not_empty', { code: 'D20.9', field: 'required' });
+  evalFx('d20-aggregation', 'd20/each-exception-materializes-all-current-rule-issues-before-stop',
+    snap([atomic, after, pipe('checks.main', [atomic.id, after.id])]),
+    { pipelineId: 'checks.main', payload: { items: [{ result: 'FAIL' }, { result: 'FAIL' }] } },
+    { status: 'EXCEPTION', issues: [
+      issue('EXCEPTION', 'D20.8', M, 'items[0].result', atomic.id, 'checks.main', { actual: 'FAIL' }),
+      issue('EXCEPTION', 'D20.8', M, 'items[1].result', atomic.id, 'checks.main', { actual: 'FAIL' }),
+    ] }, [op]);
 }
 
 rejFx('d11-snapshot', 'd11/reject-wildcard-without-aggregate',
@@ -701,14 +744,14 @@ rejFx('d11-snapshot', 'd11/reject-legacy-each-aggregate-mode',
 {
   const s = snap(one(chk('library.d21.missing', 'not_empty', { code: 'D21.X1', field: 'a' })));
   delete s.exports;
-  rejFx('d21-bundle', 'd21/reject-missing-exports', s);
+  rejFx('d21-bundle', 'd21/reject-missing-exports', rehash(s));
 }
 rejFx('d21-bundle', 'd21/reject-empty-exports',
   snap(one(chk('library.d21.empty', 'not_empty', { code: 'D21.X2', field: 'a' })), { exports: [] }));
 {
   const s = snap(one(chk('library.d21.object', 'not_empty', { code: 'D21.X2O', field: 'a' })));
   s.exports = { pipelines: ['checks.main'] };
-  rejFx('d21-bundle', 'd21/reject-legacy-exports-object', s);
+  rejFx('d21-bundle', 'd21/reject-legacy-exports-object', rehash(s));
 }
 rejFx('d21-bundle', 'd21/reject-duplicate-export',
   snap(one(chk('library.d21.dup', 'not_empty', { code: 'D21.X3', field: 'a' })),
@@ -725,7 +768,7 @@ rejFx('d21-bundle', 'd21/reject-legacy-pipeline-entrypoint',
   snap([chk('library.d21.ep', 'not_empty', { code: 'D21.X7', field: 'a' }),
     pipe('checks.main', [{ rule: 'library.d21.ep' }], { x: { entrypoint: true } })]));
 {
-  const p = pred('library.d21.guard', 'is_true', { field: 'go' });
+  const p = pred('library.d21.guard', 'equals', { field: 'go', value: true });
   const hit = chk('library.d21.hit', 'not_empty', { code: 'D21.X8', field: 'a' });
   const c1 = { id: 'c1', type: 'condition', when: p.id, steps: [{ condition: 'c2' }] };
   const c2 = { id: 'c2', type: 'condition', when: p.id, steps: [{ condition: 'c1' }] };
@@ -733,7 +776,7 @@ rejFx('d21-bundle', 'd21/reject-legacy-pipeline-entrypoint',
     snap([p, hit, c1, c2, pipe('checks.main', [{ condition: 'c1' }, { rule: hit.id }])]));
 }
 {
-  const p = pred('library.d21.mixed.guard', 'is_true', { field: 'go' });
+  const p = pred('library.d21.mixed.guard', 'equals', { field: 'go', value: true });
   const c = { id: 'mixed.condition', type: 'condition', when: p.id, steps: [{ pipeline: 'checks.main' }] };
   rejFx('d21-bundle', 'd21/reject-mixed-pipeline-condition-cycle',
     snap([p, c, pipe('checks.main', [{ condition: c.id }])]));
@@ -741,25 +784,48 @@ rejFx('d21-bundle', 'd21/reject-legacy-pipeline-entrypoint',
 {
   const s = snap(one(chk('library.d24.envelope', 'not_empty', { code: 'D24.X1', field: 'a' })));
   s.unknown = true;
-  rejFx('d24-closed-schemas', 'd24/reject-unknown-snapshot-field', s);
+  rejFx('d24-closed-schemas', 'd24/reject-unknown-snapshot-field', rehash(s));
 }
 {
   const op = 'conformance.rule.params';
   const r = chk('library.d24.params', op, { code: 'D24.1', params: { outcome: 'PASS' } });
   evalFx('d24-closed-schemas', 'd24/custom-params-schema-valid-and-delivered',
-    snap(one(r), { requires: { operators: [op] } }),
+    snap(one(r)),
     { pipelineId: 'checks.main', payload: {} }, OKR, [op]);
   rejFx('d24-closed-schemas', 'd24/reject-custom-params-schema-mismatch',
-    snap(one(chk('library.d24.params.bad', op, { code: 'D24.X2', params: { result: 'PASS' } })),
-      { requires: { operators: [op] } }), undefined, [op]);
+    snap(one(chk('library.d24.params.bad', op, { code: 'D24.X2', params: { result: 'PASS' } }))), undefined, [op]);
+
+  const fail = chk('library.d24.params.fail', op, { code: 'D24.2', params: { outcome: 'FAIL' } });
+  evalFx('d24-closed-schemas', 'd24/custom-operator-without-field-uses-null-issue-field',
+    snap(one(fail)), { pipelineId: 'checks.main', payload: {} },
+    ERR([issue('ERROR', 'D24.2', M, null, fail.id, 'checks.main')]), [op]);
+
+  rejFx('d24-closed-schemas', 'd24/reject-standard-field-not-accepted-by-params-operator',
+    snap(one(chk('library.d24.params.field', op, { code: 'D24.X2F', field: 'a', params: { outcome: 'PASS' } }))),
+    undefined, [op]);
+  rejFx('d24-closed-schemas', 'd24/reject-fields-on-custom-operator',
+    snap(one(chk('library.d24.params.fields', op, { code: 'D24.X2FS', fields: ['a'], params: { outcome: 'PASS' } }))),
+    undefined, [op]);
 }
+rejFx('d24-closed-schemas', 'd24/reject-value-and-value-field-together',
+  snap(one(chk('library.d24.both-values', 'equals', {
+    code: 'D24.X2V', field: 'a', value: 1, value_field: 'b'
+  }))));
+rejFx('d24-closed-schemas', 'd24/reject-operand-on-throw-conformance-operator',
+  snap(one(chk('library.d24.throw-field', 'conformance.rule.throw', { code: 'D24.X2T', field: 'a' }))),
+  undefined, ['conformance.rule.throw']);
+rejFx('d24-closed-schemas', 'd24/reject-missing-field-on-tri-conformance-operator',
+  snap(one(chk('library.d24.tri-no-field', 'conformance.rule.tri', { code: 'D24.X2TR' }))),
+  undefined, ['conformance.rule.tri']);
 rejFx('d24-closed-schemas', 'd24/reject-params-on-built-in',
   snap(one(chk('library.d24.builtin', 'not_empty', { code: 'D24.X3', field: 'a', params: { outcome: 'PASS' } }))));
+rejFx('d24-closed-schemas', 'd24/reject-empty-operator-name',
+  snap(one(chk('library.d24.empty-operator', '', { code: 'D24.X3E', field: 'a' }))));
 {
   const op = 'conformance.rule.params';
-  const s = snap(one(chk('library.d24.requires', op, { code: 'D24.X4', params: { outcome: 'PASS' } })),
-    { requires: { operators: [op], unknown: true } });
-  rejFx('d24-closed-schemas', 'd24/reject-unknown-requires-field', s, undefined, [op]);
+  const s = snap(one(chk('library.d24.requires', op, { code: 'D24.X4', params: { outcome: 'PASS' } })));
+  s.requires = { operators: [op] };
+  rejFx('d24-closed-schemas', 'd24/reject-legacy-requires-field', rehash(s), undefined, [op]);
 }
 rejFx('d24-closed-schemas', 'd24/reject-unknown-aggregate-field',
   snap(one(chk('library.d24.aggregate', 'greater_than', { code: 'D24.X5', field: 'x[*].v', value: 1,
@@ -776,28 +842,28 @@ rejFx('d24-closed-schemas', 'd24/reject-unknown-aggregate-field',
   rejFx('d24-closed-schemas', 'd24/reject-unknown-dictionary-entry-field', snap([d, r, pipe('checks.main', [{ rule: r.id }])]));
 }
 {
-  const p = pred('library.d24.when.p', 'is_true', { field: 'go' });
+  const p = pred('library.d24.when.p', 'equals', { field: 'go', value: true });
   const hit = chk('library.d24.when.hit', 'not_empty', { code: 'D24.X8', field: 'a' });
   const c = { id: 'condition', type: 'condition', when: { all: [p.id], unknown: true }, steps: [{ rule: hit.id }] };
   rejFx('d24-closed-schemas', 'd24/reject-unknown-when-field', snap([p, hit, c, pipe('checks.main', [{ condition: c.id }])]));
 }
 {
   const r = chk('library.d24.step', 'not_empty', { code: 'D24.X9', field: 'a' });
-  rejFx('d24-closed-schemas', 'd24/reject-unknown-step-field',
-    snap([r, pipe('checks.main', [{ rule: r.id, unknown: true }])]));
+  const s = snap([r, pipe('checks.main', [r.id])]);
+  s.artifacts['checks.main'].steps = [{ rule: r.id, unknown: true }];
+  rejFx('d24-closed-schemas', 'd24/reject-unknown-step-field', rehash(s));
 }
 
 /* ---------------- rc.4: mandatory short-circuit evaluation (D22) ---------------- */
 {
   const run = (name, kind, firstPass, shouldAbort) => {
-    const first = pred(`library.d22.${name}.first`, 'is_true', { field: 'first' });
-    const throwing = pred(`library.d22.${name}.throw`, 'conformance.rule.throw', { field: 'unused' });
+    const first = pred(`library.d22.${name}.first`, 'equals', { field: 'first', value: true });
+    const throwing = pred(`library.d22.${name}.throw`, 'conformance.rule.throw');
     const target = chk(`library.d22.${name}.target`, 'not_empty', { code: `D22.${name}`, field: 'required' });
     const condition = { id: `condition.${name}`, type: 'condition', when: { [kind]: [first.id, throwing.id] }, steps: [{ rule: target.id }] };
-    const snapshot = snap([first, throwing, target, condition, pipe('checks.main', [{ condition: condition.id }])],
-      { requires: { operators: ['conformance.rule.throw'] } });
+    const snapshot = snap([first, throwing, target, condition, pipe('checks.main', [{ condition: condition.id }])]);
     const expected = shouldAbort
-      ? { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'OPERATOR_FAULT', details: { ruleId: throwing.id, operator: 'conformance.rule.throw' } } }
+      ? { status: 'ABORT', issues: [], error: { code: 'OPERATOR_FAULT', details: { ruleId: throwing.id, operator: 'conformance.rule.throw' } } }
       : OKR;
     evalFx('d22-evaluation', `d22/${name}`, snapshot,
       { pipelineId: 'checks.main', payload: { first: firstPass, required: 'ok' } }, expected,
@@ -809,17 +875,15 @@ rejFx('d24-closed-schemas', 'd24/reject-unknown-aggregate-field',
   run('all-pass-evaluates-throw', 'all', true, true);
 }
 {
-  const op = 'conformance.rule.tri';
-  const extrema = pred('library.d22.max', op, { field: 'items[*].result', aggregate: { mode: 'MAX' } });
-  const target = chk('library.d22.max.target', 'not_empty', { code: 'D22.MAX', field: 'required' });
-  const condition = { id: 'condition.max', type: 'condition', when: extrema.id, steps: [{ rule: target.id }] };
-  evalFx('d22-evaluation', 'd22/max-selects-raw-extremum-before-operator',
-    snap([extrema, target, condition, pipe('checks.main', [{ condition: condition.id }])],
-      { requires: { operators: [op] } }),
-    { pipelineId: 'checks.main', payload: { items: [{ result: 'PASS' }, { result: 'SKIP' }] } },
-    OKR, [op]);
+  const first = chk('library.d22.issue-before-abort', 'not_empty', { code: 'D22.ABORT.1', field: 'missing' });
+  const throwing = chk('library.d22.throw-after-issue', 'conformance.rule.throw', { code: 'D22.ABORT.2' });
+  evalFx('d22-evaluation', 'd22/abort-discards-previous-business-issues',
+    snap([first, throwing, pipe('checks.main', [first.id, throwing.id])]),
+    { pipelineId: 'checks.main', payload: {} },
+    { status: 'ABORT', issues: [], error: { code: 'OPERATOR_FAULT',
+      details: { ruleId: throwing.id, operator: 'conformance.rule.throw' } } },
+    ['conformance.rule.throw']);
 }
-
 /* ---------------- rc.4: finite binary64 model (D23) ---------------- */
 evalFx('d23-binary64', 'd23/decimal-fraction-is-accepted',
   snap(one(chk('library.d23.fraction', 'equals', { code: 'D23.1', field: 'a', value: 0.1 }))),
@@ -842,7 +906,7 @@ evalFx('d23-binary64', 'd23/decimal-fraction-is-accepted',
   evalFx('d23-binary64', name,
     snap(one(chk('library.d23.payload', 'not_empty', { code: 'D23.4', field: 'a' }))),
     { pipelineId: 'checks.main', payload: { a: '__RAW_PAYLOAD_OVERFLOW__' } },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'INVALID_PAYLOAD_NUMBER', details: { path: 'a' } } });
+    { status: 'ABORT', issues: [], error: { code: 'INVALID_PAYLOAD_NUMBER', details: { path: 'a' } } });
   raw(name, [['__RAW_PAYLOAD_OVERFLOW__', '1e400']]);
 }
 {
@@ -850,7 +914,7 @@ evalFx('d23-binary64', 'd23/decimal-fraction-is-accepted',
   evalFx('d23-binary64', name,
     snap(one(chk('library.d23.context', 'not_empty', { code: 'D23.5', field: 'a' }))),
     { pipelineId: 'checks.main', payload: { a: 1 }, context: { rate: '__RAW_CONTEXT_OVERFLOW__' } },
-    { status: 'ABORT', control: 'STOP', issues: [], error: { code: 'INVALID_CONTEXT_NUMBER', details: { path: 'rate' } } });
+    { status: 'ABORT', issues: [], error: { code: 'INVALID_CONTEXT_NUMBER', details: { path: 'rate' } } });
   raw(name, [['__RAW_CONTEXT_OVERFLOW__', '-1e400']]);
 }
 {
@@ -860,15 +924,193 @@ evalFx('d23-binary64', 'd23/decimal-fraction-is-accepted',
   raw(name, [['__RAW_SNAPSHOT_OVERFLOW__', '1e400']]);
 }
 
-/* ---------------- rc.4: sourceHash projection (D25) ---------------- */
+/* ---------------- rc.5: compact format and invocation boundary (D26-D30) ---------------- */
+{
+  const s = snap(one(chk('library.d26.array', 'not_empty', { code: 'D26.X1', field: 'a' })));
+  s.artifacts = Object.entries(s.artifacts).map(([id, artifact]) => ({ id, ...artifact }));
+  rejFx('d26-format', 'd26/reject-legacy-artifacts-array', rehash(s));
+}
+{
+  const s = snap(one(chk('library.d26.id', 'not_empty', { code: 'D26.X2', field: 'a' })));
+  s.artifacts['library.d26.id'].id = 'library.d26.id';
+  rejFx('d26-format', 'd26/reject-repeated-id-in-artifact-value', rehash(s));
+}
+{
+  const r = chk('library.d26.object-step', 'not_empty', { code: 'D26.X3', field: 'a' });
+  const s = snap(one(r));
+  s.artifacts['checks.main'].steps = [{ rule: r.id }];
+  rejFx('d26-format', 'd26/reject-legacy-object-step', rehash(s));
+}
+{
+  const r = chk('library.d26.step-id', 'not_empty', { code: 'D26.X4', field: 'a' });
+  const s = snap(one(r));
+  s.artifacts['checks.main'].steps = [{ rule: r.id, stepId: 'legacy' }];
+  rejFx('d26-format', 'd26/reject-legacy-step-id', rehash(s));
+}
+{
+  const r = chk('library.d26.flow', 'not_empty', { code: 'D26.X5', field: 'a' });
+  const s = snap(one(r));
+  delete s.artifacts['checks.main'].steps;
+  s.artifacts['checks.main'].flow = [r.id];
+  rejFx('d26-format', 'd26/reject-legacy-pipeline-flow', rehash(s));
+}
+{
+  const s = snap(one(chk('library.d29.strict', 'not_empty', { code: 'D29.X1', field: 'a' })));
+  s.artifacts['checks.main'].strict = false;
+  rejFx('d29-removed', 'd29/reject-legacy-pipeline-strict', rehash(s));
+}
+rejFx('d29-removed', 'd29/reject-legacy-min-aggregate',
+  snap(one(chk('library.d29.min', 'greater_than', { code: 'D29.X2', field: 'x[*].v', value: 1,
+    aggregate: { mode: 'MIN' } }))));
+rejFx('d29-removed', 'd29/reject-legacy-max-aggregate',
+  snap(one(chk('library.d29.max', 'greater_than', { code: 'D29.X3', field: 'x[*].v', value: 1,
+    aggregate: { mode: 'MAX' } }))));
+rejFx('d26-format', 'd26/reject-duplicate-dictionary-scalar',
+  snap([{ id: 'dictionary', type: 'dictionary', entries: ['RU', 'RU'] },
+    chk('library.d26.dictionary', 'in_dictionary', { code: 'D26.X6', field: 'country', dictionary: 'dictionary' }),
+    pipe('checks.main', ['library.d26.dictionary'])]));
+rejFx('d02-length', 'd02/reject-negative-length',
+  snap(one(chk('library.length.negative', 'length_max', { code: 'L.X1', field: 'a', value: -1 }))));
+rejFx('d02-length', 'd02/reject-fractional-length',
+  snap(one(chk('library.length.fraction', 'length_equals', { code: 'L.X2', field: 'a', value: 1.5 }))));
+
+{
+  const op = 'conformance.rule.inputs';
+  const valid = chk('library.d27.inputs', op, { code: 'D27.1',
+    inputs: { missing: 'absent.path', nullValue: 'presentNull' } });
+  evalFx('d27-inputs', 'd27/missing-path-omits-key-null-path-preserves-null',
+    snap(one(valid)), { pipelineId: 'checks.main', payload: { presentNull: null } }, OKR, [op]);
+  rejFx('d27-inputs', 'd27/reject-missing-required-input-name',
+    snap(one(chk('library.d27.missing-name', op, { code: 'D27.X1', inputs: { missing: 'absent.path' } }))),
+    undefined, [op]);
+  rejFx('d27-inputs', 'd27/reject-unknown-input-name',
+    snap(one(chk('library.d27.unknown-name', op, { code: 'D27.X2',
+      inputs: { missing: 'absent.path', nullValue: 'presentNull', extra: 'x' } }))), undefined, [op]);
+  rejFx('d27-inputs', 'd27/reject-invalid-input-path',
+    snap(one(chk('library.d27.bad-path', op, { code: 'D27.X3',
+      inputs: { missing: 'a..b', nullValue: 'presentNull' } }))), undefined, [op]);
+  rejFx('d27-inputs', 'd27/reject-wildcard-input-path',
+    snap(one(chk('library.d27.wildcard', op, { code: 'D27.X4',
+      inputs: { missing: 'items[*].value', nullValue: 'presentNull' } }))), undefined, [op]);
+}
+
+{
+  const op = 'conformance.rule.tri';
+  const r = chk('library.d27.standard-absence', op, { code: 'D27.2', field: 'absent' });
+  evalFx('d27-inputs', 'd27/custom-standard-field-absence-skips-before-invocation',
+    snap(one(r)), { pipelineId: 'checks.main', payload: {} }, OKR, [op]);
+}
+
+{
+  const s = snap(one(chk('library.d28.meta', 'not_empty', { code: 'D28.X1', field: 'a' })));
+  s.meta = { projectId: 'legacy' };
+  rejFx('d28-hash', 'd28/reject-snapshot-meta', rehash(s));
+}
+{
+  const r = chk('library.d28.issue-meta', 'not_empty', { code: 'D28.1', field: 'a', meta: { owner: 'risk' } });
+  const withMeta = snap(one(r));
+  const withoutMeta = snap(one(chk('library.d28.issue-meta', 'not_empty', { code: 'D28.1', field: 'a' })));
+  if (withMeta.sourceHash === withoutMeta.sourceHash) throw new Error('issue.meta did not affect sourceHash');
+  evalFx('d28-hash', 'd28/issue-meta-is-hashed-and-passed-through', withMeta,
+    { pipelineId: 'checks.main', payload: {} },
+    ERR([issue('ERROR', 'D28.1', M, 'a', r.id, 'checks.main', { meta: { owner: 'risk' } })]));
+}
+{
+  const astral = '\u{10000}';
+  const bmp = '\uE000';
+  const r = chk('shared.rule', 'not_empty', { code: 'D28.2', field: 'a' });
+  const arts = [r, pipe(astral, [r.id]), pipe(bmp, [r.id])];
+  const valid = snap(arts);
+  if (valid.exports[0] !== astral || valid.exports[1] !== bmp) throw new Error('UTF-16 export order is wrong');
+  evalFx('d28-hash', 'd28/jcs-utf16-orders-u10000-before-ue000', valid,
+    { pipelineId: astral, payload: { a: 1 } }, OKR);
+  rejFx('d28-hash', 'd28/reject-unsorted-exports',
+    snap(arts, { exports: [bmp, astral], sortExports: false }));
+}
+
+{
+  const valid = snap(one(chk('library.d28.duplicate', 'not_empty', { code: 'D28.X2', field: 'a' })));
+  const text = JSON.stringify(valid).replace(
+    '{"format":"jsonspecs-snapshot",',
+    '{"format":"jsonspecs-snapshot","format":"jsonspecs-snapshot",');
+  rawSnapshotFx('d28-hash', 'd28/reject-duplicate-json-member', text);
+}
+{
+  const validExceptUnicode = snap(one(chk('library.d28.surrogate', 'not_empty', {
+    code: 'D28.X3', field: 'a', message: '\uD800'
+  })));
+  rawSnapshotFx('d28-hash', 'd28/reject-lone-surrogate', JSON.stringify(validExceptUnicode));
+}
+
+/* ---------------- complete built-in operator outcome matrix ---------------- */
+{
+  const cases = [
+    { op: 'not_empty', pass: { a: 'x' }, fail: {}, failExtra: {} },
+    { op: 'is_empty', pass: {}, fail: { a: 0 }, failExtra: { actual: 0 } },
+    { op: 'not_true', pass: { a: false }, fail: { a: true }, failExtra: { actual: true } },
+    { op: 'any_filled', rule: { fields: ['a', 'b'] }, pass: { b: 'x' }, fail: {}, field: null, failExtra: {} },
+    { op: 'is_boolean', pass: { a: true }, fail: { a: 1 }, skip: true, failExtra: { actual: 1 } },
+    { op: 'is_string', pass: { a: 'x' }, fail: { a: 1 }, skip: true, failExtra: { actual: 1 } },
+    { op: 'is_number', pass: { a: 1 }, fail: { a: '1' }, skip: true, failExtra: { actual: '1' } },
+    { op: 'is_integer', pass: { a: 1 }, fail: { a: 1.5 }, skip: true, failExtra: { actual: 1.5 } },
+    { op: 'equals', rule: { value: 1 }, pass: { a: 1 }, fail: { a: 2 }, skip: true, failExtra: { expected: 1, actual: 2 } },
+    { op: 'not_equals', rule: { value: 1 }, pass: { a: 2 }, fail: { a: 1 }, skip: true, failExtra: { expected: 1, actual: 1 } },
+    { op: 'contains', rule: { value: 'x' }, pass: { a: 'ax' }, fail: { a: 'ay' }, skip: true, failExtra: { expected: 'x', actual: 'ay' } },
+    { op: 'matches_regex', rule: { value: '^x$' }, pass: { a: 'x' }, fail: { a: 'y' }, skip: true, failExtra: { expected: '^x$', actual: 'y' } },
+    { op: 'not_matches_regex', rule: { value: '^x$' }, pass: { a: 'y' }, fail: { a: 'x' }, skip: true, failExtra: { expected: '^x$', actual: 'x' } },
+    { op: 'greater_than', rule: { value: 1 }, pass: { a: 2 }, fail: { a: 1 }, skip: true, failExtra: { expected: 1, actual: 1 } },
+    { op: 'less_than', rule: { value: 1 }, pass: { a: 0 }, fail: { a: 1 }, skip: true, failExtra: { expected: 1, actual: 1 } },
+    { op: 'length_equals', rule: { value: 2 }, pass: { a: 'ab' }, fail: { a: 'a' }, skip: true, failExtra: { expected: 2, actual: 'a' } },
+    { op: 'length_max', rule: { value: 2 }, pass: { a: 'ab' }, fail: { a: 'abc' }, skip: true, failExtra: { expected: 2, actual: 'abc' } },
+    { op: 'field_equals_field', rule: { value_field: 'b' }, pass: { a: 1, b: 1 }, fail: { a: 1, b: 2 }, skip: true, failExtra: { expected: 2, actual: 1 } },
+    { op: 'field_not_equals_field', rule: { value_field: 'b' }, pass: { a: 1, b: 2 }, fail: { a: 1, b: 1 }, skip: true, failExtra: { expected: 1, actual: 1 } },
+    { op: 'field_greater_than_field', rule: { value_field: 'b' }, pass: { a: 2, b: 1 }, fail: { a: 1, b: 2 }, skip: true, failExtra: { expected: 2, actual: 1 } },
+    { op: 'field_less_than_field', rule: { value_field: 'b' }, pass: { a: 1, b: 2 }, fail: { a: 2, b: 1 }, skip: true, failExtra: { expected: 1, actual: 2 } },
+    { op: 'field_greater_or_equal_than_field', rule: { value_field: 'b' }, pass: { a: 1, b: 1 }, fail: { a: 0, b: 1 }, skip: true, failExtra: { expected: 1, actual: 0 } },
+    { op: 'field_less_or_equal_than_field', rule: { value_field: 'b' }, pass: { a: 1, b: 1 }, fail: { a: 2, b: 1 }, skip: true, failExtra: { expected: 1, actual: 2 } },
+    { op: 'in_dictionary', rule: { dictionary: 'matrix.dictionary' }, dictionary: true, pass: { a: 'A' }, fail: { a: 'B' }, skip: true, failExtra: { expected: 'matrix.dictionary', actual: 'B' } },
+    { op: 'not_in_dictionary', rule: { dictionary: 'matrix.dictionary' }, dictionary: true, pass: { a: 'B' }, fail: { a: 'A' }, skip: true, failExtra: { expected: 'matrix.dictionary', actual: 'A' } },
+  ];
+
+  for (const c of cases) {
+    const code = `BUILTIN.${c.op}`;
+    const ruleOptions = { code, ...(c.op === 'any_filled' ? {} : { field: 'a' }), ...(c.rule ?? {}) };
+    const makeSnapshot = () => {
+      const r = chk(`builtin.${c.op}`, c.op, ruleOptions);
+      const artifacts = c.dictionary
+        ? [{ id: 'matrix.dictionary', type: 'dictionary', entries: ['A'] }, r, pipe('checks.main', [r.id])]
+        : one(r);
+      return { r, snapshot: snap(artifacts) };
+    };
+
+    {
+      const { snapshot } = makeSnapshot();
+      evalFx('operators', `operators/${c.op}-pass`, snapshot,
+        { pipelineId: 'checks.main', payload: c.pass }, OKR);
+    }
+    {
+      const { r, snapshot } = makeSnapshot();
+      evalFx('operators', `operators/${c.op}-fail`, snapshot,
+        { pipelineId: 'checks.main', payload: c.fail },
+        ERR([issue('ERROR', code, M, c.field === null ? null : 'a', r.id, 'checks.main', c.failExtra)]));
+    }
+    if (c.skip) {
+      const { snapshot } = makeSnapshot();
+      evalFx('operators', `operators/${c.op}-skip`, snapshot,
+        { pipelineId: 'checks.main', payload: {} }, OKR);
+    }
+  }
+}
+
+/* ---------------- rc.5: whole-snapshot sourceHash (D28) ---------------- */
 {
   const r = chk('library.d25.rule', 'not_empty', { code: 'D25.1', field: 'a' });
   const p = pipe('checks.main', [{ rule: r.id }]);
   const a = snap([r, p]);
   const b = snap([p, r]);
   if (a.sourceHash !== b.sourceHash) throw new Error('artifact order changed sourceHash');
-  evalFx('d25-hash', 'd25/artifact-order-a', a, { pipelineId: 'checks.main', payload: { a: 1 } }, OKR);
-  evalFx('d25-hash', 'd25/artifact-order-b-same-hash', b, { pipelineId: 'checks.main', payload: { a: 1 } }, OKR);
+  evalFx('d28-hash', 'd28/artifact-authoring-order-a', a, { pipelineId: 'checks.main', payload: { a: 1 } }, OKR);
+  evalFx('d28-hash', 'd28/artifact-authoring-order-b-same-map-and-hash', b, { pipelineId: 'checks.main', payload: { a: 1 } }, OKR);
 }
 
 /* ---------------- write ---------------- */

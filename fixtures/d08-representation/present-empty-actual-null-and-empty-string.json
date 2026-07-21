@@ -3,25 +3,19 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "b355cc9d0df9b2404f04a00534c9aa65ac2ea489a2f43a4a88e9d0cc6fa29454",
-    "artifacts": [
-      {
-        "id": "library.p.n",
-        "type": "rule",
-        "operator": "not_empty",
-        "field": "a",
-        "issue": {
-          "level": "ERROR",
-          "code": "P2",
-          "message": "failed"
-        }
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.p.n",
+          "library.p.e"
+        ]
       },
-      {
-        "id": "library.p.e",
+      "library.p.e": {
         "type": "rule",
         "operator": "not_empty",
         "field": "b",
@@ -31,20 +25,18 @@
           "message": "failed"
         }
       },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.p.n"
-          },
-          {
-            "rule": "library.p.e"
-          }
-        ]
+      "library.p.n": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "a",
+        "issue": {
+          "level": "ERROR",
+          "code": "P2",
+          "message": "failed"
+        }
       }
-    ]
+    },
+    "sourceHash": "1159df60c424d0a06f44c4eafc99a2b433ca226eb4cf1901776a010419ac4d4c"
   },
   "operators": [],
   "input": {
@@ -56,10 +48,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "P2",
         "message": "failed",
@@ -69,7 +59,6 @@
         "actual": null
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "P3",
         "message": "failed",
@@ -80,8 +69,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "b355cc9d0df9b2404f04a00534c9aa65ac2ea489a2f43a4a88e9d0cc6fa29454"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "1159df60c424d0a06f44c4eafc99a2b433ca226eb4cf1901776a010419ac4d4c"
     }
   }
 }

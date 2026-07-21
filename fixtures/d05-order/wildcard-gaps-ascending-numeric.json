@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "7157c47ba7b893c6130f9c3a5407255aaa62096eab6a18b5d0ab1d2ad79416d4",
-    "artifacts": [
-      {
-        "id": "library.o.each",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.o.each"
+        ]
+      },
+      "library.o.each": {
         "type": "rule",
         "operator": "greater_than",
         "field": "x[*].v",
@@ -24,18 +28,9 @@
           "code": "O1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.o.each"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "1afcb25bd0e67e1d9103f45849d4c9814fbc1c3ecdf0e163792b5620e9b64c47"
   },
   "operators": [],
   "input": {
@@ -59,10 +54,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O1",
         "message": "failed",
@@ -73,7 +66,6 @@
         "actual": 2
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O1",
         "message": "failed",
@@ -84,7 +76,6 @@
         "actual": 3
       },
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "O1",
         "message": "failed",
@@ -96,8 +87,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "7157c47ba7b893c6130f9c3a5407255aaa62096eab6a18b5d0ab1d2ad79416d4"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "1afcb25bd0e67e1d9103f45849d4c9814fbc1c3ecdf0e163792b5620e9b64c47"
     }
   }
 }

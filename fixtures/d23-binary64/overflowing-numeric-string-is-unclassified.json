@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "0f49906f4bad32d3ff07358e221b2df9abd2525f39638127da9f9a7d895a453f",
-    "artifacts": [
-      {
-        "id": "library.d23.string",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d23.string"
+        ]
+      },
+      "library.d23.string": {
         "type": "rule",
         "operator": "greater_than",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "D23.3",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d23.string"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "348e943d4590bfcf9e3c5af8920365d8e37f888a68a8b824eb152e4eed3adc7c"
   },
   "operators": [],
   "input": {
@@ -42,10 +37,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "D23.3",
         "message": "failed",
@@ -57,8 +50,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "0f49906f4bad32d3ff07358e221b2df9abd2525f39638127da9f9a7d895a453f"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "348e943d4590bfcf9e3c5af8920365d8e37f888a68a8b824eb152e4eed3adc7c"
     }
   }
 }

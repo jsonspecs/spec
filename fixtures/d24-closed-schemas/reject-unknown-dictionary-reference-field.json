@@ -3,21 +3,24 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "b0b950ebe2ea2dc05aac233a577430645ca4ef87ce4bc9f75b2d4ef4c75cb154",
-    "artifacts": [
-      {
-        "id": "dictionary",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d24.dictref"
+        ]
+      },
+      "dictionary": {
         "type": "dictionary",
         "entries": [
           "X"
         ]
       },
-      {
-        "id": "library.d24.dictref",
+      "library.d24.dictref": {
         "type": "rule",
         "operator": "in_dictionary",
         "field": "a",
@@ -31,18 +34,9 @@
           "code": "D24.X6",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.d24.dictref"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "a954427672c7fd64ad88ad05b538456a69c909cbcecbf57a0b439feb1ba65645"
   },
   "operators": [],
   "expected": {

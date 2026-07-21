@@ -3,14 +3,18 @@
   "snapshot": {
     "format": "jsonspecs-snapshot",
     "formatVersion": 2,
-    "specVersion": "1.0.0-rc.4",
+    "specVersion": "1.0.0-rc.5",
     "exports": [
       "checks.main"
     ],
-    "sourceHash": "bf6cabc5ee87995eda408c3988b7268f7e48a43f81e292f7c84fffec65a9f288",
-    "artifacts": [
-      {
-        "id": "library.n.eq",
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.n.eq"
+        ]
+      },
+      "library.n.eq": {
         "type": "rule",
         "operator": "equals",
         "field": "a",
@@ -20,18 +24,9 @@
           "code": "N1",
           "message": "failed"
         }
-      },
-      {
-        "id": "checks.main",
-        "type": "pipeline",
-        "strict": false,
-        "flow": [
-          {
-            "rule": "library.n.eq"
-          }
-        ]
       }
-    ]
+    },
+    "sourceHash": "1f9274dd0eb5a886a8e87f6a83cf3138faaad5213cf6b76a1879f68a86dcd134"
   },
   "operators": [],
   "input": {
@@ -42,10 +37,8 @@
   },
   "expected": {
     "status": "ERROR",
-    "control": "STOP",
     "issues": [
       {
-        "kind": "ISSUE",
         "level": "ERROR",
         "code": "N1",
         "message": "failed",
@@ -57,8 +50,8 @@
       }
     ],
     "ruleset": {
-      "specVersion": "1.0.0-rc.4",
-      "sourceHash": "bf6cabc5ee87995eda408c3988b7268f7e48a43f81e292f7c84fffec65a9f288"
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "1f9274dd0eb5a886a8e87f6a83cf3138faaad5213cf6b76a1879f68a86dcd134"
     }
   }
 }

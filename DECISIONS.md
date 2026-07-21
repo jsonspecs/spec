@@ -8,7 +8,7 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 25 decisions (D1–D25) and addenda [DR-I]–[DR-VI] are **APPROVED** by the
+Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-VIII] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -18,7 +18,7 @@ in `source/`.
 
 ---
 
-## D1. Numeric model — APPROVED
+## D1. Numeric model — APPROVED; precision caveat superseded by D23
 
 **Context.** `equals`, `greater_than`, `field_*_field`, `is_integer`, `COUNT` all rest
 on a notion of "number". The prototype implied IEEE 754 binary64 (Node); Java might
@@ -31,9 +31,9 @@ fractional money is not). (b) Arbitrary-precision decimal — exact for money, b
 breaking vs the prototype and not native in Go/JS. (c) int64 + binary64 hybrid — worst
 of both: int↔float comparison rules would need separate definition.
 
-**Resolution: (a) binary64**, with two normative caveats: integers within
-±(2^53 − 1) are exact; numbers outside that range or fractions not representable in
-binary64 are outside the determinism guarantee (round-to-nearest-even applies). Numeric
+**Original resolution: (a) binary64.** D23 later closed the entire finite-binary64
+domain and supersedes the original "outside the determinism guarantee" caveat: every
+finite rounded result is normative. Numeric
 strings parse via the pinned grammar `^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$` into binary64.
 Consequences: `1 == 1.0`, `1 != "1"` — matches the prototype.
 
@@ -74,7 +74,11 @@ capricious part of JS into the contract.
 production-pack audit found none (all 18 `length_max` rules target string fields).
 See also the Part I addendum: the same strictness extends to the whole string family.
 
-## D4. Regex: dialect, flags, preprocessing — APPROVED (three sub-decisions + amendment)
+## D4. Regex dialect — APPROVED; flags and preprocessing superseded by D29
+
+The text below records the original rc.1 decision. D29 removes regex flags and the
+extra backslash preprocessing from version 1; only the dialect and the two regex
+operators remain current.
 
 **Amendment (approved after the production-pack audit):** the built-in operator set
 gains the check operator `not_matches_regex` — the same pattern contract and
@@ -125,7 +129,7 @@ written in the `^\\d{6}$` style with a risk of silently changing pattern semanti
 The production pack confirmed the decision on live data: both escaping styles coexist
 (17 rules single-escaped, 3 double-escaped relying on the pass).
 
-## D5. Wildcard traversal and total `issues[]` order — APPROVED
+## D5. Wildcard traversal and total `issues[]` order — APPROVED; legacy wording superseded by D26/D29
 
 **Context.** "Same result" includes the same order of `issues[]`. Step order is fixed
 by `flow`, but `accounts[*].balance` enumerates payload keys — JS preserves insertion
@@ -142,7 +146,7 @@ all issues of their pipeline.
 **Cost:** zero for arrays (matches observed prototype behavior, including sparse flat
 keys like `a[0], a[2], a[5]` — verified empirically); fixtures cover the gap case.
 
-## D6. Canonical serialization for `sourceHash` — APPROVED
+## D6. Canonical serialization for `sourceHash` — APPROVED; hash input superseded by D28
 
 **Context.** Implementations verify `sourceHash`, hence must *recompute* it. SHA-256
 "over artifacts" without a canonical JSON form is unreproducible: key order, number
@@ -156,7 +160,10 @@ serialization aligns with D1 (binary64). Dropping runtime recomputation was reje
 independent JCS canonicalization on the production snapshot; full equivalence on edge
 inputs is closed by fixtures.
 
-## D7. Normative vs informative result surface — APPROVED
+## D7. Normative vs informative result surface — APPROVED; result fields refined by D28/D30
+
+D30 removes `control`, `kind`, trace, and engine version from the specified result;
+D28 removes snapshot metadata. The following is retained as historical rationale.
 
 **Normative (equality required):** `status`, `control`; `issues[]` — composition,
 order (D5), all fields including `message` (authored data passthrough, not
@@ -184,7 +191,7 @@ same payload `ABORT` on Node and `OK` on Go, breaking result equality on flat gr
 framed as "keys reserved by the contract", not as a platform defense. ABORT codes are
 a closed normative enum (SPEC.md §6.7).
 
-## D10. Custom and unknown operators — APPROVED (revision 2)
+## D10. Custom and unknown operators — APPROVED; registry boundary refined by D26/D27
 
 **The approved model: the spec guarantees only itself; custom operators are
 implementation-specific, outside the spec.**
@@ -202,19 +209,18 @@ referencing an operator absent from the implementation's registry is **rejected
 before any evaluation**, normative identifier `OPERATOR_NOT_FOUND` (determinism
 argument: under a runtime model the verdict would depend on *which* pipeline was run;
 reject-before-execution yields one verdict per snapshot, without which the "rejected
-inputs set" of D7 is undefinable); the optional snapshot field
-`requires.operators: string[]` — names only, no versions (there is no separate
-operator-spec layer to version) — letting an implementation reject a non-portable
-snapshot from one field without walking the artifacts.
+inputs set" of D7 is undefinable).
+The original design used `requires.operators: string[]` — names only, no versions (there is no separate
+operator-spec layer to version). D26 removes that duplicate list and derives the set
+from reachable rules; D27 pins the resolved invocation boundary and operator schema.
 
 An implementation author encountering someone else's custom operator chooses freely:
-implement it, or honestly return `OPERATOR_NOT_FOUND`. An intermediate layer
-("operator packs as separate conformance units with their own specs and versions")
-was **deliberately rejected**: two runtimes for one business process is an unlikely
-scenario in practice, and the layer would tie implementers' hands without delivering
-value. Consequence for production packs: the quality of their custom-operator
-documentation is the pack's and its consumers' responsibility; the spec and the
-conformance suite do not check it.
+implement it, or honestly return `OPERATOR_NOT_FOUND`. The original decision rejected a
+separate cross-runtime operator-pack conformance layer because two runtimes for one
+business process appeared unlikely. That premise was later invalidated by the concrete
+Node/Java implementation plan. The core still cannot define custom business semantics,
+but [DR-VIII] adds a separate operator-pack profile for deployments that claim
+cross-runtime equivalence.
 
 ## D11. Legacy surfaces — APPROVED: cut along the `formatVersion` boundary
 
@@ -408,7 +414,10 @@ A returned `EXCEPTION` is outside the enum and causes
 `conformance.rule.throw`, `conformance.rule.invalid_result`, and
 `conformance.rule.tri`, registered only by conformance runners.
 
-## D18. Unicode pinning for case folding — APPROVED
+## D18. Unicode pinning for case folding — superseded by D29
+
+This decision governed the now-removed regex `i` flag. It is retained only as the
+historical reason the flag was expensive to carry across runtimes.
 
 Flag `i` — Unicode simple case folding per **Unicode 16.0.0**, normative reference to
 the immutable file <https://www.unicode.org/Public/16.0.0/ucd/CaseFolding.txt>,
@@ -466,10 +475,11 @@ analyst ownership of levels. Any value outside `PASS|FAIL|SKIP`, including
 `EXCEPTION`, causes `OPERATOR_CONTRACT_VIOLATION`; a thrown technical failure causes
 `OPERATOR_FAULT`. This supersedes the role-specific portions of D10/D13/D17.
 
-## D20. Unified wildcard aggregation and effective population — APPROVED
+## D20. Unified wildcard aggregation and effective population — APPROVED; MIN/MAX removed by D29
 
 **Approved for rc.3.** Logical aggregation is separate from reporting:
-`mode = ALL|ANY|COUNT|MIN|MAX`; `issueMode = EACH|SUMMARY` exists only for
+The rc.3 model had `mode = ALL|ANY|COUNT|MIN|MAX`; D29 removes `MIN`/`MAX` from
+version 1. `issueMode = EACH|SUMMARY` exists only for
 `ALL`/`ANY`. It is required for those modes when `issue` exists and forbidden when
 it does not. `COUNT`/`MIN`/`MAX` always summarize on failure. Legacy logical `EACH`
 and `summaryIssue` are removed.
@@ -519,18 +529,19 @@ conditions, 40 reused by more than one caller, and control paths reaching pipeli
 three nested condition artifacts. Inlining would optimize the runtime schema at the cost
 of authoring deeply nested JSON control trees, contrary to the DSL's purpose.
 
-## D22. Deterministic guard short-circuit and select-first extrema — APPROVED
+## D22. Deterministic guard short-circuit — APPROVED; extrema portion superseded by D29
 
 **Approved for rc.4.** `when` evaluates recursively, left-to-right, with mandatory
 short-circuit: `all` stops at first false and `any` at first true. This is observable when
 a later custom operator throws, so exhaustive evaluation is not conformant. Fixtures pin
 `any(PASS, throw)`, `all(FAIL, throw)`, and their non-short-circuit counterparts.
 
-`MIN`/`MAX` select the raw structural extremum before operator evaluation, then invoke the
+The rc.4 extrema decision stated that `MIN`/`MAX` select the raw structural extremum before operator evaluation, then invoke the
 operator exactly once. Classification failure or mixed kinds fail before invocation; the
 first normative-order element breaks ties; the chosen result, including `SKIP`, becomes
 the aggregate result. Effective-population evaluation remains exclusive to
-`ALL`/`ANY`/`COUNT`.
+`ALL`/`ANY`/`COUNT`. D29 removes both modes from version 1, so this paragraph is
+historical only.
 
 ## D23. Closed finite-binary64 number domain — APPROVED
 
@@ -543,11 +554,12 @@ uses `INVALID_PAYLOAD_NUMBER`/`INVALID_CONTEXT_NUMBER` with the lexicographicall
 smallest path. A numeric-looking string is numeric for ordered comparison only when its
 conversion is finite; `"1e400"` is valid JSON text but unclassified for ordering.
 
-## D24. Closed nested schemas and custom-operator `params` — APPROVED
+## D24. Closed nested schemas and custom-operator `params` — APPROVED; refined by D26-D28
 
 **Approved for rc.4.** The snapshot envelope, `requires`, `exports`, `aggregate`, static
 dictionary references, object dictionary entries, `when` objects, and steps are explicitly
-closed. `snapshot.meta` remains the sole open core extension.
+closed. The rc.4 design retained `snapshot.meta`; D28 removes it. D26 removes
+`requires` and object dictionary references; D27 adds named resolved `inputs`.
 
 Operator-specific top-level rule fields are forbidden. A custom rule uses one `params`
 JSON object and its registered operator supplies a closed compile-time schema plus its
@@ -557,9 +569,9 @@ details, but a cross-runtime operator pack must publish equivalent machine-reada
 schemas. Strings in params do not create artifact-graph edges; dictionary dependencies
 use the normative `dictionary` field.
 
-## D25. Order-independent hash of the executable bundle — APPROVED
+## D25. Order-independent hash of the executable bundle — superseded by D28
 
-**Approved for rc.4; supersedes D6's artifacts-only projection.** `sourceHash` is SHA-256
+**Historical rc.4 decision; superseded in full by D28.** `sourceHash` was SHA-256
 over JCS of `{requires, exports, artifacts}` after sorting operator names, exported
 pipeline ids, and artifacts by id. Missing `requires` projects to an empty operator list.
 Nested semantic arrays (`flow`, `steps`, `when`, dictionary entries) retain order. This
@@ -574,3 +586,108 @@ closure, combined-DAG, short-circuit, extrema, binary64, nested-schema, params-s
 hash rules with both positive and rejection fixtures, and MUST be demonstrated red by an
 intentional violation before tagging. Further pre-1.0 changes are limited to errata found
 while implementing Node and Java against this exact candidate.
+
+## D26. Map-shaped artifacts and one exact step form — APPROVED
+
+**Approved for rc.5; supersedes the array/id and typed-step portions of D11, D21, and
+D25.** `artifacts` is an object keyed by globally unique artifact id; artifact values
+have no repeated `id`. Pipeline and condition both use `steps`, and each step is one
+exact id string whose target type is read from the artifact. `stepId` is removed.
+
+`requires.operators` is removed because the required custom set is derived from
+reachable rule operator names minus built-ins. A missing derived operator still produces
+the normative `OPERATOR_NOT_FOUND` rejection. Dictionary references become exact id
+strings and dictionary entries are unique scalars only. These changes eliminate data
+that duplicated information already present in the closed graph.
+
+## D27. Core-resolved operator inputs and constant params — APPROVED
+
+**Approved for rc.5; refines D10, D17, D19, and D24.** Every operator registers one
+closed compile-time contract for accepted standard operands, named `inputs`, and
+constant `params`. `inputs` maps operator-declared names to core path strings. Core
+validates and resolves all paths before invocation and never passes the whole payload,
+context, or a resolver API to an operator.
+
+At runtime an absent resolved path is an absent invocation key, while a present JSON
+`null` is a present key with value `null`. Named `inputs` are scalar non-wildcard
+paths; the exact abstract invocation record is pinned in §3.1. The operator result remains exactly
+`PASS|FAIL|SKIP`; throw/panic is `OPERATOR_FAULT`, never a fourth outcome. For custom
+issues, `actual` comes from the resolved primary field and `expected` from `value` or
+resolved `value_field`, with absent operands omitted. Operators cannot author runtime
+diagnostic fields.
+
+RC.5 errata clarify that required `inputs` names are compile-time configuration
+requirements, not runtime presence requirements. Missing resolved named inputs are
+delivered as omitted map members and never trigger core-level `SKIP`. The automatic
+absence rule applies to every configured standard `field`/`value_field` operand of a
+custom operator, whether its configuration is required or optional; a custom operator
+observes absence only through `inputs`. Compile-time operand type constraints describe
+the authored configuration, not the runtime values resolved from paths. `fields` remains
+private to the built-in `any_filled`, and `value`/`value_field` are mutually exclusive.
+The registry binds each non-empty name exactly once, and built-in names cannot be
+shadowed by custom packages.
+
+## D28. I-JSON boundary, whole-snapshot JCS hash, and no snapshot meta — APPROVED
+
+**Approved for rc.5; supersedes D6 and D25.** Text adapters reject duplicate object
+member names and unpaired surrogates before an ordinary lossy parse. JCS ordering is
+unsigned UTF-16 code-unit order, exactly RFC 8785; U+10000 sorts before U+E000.
+
+`sourceHash` is SHA-256 over JCS of the complete snapshot with only `sourceHash`
+removed. `exports` is required to arrive unique and strictly sorted in JCS string order;
+verification rejects unsorted input instead of normalizing it. Snapshot-level `meta` is
+removed because unhashed normative passthrough allowed equal hashes to produce unequal
+results. Authored `rule.issue.meta` remains open, hashed inside its artifact, and passed
+through normatively.
+
+## D29. Remove unproven version-1 features — APPROVED
+
+**Approved for rc.5; supersedes the affected parts of D4, D18, D20, and D22.** Version
+1 removes pipeline `strict`, aggregate `MIN`/`MAX`, and regex `flags`; none occurs in the
+reviewed production corpora and each carries disproportionate cross-runtime semantics.
+They may return in a later compatible spec extension after a concrete use case and
+portable vectors exist. `ALL`, `ANY`, and `COUNT` remain.
+
+Regex patterns are interpreted exactly after I-JSON decoding. The prototype's extra
+backslash-collapse pass is removed and legacy patterns are normalized once by migration.
+Comparison operators remain explicit DSL verbs; implementations may share an internal
+comparison primitive without replacing readable operators by `compare + params`.
+
+## D30. Minimal normative result — APPROVED
+
+**Approved for rc.5; refines D7 and D8.** `control` is removed because it is fully
+derived from `status`; constant issue `kind` is removed; `stepId` disappears with object
+steps. Trace and engine version are implementation API concerns, not fields of the core
+result. `ruleset` contains only normative `specVersion` and `sourceHash`.
+
+## [DR-VII] Addendum: final format review rc.4 → rc.5 — APPROVED
+
+rc.5 is an intentional final format redesign, not rc.4 polishing. Its release gate MUST
+cover the map artifact shape, string steps, derived custom operators, core-resolved
+inputs, absent-vs-null invocation semantics, I-JSON pre-parse rejection, unsigned UTF-16
+JCS ordering across Node and Java, whole-snapshot hashing, removed legacy fields, and
+the retained hashed `rule.issue.meta`. After rc.5, pre-1.0 changes are errata only.
+
+## [DR-VIII] Addendum: RC.5 semantic closure errata — APPROVED
+
+Implementation review of RC.5 exposed requirements that existed in intent but were not
+executable or unambiguous. The RC.5 edition therefore pins, without changing its format:
+
+- exact custom-operator operand schemas and absent named-input invocation;
+- no-operand schemas for `conformance.rule.throw`/`invalid_result` and exhaustive
+  aggregate probes through `conformance.rule.tri`;
+- `numeric-string` operands for scalar ordered comparisons;
+- escaped-only literal hyphens, absolute anchors, and dot semantics excluding only LF;
+- exhaustive left-to-right aggregate evaluation, atomic `EACH` issue materialization,
+  and the `COUNT + onEmpty` details shape;
+- technical `ABORT` discards previously accumulated business issues, while
+  `EXCEPTION` preserves them;
+- `OPERATOR_NOT_FOUND` only after all validation that does not require the missing
+  operator's unavailable contract succeeds;
+- closed result, issue, error, and ruleset objects; and
+- a separate versioned cross-runtime operator-pack profile with a supported core-version
+  range, shared golden vectors, and algorithm-tagged deployment provenance.
+
+These are errata because each resolves a contradiction or makes an already approved
+boundary testable. Scalar `greater_or_equal`/`less_or_equal` remain unapproved backlog
+features and are not added by this edition.
