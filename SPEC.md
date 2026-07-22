@@ -9,7 +9,7 @@ expected behavior. The reasoning behind every decision lives in a separate docum
 implementation (`source/`) whose practical experience produced these decisions.
 
 **Notation.** `[D1]`…`[D30]` refer to numbered decisions in `DECISIONS.md`;
-`[DR-I]`…`[DR-VIII]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
+`[DR-I]`…`[DR-IX]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
 
 ---
 
@@ -299,9 +299,18 @@ Every operator registers a closed compile-time contract declaring:
 1. which standard operands (`field`, `value`, `value_field`, `dictionary`) it accepts,
    the JSON type constraints on their authored configuration, and which combinations
    are required;
-2. the allowed and required *configured names* in `inputs`; every configured input value is a path
-   checked by the core path grammar (§2.7) and MUST NOT contain `[*]`;
+2. the allowed and required *configured names* in `inputs`; every name is a non-empty
+   I-JSON string, and every configured input value is a path checked by the core path
+   grammar (§2.7) and MUST NOT contain `[*]`;
 3. a closed schema for constant `params`.
+
+At the three levels controlled by an operator contract — the operator-specific
+configuration members of a rule, the `inputs` object, and the immediate `params` object
+— *closed* means a finite, explicitly enumerated set of property names. Dynamic name
+families (`patternProperties`, arbitrary additional members, or an equivalent facility
+in another schema language) do not satisfy this contract. Schemas may constrain values
+below those enumerated names in any portable way. The registration API and schema
+language remain implementation choices; the finite-name property does not. `[DR-IX]`
 
 The operator registry is a partial function from a non-empty name to exactly one
 contract and implementation. Ambiguous or duplicate bindings are invalid deployment
@@ -445,9 +454,10 @@ nz-digit     = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 `literal` is any code point except the metacharacters `\ . * + ? ( ) [ ] { } | ^ $`.
 `class-literal` is any code point except `\ ] -`. A literal hyphen in a class MUST be
-written as `\-`; an unescaped `-` is always the range operator. A literal `^` is allowed
-inside a class anywhere except the first position. Range endpoints are ordered by
-Unicode code-point value.
+written as `\-`; an unescaped `-` is always the range operator. A `class-escape` is a
+complete `class-item` and MUST NOT appear on either side of the range operator. Thus
+`[\d-z]` and `[0-\d]` are invalid. A literal `^` is allowed inside a class anywhere
+except the first position. Range endpoints are ordered by Unicode code-point value.
 
 **Explicitly excluded** (their presence makes the pattern, and hence the snapshot,
 invalid): backreferences, lookahead/lookbehind `(?= (?! (?<= (?<!`, named groups
@@ -457,9 +467,40 @@ string level, which already provides `\uXXXX`), POSIX classes `[:alpha:]`, neste
 classes, octal escapes, and any escape not listed in the grammar.
 
 **Normative limits** (protect against divergent engine-internal limits): every `int` in a
-quantifier MUST be ≤ 1000; the decoded pattern MUST be ≤ 1024 code points. Patterns
-violating the grammar or the limits make the artifact invalid — this is an artifact
-rejection, not a runtime error.
+quantifier MUST be ≤ 1000; the decoded pattern MUST be ≤ 1024 code points. Two
+additional limits are computed over the parsed grammar tree. `[DR-IX]`
+
+For a quantifier `q`, define its *bounded repeat factor* `F(q)` and *expansion copies*
+`K(q)`:
+
+| `q` | `F(q)` | `K(q)` |
+| --- | ---: | ---: |
+| absent, `*`, `+`, `?` | 1 | 1 |
+| `{n}` | `max(n, 1)` | `max(n, 1)` |
+| `{n,m}` | `max(m, 1)` | `max(m, 1)` |
+| `{n,}` | `max(n, 1)` | `n + 1` |
+
+The floor of 1 prevents a zero-count wrapper from erasing the compilation cost of its
+contained syntax.
+
+On every path from the pattern root to an atom, multiply `F(q)` for all counted
+quantifiers (`{n}`, `{n,m}`, `{n,}`) enclosing that atom. The product MUST be ≤
+**1000**. This catches backend repeat-expansion limits without banning nested unbounded
+loops such as `(a+)+`.
+
+The *expanded atom count* `C` is defined recursively:
+
+- `C(literal) = C(".") = C(escape) = C(class) = 1`; an anchor contributes 0;
+- `C(concat)` and `C(alternation)` are the sums of their child counts;
+- `C(group)` is the count of its contained alternation;
+- `C(atom q) = K(q) × C(atom)` for a quantified atom.
+
+The complete pattern MUST have `C ≤ 10000`. Implementations may stop either
+calculation as soon as its limit is exceeded; arbitrary-precision arithmetic is not
+required. Patterns violating the grammar or any limit make the artifact invalid — this
+is an artifact rejection, not a runtime error. Conversely, a pattern that satisfies the
+grammar and all four limits is in the specified language: a backend-specific repeat,
+program-size, or compilation-memory limit MUST NOT turn it into snapshot rejection.
 
 #### 3.4.3 Matching semantics
 
@@ -598,7 +639,7 @@ Fields in addition to §4.1:
 | `operator` | yes | non-empty string naming a built-in (§3.2) or registered custom operator (§4.9) |
 | `field` | per operator | §2.7 path; unused by `any_filled` |
 | `fields` | `any_filled` only | non-empty path array; forbidden for custom operators |
-| `inputs` | per operator | closed object of operator-declared names to non-wildcard §2.7 paths `[D27]` |
+| `inputs` | per operator | closed object of non-empty operator-declared names to non-wildcard §2.7 paths `[D27][DR-IX]` |
 | `value`, `value_field`, `dictionary` | per operator | Part I; `value` and `value_field` are mutually exclusive; `value_field` contains no `[*]`; `dictionary` is an exact dictionary id |
 | `params` | per operator | constant JSON object valid under the operator's closed schema `[D24][D27]` |
 | `aggregate` | when `field` contains `[*]` | §3.6; forbidden without wildcard |
@@ -782,7 +823,8 @@ evaluation is normative.
 2. Any artifact member name or value violating §4.1 or its type-specific schema
    (§4.4–§4.8), including regex patterns outside §3.4, legacy `flags`, `strict`, `flow`,
    object steps, object dictionary entries, invalid aggregate combinations, or
-   `inputs`/`params` rejected by the contract of a registered operator.
+   an empty configured `inputs` name, or `inputs`/`params` rejected by the contract of a
+   registered operator.
 3. Duplicate `issue.code` among rules with `issue`.
 4. Any unresolved or wrong-typed exact reference (§4.3), including `when` leaves that
    are not rules, dictionary step targets, and rule step targets without `issue`.
@@ -792,8 +834,9 @@ evaluation is normative.
    validation in items 1–5 and 7–8 that does not require the missing operator's contract.
    This includes the core-owned rule schema, global operand constraints, references,
    cycles, closure, depth, numbers, and the contracts of all registered operators. The
-   missing operator's accepted-operand set, configured `inputs` names, and `params`
-   schema are not available and therefore are not validated. If an independently
+   missing operator's accepted-operand set, configured non-empty `inputs` names beyond
+   the global non-empty-name constraint, and `params` schema are not available and
+   therefore are not validated. If an independently
    detectable defect coexists with the missing operator, the verdict is an ordinary
    rejection without that identifier.
 7. A snapshot exceeding maximum JSON depth (§2.1), or any
@@ -1178,7 +1221,13 @@ text and fixtures version together, atomically, under one tag. Three fixture kin
 ```
 
 A runner executes every fixture against the implementation and compares the normative
-projection structurally. Passing the complete suite of version X is a **necessary
+projection structurally. For a rejection fixture, the `expected` object is closed:
+absence of `identifier` means that the runner MUST verify that the implementation did
+not report the normative `OPERATOR_NOT_FOUND` identifier. For an evaluation fixture,
+comparison is over the JSON data model only; host object prototypes, classes, map types,
+or property iteration order have no identity. A runner MUST NOT use a host-language deep
+comparison that distinguishes two structurally equal JSON objects for such reasons.
+`[DR-IX]` Passing the complete suite of version X is a **necessary
 condition** of a conformance claim for X — not a sufficient one: the suite samples the
 behavior space, the text defines it. `[DR-IV]` If a fixture contradicts the text, the
 text prevails; the fixture is corrected through an erratum and a new suite version —

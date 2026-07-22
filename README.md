@@ -27,7 +27,9 @@ internal representations, and performance are explicitly out of scope.
 2. Build a fixture runner: for each file in `fixtures/**`, feed
    `snapshot` + `input` to your runtime and compare the **normative projection**
    (SPEC.md §7.2) to `expected` with structural JSON equality (§6.1). Rejection
-   fixtures must be refused before any evaluation.
+   fixtures must be refused before any evaluation; an absent rejection `identifier`
+   must be checked as absence, not ignored. Compare JSON data rather than host object
+   prototypes, classes, map implementations, or property iteration order.
 3. Declare conformance: implementation + version, supported `specVersion` range, and
    registered non-built-in operator names (§7.1).
 

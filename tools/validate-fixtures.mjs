@@ -79,6 +79,13 @@ for (const p of files) {
   if (!fx.expected || typeof fx.expected !== 'object') { err('missing expected'); continue; }
 
   const rejection = fx.expected.verdict === 'reject';
+  if (rejection) {
+    const expectedKeys = new Set(['verdict', 'identifier']);
+    for (const key of Object.keys(fx.expected))
+      if (!expectedKeys.has(key)) err(`rejection expected has unknown field ${key}`);
+    if ('identifier' in fx.expected && fx.expected.identifier !== 'OPERATOR_NOT_FOUND')
+      err(`bad rejection identifier ${fx.expected.identifier}`);
+  }
   if (typeof fx.snapshotText === 'string') {
     if (!rejection) err('snapshotText is only valid in rejection fixtures');
     if (fx.snapshot !== undefined) err('snapshotText fixture must not also contain snapshot');
@@ -185,6 +192,14 @@ for (const operator of BUILT_INS) {
 for (const name of [
   'd04/dollar-is-absolute-end-not-before-final-newline',
   'd04/dot-matches-line-separator',
+  'd04/reject-class-escape-as-left-range-endpoint',
+  'd04/reject-class-escape-as-right-range-endpoint',
+  'd04/nested-counted-repeat-factor-at-1000-is-accepted',
+  'd04/reject-nested-counted-repeat-factor-over-1000',
+  'd04/expanded-atom-count-at-10000-is-accepted',
+  'd04/reject-expanded-atom-count-over-10000',
+  'd04/reject-zero-repeat-does-not-erase-expanded-atom-cost',
+  'd08/object-operands-remain-structural-json-in-result',
   'd20/any-pass-still-evaluates-later-throw',
   'd20/all-fail-still-evaluates-later-throw',
   'd20/each-exception-materializes-all-current-rule-issues-before-stop',
@@ -192,6 +207,7 @@ for (const name of [
   'd10/unknown-operator-with-bad-hash-has-no-operator-identifier',
   'd09/dangerous-key-selection-uses-code-point-order-not-utf16',
   'd10/unknown-operator-contract-specific-shape-still-not-found',
+  'd10/unknown-operator-with-empty-input-name-has-no-operator-identifier',
   'd27/custom-standard-field-absence-skips-before-invocation',
   'd24/reject-empty-operator-name',
   'd22/abort-discards-previous-business-issues',

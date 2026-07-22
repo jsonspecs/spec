@@ -1,0 +1,35 @@
+{
+  "name": "d04/reject-class-escape-as-left-range-endpoint",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.class-range.left"
+        ]
+      },
+      "library.r.class-range.left": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^[\\d-z]$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R18",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "d87fcc83f0a4ce98378f22ec44c98cf351289e2d25873f758649c514ffc07e7b"
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

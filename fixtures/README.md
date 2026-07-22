@@ -38,10 +38,15 @@ adapter without parsing it in the runner first:
 `operators` is the set of registered non-built-in operator names for the fixture
 (conformance is relative to equal operator sets — SPEC.md §7.1). `identifier` in a
 rejection `expected` is present only where the spec makes the rejection cause itself
-normative (`OPERATOR_NOT_FOUND`).
+normative (`OPERATOR_NOT_FOUND`). The rejection `expected` object is closed. When
+`identifier` is absent, the runner must assert that the implementation did not report
+`OPERATOR_NOT_FOUND`; it must not ignore an implementation-reported
+`OPERATOR_NOT_FOUND`.
 
 Comparison is **structural JSON equality** (SPEC.md §6.1): array order matters, object
 key order does not, absent key ≠ key with `null`, numbers compare as binary64 values.
+Host prototypes, classes, map implementations, and property iteration order are not JSON
+data and must not affect equality.
 
 ## Layout
 
@@ -83,4 +88,5 @@ the tested runtime's business.
 Дерево — **нормативное приложение** спеки (§7.3): текст и фикстуры версионируются
 одним тегом. Прохождение всех фикстур версии — необходимое, но не достаточное условие
 декларации конформанса; канон — текст спеки (SPEC.md §7.3). Сравнение — структурное равенство JSON нормативной проекции
-(§7.2). Фикстуры генерируются из `tools/generate-fixtures.mjs`; правки — в генераторе.
+(§7.2). Отсутствие `identifier` в `expected` тоже проверяется. Прототипы, классы, внутреннее представление объектов и порядок обхода
+полей языка реализации не участвуют в сравнении. Фикстуры генерируются из `tools/generate-fixtures.mjs`; правки — в генераторе.

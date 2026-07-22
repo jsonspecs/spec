@@ -1,0 +1,36 @@
+{
+  "name": "d10/unknown-operator-with-empty-input-name-has-no-operator-identifier",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.c.empty-input"
+        ]
+      },
+      "library.c.empty-input": {
+        "type": "rule",
+        "operator": "custom_x",
+        "inputs": {
+          "": "a"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "C4",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "a43e44c704cc2583fcd634e38e8a470180c804f3bb352c7a8a2c26087436b33e"
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

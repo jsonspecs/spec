@@ -8,7 +8,7 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-VIII] are **APPROVED** by the
+Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-IX] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -691,3 +691,31 @@ executable or unambiguous. The RC.5 edition therefore pins, without changing its
 These are errata because each resolves a contradiction or makes an already approved
 boundary testable. Scalar `greater_or_equal`/`less_or_equal` remain unapproved backlog
 features and are not added by this edition.
+
+## [DR-IX] Addendum: RC.5 portability and fixture-runner closure — APPROVED
+
+Reviewing the RC.5 implementation exposed four remaining portability gaps. This
+edition closes them without changing the snapshot or result format:
+
+- The original per-quantifier and pattern-length limits did not bound compilation
+  expansion. For example, a backend may reject `(a{40}){30}` despite accepting each
+  individual quantifier. The grammar now adds a maximum nested counted-repeat factor
+  of 1000 and an expanded-atom budget of 10000. A conforming adapter must accept every
+  pattern inside the grammar and all four limits, independently of lower backend
+  program-size or compilation-memory limits. The factor catches narrow nested repeats
+  such as the example above; the atom budget separately catches wide groups repeated
+  1000 times. A budget of 10000 still permits ten authored atoms at the maximum repeat.
+- A character-class escape is a complete item, never a range endpoint. Explicit
+  rejection vectors cover both `\d-z` and `0-\d`; an implementation must validate the
+  portable grammar before delegating to a more permissive host engine.
+- A closed operator contract means finite, explicitly enumerated names at the operator
+  configuration, `inputs`, and immediate `params` levels. Configured `inputs` names are
+  globally non-empty, including when the operator itself is unavailable. Dynamic name
+  families would otherwise give Java, Go, and Node adapters different validation
+  surfaces.
+- Rejection expectations are closed, so an absent `identifier` must be asserted rather
+  than ignored. Evaluation fixtures compare the JSON data model, not host prototypes,
+  classes, map implementations, or property iteration order.
+
+These are semantic errata: they make the accepted language, rejection precedence, and
+fixture comparison executable across runtimes; they add no DSL fields or result data.

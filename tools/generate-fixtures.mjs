@@ -211,6 +211,25 @@ rejFx('d04-regex', 'd04/reject-unescaped-hyphen-at-class-edge',
 evalFx('d04-regex', 'd04/escaped-hyphen-in-class-is-literal',
   snap(one(chk('library.r.hyphen.ok', 'matches_regex', { code: 'R17', field: 'a', value: '^[\\-a]$' }))),
   { pipelineId: 'checks.main', payload: { a: '-' } }, OKR);
+rejFx('d04-regex', 'd04/reject-class-escape-as-left-range-endpoint',
+  snap(one(chk('library.r.class-range.left', 'matches_regex', { code: 'R18', field: 'a', value: '^[\\d-z]$' }))));
+rejFx('d04-regex', 'd04/reject-class-escape-as-right-range-endpoint',
+  snap(one(chk('library.r.class-range.right', 'matches_regex', { code: 'R19', field: 'a', value: '^[0-\\d]$' }))));
+evalFx('d04-regex', 'd04/nested-counted-repeat-factor-at-1000-is-accepted',
+  snap(one(chk('library.r.repeat.boundary', 'matches_regex', { code: 'R20', field: 'a', value: '^(?:a{40}){25}$' }))),
+  { pipelineId: 'checks.main', payload: { a: 'a'.repeat(1000) } }, OKR);
+rejFx('d04-regex', 'd04/reject-nested-counted-repeat-factor-over-1000',
+  snap(one(chk('library.r.repeat.over', 'matches_regex', { code: 'R21', field: 'a', value: '^(?:a{40}){30}$' }))));
+{
+  const atom = 'abcdefghij';
+  evalFx('d04-regex', 'd04/expanded-atom-count-at-10000-is-accepted',
+    snap(one(chk('library.r.atoms.boundary', 'matches_regex', { code: 'R22', field: 'a', value: `^(?:${atom}){1000}$` }))),
+    { pipelineId: 'checks.main', payload: { a: atom.repeat(1000) } }, OKR);
+}
+rejFx('d04-regex', 'd04/reject-expanded-atom-count-over-10000',
+  snap(one(chk('library.r.atoms.over', 'matches_regex', { code: 'R23', field: 'a', value: '^(?:abcdefghijk){1000}$' }))));
+rejFx('d04-regex', 'd04/reject-zero-repeat-does-not-erase-expanded-atom-cost',
+  snap(one(chk('library.r.atoms.zero-wrapper', 'matches_regex', { code: 'R24', field: 'a', value: '^(?:(?:abcdefghijk){1000}){0}$' }))));
 {
   const r = chk('library.r.d2', 'matches_regex', { code: 'R11', field: 'a', value: '^\\d+$' });
   evalFx('d04-regex', 'd04/digit-class-is-ascii-only', snap(one(r)), { pipelineId: 'checks.main', payload: { a: '\u0663' } },
@@ -278,6 +297,12 @@ rejFx('d06-hash', 'd06/reject-source-hash-mismatch', snap(one(chk('library.h.r',
     { pipelineId: 'checks.main', payload: { a: [], b: [1] } },
     ERR([issue('ERROR', 'P6', M, 'b', 'library.p.cc', 'checks.main')]));
 }
+{
+  const r = chk('library.p.object', 'equals', { code: 'P7', field: 'a', value: {} });
+  evalFx('d08-representation', 'd08/object-operands-remain-structural-json-in-result', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: {} } },
+    ERR([issue('ERROR', 'P7', M, 'a', r.id, 'checks.main', { expected: {}, actual: {} })]));
+}
 
 /* ---------------- d09-guards ---------------- */
 {
@@ -310,6 +335,8 @@ rejFx('d10-operators', 'd10/unknown-operator-contract-specific-shape-still-not-f
 }
 rejFx('d10-operators', 'd10/unknown-operator-with-broken-reference-has-no-operator-identifier',
   snap([chk('library.c.bad-ref', 'custom_x', { code: 'C3', field: 'a' }), pipe('checks.main', ['missing.rule'])]));
+rejFx('d10-operators', 'd10/unknown-operator-with-empty-input-name-has-no-operator-identifier',
+  snap(one(chk('library.c.empty-input', 'custom_x', { code: 'C4', inputs: { '': 'a' } }))));
 
 /* ---------------- d11-snapshot ---------------- */
 rejFx('d11-snapshot', 'd11/reject-any-filled-paths-alias',

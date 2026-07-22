@@ -1,0 +1,35 @@
+{
+  "name": "d04/reject-zero-repeat-does-not-erase-expanded-atom-cost",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.atoms.zero-wrapper"
+        ]
+      },
+      "library.r.atoms.zero-wrapper": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^(?:(?:abcdefghijk){1000}){0}$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R24",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "88fb02d58811fcba12256b10c6cb3f246eab25ae8bcb1fabc93081bb8352fc59"
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

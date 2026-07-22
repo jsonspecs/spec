@@ -1,0 +1,57 @@
+{
+  "name": "d08/object-operands-remain-structural-json-in-result",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.p.object"
+        ]
+      },
+      "library.p.object": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "a",
+        "value": {},
+        "issue": {
+          "level": "ERROR",
+          "code": "P7",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "3cdd9d29d4a09a20c93142fe646b789b9ec132000e613953963c225d628303a4"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": {}
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "level": "ERROR",
+        "code": "P7",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.p.object",
+        "pipelineId": "checks.main",
+        "expected": {},
+        "actual": {}
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "3cdd9d29d4a09a20c93142fe646b789b9ec132000e613953963c225d628303a4"
+    }
+  }
+}

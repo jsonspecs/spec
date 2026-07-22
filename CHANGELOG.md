@@ -6,7 +6,7 @@ The specification follows SemVer 2.0.0 (see README, Versioning).
 ## [1.0.0-rc.5] — 2026-07-21
 
 Final executable-format simplification, portable operator invocation boundary, and
-semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-VIII]).
+semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-IX]).
 
 - Changed `artifacts` from an array with repeated ids to an object keyed by id.
 - Unified pipeline and condition steps as exact id strings; removed typed step objects
@@ -30,7 +30,12 @@ semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-VIII]).
   issue disposal, `OPERATOR_NOT_FOUND` precedence, and closed result objects.
 - Added a separate cross-runtime operator-pack profile with shared golden vectors and
   deployment provenance, without coupling it to snapshot hashing.
-- Fixtures: 163 → **267** (185 evaluation, 82 rejection), including raw I-JSON,
+- The 2026-07-22 portability errata add finite-name operator contracts, non-empty
+  configured `inputs` names, explicit character-class range endpoints, and portable
+  regex compilation budgets for nested repeats and expanded atoms.
+- Fixture-runner comparison now requires absence of a rejection `identifier` to be
+  asserted and compares JSON data independently of host prototypes and classes.
+- Fixtures: 163 → **276** (188 evaluation, 88 rejection), including raw I-JSON,
   UTF-16/JCS, absent-vs-null operator inputs, regex portability, aggregate fault/order,
   rejection precedence, and a complete built-in operator outcome matrix.
 

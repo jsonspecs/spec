@@ -1,0 +1,35 @@
+{
+  "name": "d04/reject-expanded-atom-count-over-10000",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.atoms.over"
+        ]
+      },
+      "library.r.atoms.over": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^(?:abcdefghijk){1000}$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R23",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "d2217f0b4eebfefa2c3069e9099477c13940635f44ab5f5123d9db5b72e362dc"
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}

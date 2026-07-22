@@ -1,0 +1,35 @@
+{
+  "name": "d04/reject-class-escape-as-right-range-endpoint",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.class-range.right"
+        ]
+      },
+      "library.r.class-range.right": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^[0-\\d]$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R19",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "197238c0ac66c6df14574e55b5ab6703fb45be7e1d41ceff29360a7958568c34"
+  },
+  "operators": [],
+  "expected": {
+    "verdict": "reject"
+  }
+}
