@@ -6,7 +6,7 @@ The specification follows SemVer 2.0.0 (see README, Versioning).
 ## [1.0.0-rc.5] — 2026-07-21
 
 Final executable-format simplification, portable operator invocation boundary, and
-semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-IX]).
+semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-X]).
 
 - Changed `artifacts` from an array with repeated ids to an object keyed by id.
 - Unified pipeline and condition steps as exact id strings; removed typed step objects
@@ -35,7 +35,10 @@ semantic-closure errata (D26–D30 and addenda [DR-VII]–[DR-IX]).
   regex compilation budgets for nested repeats and expanded atoms.
 - Fixture-runner comparison now requires absence of a rejection `identifier` to be
   asserted and compares JSON data independently of host prototypes and classes.
-- Fixtures: 163 → **276** (188 evaluation, 88 rejection), including raw I-JSON,
+- Clarified that §2.2 number conversion precedes JCS hashing and that issue `expected`
+  contains the converted snapshot value. Added zero-width regex boundary vectors and
+  acceptance coverage for a complemented character class whose resulting set is empty.
+- Fixtures: 163 → **281** (193 evaluation, 88 rejection), including raw I-JSON,
   UTF-16/JCS, absent-vs-null operator inputs, regex portability, aggregate fault/order,
   rejection precedence, and a complete built-in operator outcome matrix.
 

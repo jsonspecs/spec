@@ -1,0 +1,57 @@
+{
+  "name": "d04/empty-complemented-class-is-valid-and-never-matches",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.empty-complemented-class"
+        ]
+      },
+      "library.r.empty-complemented-class": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^[^\\D\\d]$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R27",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "2cdead8524d487b7f42257ff1b54a6214827cb974b23f37bd3bafe42e1ce4483"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "a"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "level": "ERROR",
+        "code": "R27",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.r.empty-complemented-class",
+        "pipelineId": "checks.main",
+        "expected": "^[^\\D\\d]$",
+        "actual": "a"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "2cdead8524d487b7f42257ff1b54a6214827cb974b23f37bd3bafe42e1ce4483"
+    }
+  }
+}

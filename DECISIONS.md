@@ -8,7 +8,7 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-IX] are **APPROVED** by the
+Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-X] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -719,3 +719,28 @@ edition closes them without changing the snapshot or result format:
 
 These are semantic errata: they make the accepted language, rejection precedence, and
 fixture comparison executable across runtimes; they add no DSL fields or result data.
+
+## [DR-X] Addendum: numeric representation wording and regex boundary vectors — APPROVED
+
+An external review identified wording that could be mistaken for additional freedom at
+the snapshot boundary. This edition clarifies existing behavior without changing the
+snapshot or result format:
+
+- The mandatory §2.2 conversion of every snapshot number to binary64, including `-0`
+  normalization, occurs before JCS serialization. The statement that no other
+  normalization occurs excludes only additional JSONSpecs-specific transformations;
+  it does not bypass §2.2.
+- A rule's literal `value` in an issue is the parsed snapshot value after recursive
+  §2.2 conversion, not the authored numeric token. Therefore an authored
+  `9007199254740993` is represented in `expected` as `9007199254740992`.
+- The existing search and absolute-anchor semantics imply that an empty pattern matches
+  every string and `^$` matches only the empty string. Dedicated vectors now pin both
+  cases.
+- Character-class items form a union and leading `^` complements that union over Unicode
+  scalar values. The result is allowed to be empty. A dedicated vector requires
+  `^[^\D\d]$` to compile successfully and fail for every one-code-point subject instead
+  of turning a backend rendering limitation into snapshot rejection.
+
+The aggregate rule is unchanged. §3.6.2 already requires exhaustive aggregate
+evaluation and makes any later operator fault abort the evaluation; §5.4 separately
+defines short-circuiting guards. Existing vectors cover both boundaries.

@@ -238,6 +238,23 @@ rejFx('d04-regex', 'd04/reject-zero-repeat-does-not-erase-expanded-atom-cost',
 evalFx('d04-regex', 'd04/unanchored-search-semantics',
   snap(one(chk('library.r.s', 'matches_regex', { code: 'R12', field: 'a', value: '\\d' }))),
   { pipelineId: 'checks.main', payload: { a: 'ab7cd' } }, OKR);
+evalFx('d04-regex', 'd04/empty-pattern-matches-empty-substring-of-nonempty-string',
+  snap(one(chk('library.r.empty', 'matches_regex', { code: 'R25', field: 'a', value: '' }))),
+  { pipelineId: 'checks.main', payload: { a: 'abc' } }, OKR);
+{
+  const r = chk('library.r.empty-anchors', 'matches_regex', { code: 'R26', field: 'a', value: '^$' });
+  evalFx('d04-regex', 'd04/absolute-empty-string-anchors-do-not-match-nonempty-string', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: 'abc' } },
+    ERR([issue('ERROR', 'R26', M, 'a', r.id, 'checks.main', { expected: '^$', actual: 'abc' })]));
+}
+{
+  const r = chk('library.r.empty-complemented-class', 'matches_regex',
+    { code: 'R27', field: 'a', value: '^[^\\D\\d]$' });
+  evalFx('d04-regex', 'd04/empty-complemented-class-is-valid-and-never-matches', snap(one(r)),
+    { pipelineId: 'checks.main', payload: { a: 'a' } },
+    ERR([issue('ERROR', 'R27', M, 'a', r.id, 'checks.main',
+      { expected: '^[^\\D\\d]$', actual: 'a' })]));
+}
 {
   const r = chk('library.r.nm', 'not_matches_regex', { code: 'R13', field: 'a', value: 'USA|США' });
   evalFx('d04-regex', 'd04/not-matches-regex-ok', snap(one(r)), { pipelineId: 'checks.main', payload: { a: 'город Москва' } }, OKR);
@@ -921,6 +938,28 @@ evalFx('d23-binary64', 'd23/decimal-fraction-is-accepted',
     snap(one(chk('library.d23.round', 'equals', { code: 'D23.2', field: 'a', value: 9007199254740992 }))),
     { pipelineId: 'checks.main', payload: { a: '__RAW_UNSAFE_INTEGER__' } }, OKR);
   raw(name, [['__RAW_UNSAFE_INTEGER__', '9007199254740993']]);
+}
+{
+  const name = 'd23/snapshot-negative-zero-is-normalized-before-hashing-and-expected';
+  const r = chk('library.d23.snapshot-negative-zero', 'equals', { code: 'D23.6', field: 'a', value: -0 });
+  const snapshot = snap(one(r));
+  snapshot.artifacts[r.id].value = '__RAW_SNAPSHOT_NEGATIVE_ZERO__';
+  evalFx('d23-binary64', name, snapshot,
+    { pipelineId: 'checks.main', payload: { a: 1 } },
+    ERR([issue('ERROR', 'D23.6', M, 'a', r.id, 'checks.main', { expected: 0, actual: 1 })]));
+  raw(name, [['__RAW_SNAPSHOT_NEGATIVE_ZERO__', '-0']]);
+}
+{
+  const name = 'd23/snapshot-unsafe-integer-is-converted-before-hashing-and-expected';
+  const r = chk('library.d23.snapshot-unsafe-integer', 'equals',
+    { code: 'D23.7', field: 'a', value: 9007199254740992 });
+  const snapshot = snap(one(r));
+  snapshot.artifacts[r.id].value = '__RAW_SNAPSHOT_UNSAFE_INTEGER__';
+  evalFx('d23-binary64', name, snapshot,
+    { pipelineId: 'checks.main', payload: { a: 0 } },
+    ERR([issue('ERROR', 'D23.7', M, 'a', r.id, 'checks.main',
+      { expected: 9007199254740992, actual: 0 })]));
+  raw(name, [['__RAW_SNAPSHOT_UNSAFE_INTEGER__', '9007199254740993']]);
 }
 {
   const r = chk('library.d23.string', 'greater_than', { code: 'D23.3', field: 'a', value: 0 });

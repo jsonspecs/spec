@@ -39,7 +39,7 @@ for (const [label, pattern] of [
   if (enCount !== ruCount) errors.push(`${label} count differs: EN=${enCount} RU=${ruCount}`);
 }
 
-for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-IX']) {
+for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-X']) {
   if (!ru.includes(token)) errors.push(`SPEC_RU.md does not contain required token ${token}`);
 }
 

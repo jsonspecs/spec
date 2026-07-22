@@ -9,7 +9,7 @@ expected behavior. The reasoning behind every decision lives in a separate docum
 implementation (`source/`) whose practical experience produced these decisions.
 
 **Notation.** `[D1]`…`[D30]` refer to numbered decisions in `DECISIONS.md`;
-`[DR-I]`…`[DR-IX]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
+`[DR-I]`…`[DR-X]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
 
 ---
 
@@ -512,8 +512,12 @@ program-size, or compilation-memory limit MUST NOT turn it into snapshot rejecti
 - `\d` = `[0-9]`, `\w` = `[0-9A-Za-z_]`, `\s` = `[ \t\n\r\f\v]`, uppercase forms are
   their complements. **ASCII semantics regardless of platform defaults** — engines whose
   defaults are Unicode-aware (e.g. Rust `regex`) MUST compensate. `[D4.1]`
+- Inside a character class, item sets are unioned; a leading `^` complements that union
+  over Unicode scalar values. The resulting set may be empty: the pattern remains valid
+  and that class matches no code point. `[DR-X]`
 - Matching is a **search**: the pattern matches if any substring (including the empty
-  substring) matches. Authors anchor with `^`/`$` explicitly.
+  substring) matches. Authors anchor with `^`/`$` explicitly. Consequently, the empty
+  pattern matches every subject, while `^$` matches only the empty subject. `[DR-X]`
 - No regex flags exist in version 1. Matching is case-sensitive. `^` matches only the
   absolute start of the subject and `$` only the absolute end; `$` MUST NOT match before
   a final line terminator. `.` does not match U+000A. Implementations MUST compensate for
@@ -781,9 +785,11 @@ The snapshot envelope is closed: no other top-level fields exist. In particular,
 
 **Normative `sourceHash`.** `[D28]` Remove only the `sourceHash` member from the parsed
 snapshot, serialize the remaining object using RFC 8785 JCS, UTF-8 encode it, and hash
-those bytes with SHA-256. No other projection or normalization occurs. In particular,
-the verifier MUST reject an unsorted `exports` array rather than sorting it before
-verification.
+those bytes with SHA-256. Before JCS serialization, every snapshot number MUST already
+have undergone the mandatory §2.2 binary64 conversion, including normalization of `-0`
+to `+0`. No other projection or application-specific normalization occurs after §2.2.
+In particular, the verifier MUST reject an unsorted `exports` array rather than sorting
+it before verification. `[DR-X]`
 
 JCS string ordering is lexicographic over raw, unescaped **unsigned UTF-16 code units**,
 independent of locale. This applies recursively to object member names, including
@@ -1028,21 +1034,26 @@ wildcard enumeration order within a rule (§3.6.1).
 
 ### 6.4 `expected` and `actual`
 
+In this section, a rule's literal `value` means the value in the parsed snapshot after
+the mandatory recursive §2.2 binary64 conversion. Thus the authored numeric token
+`9007199254740993` is represented in `expected` as `9007199254740992`; non-number
+content and structure are unchanged. `[DR-X]`
+
 | Operator class | `expected` | `actual` |
 | --- | --- | --- |
-| value comparisons (`equals`, `not_equals`, `contains`, `matches_regex`, `not_matches_regex`, `greater_than`, `less_than`, `length_*`) | the rule's `value` verbatim | the resolved field value |
+| value comparisons (`equals`, `not_equals`, `contains`, `matches_regex`, `not_matches_regex`, `greater_than`, `less_than`, `length_*`) | the rule's converted `value` | the resolved field value |
 | type checks (`is_boolean`, `is_string`, `is_number`, `is_integer`) | omitted | the resolved field value |
 | `not_empty` | omitted | omitted when absent; the value (`null` or `""`) when present-but-empty — represented as the JSON value, i.e. `"actual": null` is legal here as an actual *value*, distinct from key omission |
 | `is_empty`, `not_true` | omitted | the resolved field value |
 | dictionary operators | the rule's dictionary id string | the resolved field value |
 | `field_*_field` | the resolved **value** of `value_field` `[DR-III]` | the resolved `field` value |
 | `any_filled` | omitted | omitted |
-| custom operator | literal `value`, or resolved `value_field`, when present; otherwise omitted | resolved primary `field` when present; otherwise omitted |
+| custom operator | converted literal `value`, or resolved `value_field`, when present; otherwise omitted | resolved primary `field` when present; otherwise omitted |
 
 Resolved `field` and `value_field` operands are scalar or empty-container leaves because
 of payload flattening (§2.7). A literal `value`, and therefore `expected`, MAY be any
 I-JSON value accepted by the operator contract. No truncation or transport normalization
-of `expected` or `actual` is defined or permitted.
+of `expected` or `actual` after the conversions required by §2.2 is defined or permitted.
 
 ### 6.5 Group-verdict summary issues
 

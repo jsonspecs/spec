@@ -199,6 +199,9 @@ for (const name of [
   'd04/expanded-atom-count-at-10000-is-accepted',
   'd04/reject-expanded-atom-count-over-10000',
   'd04/reject-zero-repeat-does-not-erase-expanded-atom-cost',
+  'd04/empty-pattern-matches-empty-substring-of-nonempty-string',
+  'd04/absolute-empty-string-anchors-do-not-match-nonempty-string',
+  'd04/empty-complemented-class-is-valid-and-never-matches',
   'd08/object-operands-remain-structural-json-in-result',
   'd20/any-pass-still-evaluates-later-throw',
   'd20/all-fail-still-evaluates-later-throw',
@@ -211,6 +214,8 @@ for (const name of [
   'd27/custom-standard-field-absence-skips-before-invocation',
   'd24/reject-empty-operator-name',
   'd22/abort-discards-previous-business-issues',
+  'd23/snapshot-negative-zero-is-normalized-before-hashing-and-expected',
+  'd23/snapshot-unsafe-integer-is-converted-before-hashing-and-expected',
 ]) if (!names.has(name)) errors.push(`missing RC.5 erratum fixture ${name}`);
 
 if (errors.length) {

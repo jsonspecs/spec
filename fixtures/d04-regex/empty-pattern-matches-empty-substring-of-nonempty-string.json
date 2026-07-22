@@ -1,0 +1,46 @@
+{
+  "name": "d04/empty-pattern-matches-empty-substring-of-nonempty-string",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.empty"
+        ]
+      },
+      "library.r.empty": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "",
+        "issue": {
+          "level": "ERROR",
+          "code": "R25",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "3a73ab91cd2e675d16b3cae3307d9a21a4b0e8680b02e4b0180369b59dc3093e"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "abc"
+    }
+  },
+  "expected": {
+    "status": "OK",
+    "issues": [],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "3a73ab91cd2e675d16b3cae3307d9a21a4b0e8680b02e4b0180369b59dc3093e"
+    }
+  }
+}

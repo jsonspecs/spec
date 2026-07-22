@@ -1,0 +1,57 @@
+{
+  "name": "d23/snapshot-unsafe-integer-is-converted-before-hashing-and-expected",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d23.snapshot-unsafe-integer"
+        ]
+      },
+      "library.d23.snapshot-unsafe-integer": {
+        "type": "rule",
+        "operator": "equals",
+        "field": "a",
+        "value": 9007199254740993,
+        "issue": {
+          "level": "ERROR",
+          "code": "D23.7",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "50526e1d414c6e7fabed4b0fd879cad9085e8e4298e0205f3c2bc58bf065bab3"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": 0
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "level": "ERROR",
+        "code": "D23.7",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.d23.snapshot-unsafe-integer",
+        "pipelineId": "checks.main",
+        "expected": 9007199254740992,
+        "actual": 0
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "50526e1d414c6e7fabed4b0fd879cad9085e8e4298e0205f3c2bc58bf065bab3"
+    }
+  }
+}

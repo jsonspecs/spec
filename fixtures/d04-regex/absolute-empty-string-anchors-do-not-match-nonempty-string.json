@@ -1,0 +1,57 @@
+{
+  "name": "d04/absolute-empty-string-anchors-do-not-match-nonempty-string",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.5",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.r.empty-anchors"
+        ]
+      },
+      "library.r.empty-anchors": {
+        "type": "rule",
+        "operator": "matches_regex",
+        "field": "a",
+        "value": "^$",
+        "issue": {
+          "level": "ERROR",
+          "code": "R26",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "8872314c16be5fac17506726124e8f66d2669a10a6fe3b8d0ec5eb4caff9a10d"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "a": "abc"
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "level": "ERROR",
+        "code": "R26",
+        "message": "failed",
+        "field": "a",
+        "ruleId": "library.r.empty-anchors",
+        "pipelineId": "checks.main",
+        "expected": "^$",
+        "actual": "abc"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.5",
+      "sourceHash": "8872314c16be5fac17506726124e8f66d2669a10a6fe3b8d0ec5eb4caff9a10d"
+    }
+  }
+}
