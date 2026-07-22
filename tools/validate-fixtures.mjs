@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIX = join(ROOT, 'fixtures');
+const SPEC = '1.0.0-rc.6';
 
 function jcs(v) {
   if (v === null || typeof v === 'boolean') return JSON.stringify(v);
@@ -117,7 +118,7 @@ for (const p of files) {
   const s = fx.snapshot;
   if (s.format !== 'jsonspecs-snapshot') err('bad snapshot.format');
   if (s.formatVersion !== 2) err('bad snapshot.formatVersion');
-  if (typeof s.specVersion !== 'string') err('bad snapshot.specVersion');
+  if (s.specVersion !== SPEC) err(`evaluation fixture specVersion must be ${SPEC}`);
   if (!s.artifacts || typeof s.artifacts !== 'object' || Array.isArray(s.artifacts)) err('snapshot.artifacts must be an object');
   if (!Array.isArray(s.exports) || s.exports.length === 0) err('snapshot.exports must be a non-empty array');
   else {
@@ -217,6 +218,33 @@ for (const name of [
   'd23/snapshot-negative-zero-is-normalized-before-hashing-and-expected',
   'd23/snapshot-unsafe-integer-is-converted-before-hashing-and-expected',
 ]) if (!names.has(name)) errors.push(`missing RC.5 erratum fixture ${name}`);
+
+for (const name of [
+  'd31/required-child-all-each-reports-absent',
+  'd31/required-child-all-summary-counts-absent',
+  'd31/any-pass-emits-no-absent-partial-issue',
+  'd31/any-all-fail-reports-absent-and-null-in-order',
+  'd31/count-mixes-pass-fail-and-two-kinds-of-skip',
+  'd31/value-operator-absent-candidate-counts-as-skip',
+  'd31/value-operator-all-absent-is-all-skip-not-on-empty',
+  'd31/empty-parent-array-uses-on-empty',
+  'd31/missing-prefix-before-first-wildcard-uses-on-empty',
+  'd31/null-parent-before-wildcard-uses-on-empty',
+  'd31/scalar-parent-before-wildcard-uses-on-empty',
+  'd31/object-parent-before-wildcard-uses-on-empty',
+  'd31/missing-segment-between-wildcards-creates-no-inner-branch',
+  'd31/missing-inner-array-does-not-hide-other-branches',
+  'd31/missing-suffix-after-final-wildcard-preserves-candidate',
+  'd31/null-scalar-and-empty-object-elements-preserve-absent-suffix',
+  'd31/terminal-wildcard-keeps-flat-leaf-model',
+  'd31/absent-candidate-order-is-numeric-two-before-ten',
+  'd31/nested-absent-candidates-follow-index-tuple-order',
+  'd31/numeric-object-key-is-not-an-exact-array-index',
+  'd31/out-of-range-exact-index-before-wildcard-ends-branch',
+  'd31/out-of-range-exact-index-after-final-wildcard-is-absent',
+  'd31/reject-wildcard-in-context-field',
+  'd31/any-pass-still-evaluates-late-invalid-result',
+]) if (!names.has(name)) errors.push(`missing RC.6 D31 fixture ${name}`);
 
 if (errors.length) {
   console.error(`FAIL: ${errors.length} problem(s)`);

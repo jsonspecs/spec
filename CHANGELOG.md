@@ -3,6 +3,28 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.6] — 2026-07-22
+
+Structural wildcard candidates for required child fields (D31).
+
+- Changed `[*]` population construction from existing flat-map leaves to real indices
+  of the normative nested payload arrays.
+- Preserved one absent structural candidate after the final wildcard when its exact
+  suffix is missing or impassable; absence before a later wildcard still creates no
+  branch because no real next index can be determined.
+- Pinned type-safe traversal: keys address only own JSON-object members and exact indices
+  address only in-range JSON-array elements. Numeric object keys are not array indices.
+- Kept the §2.7 terminal leaf model: scalars, `null`, and empty containers are present;
+  non-empty terminal containers remain absent and are not exposed to operators.
+- Applied existing D13 absence semantics and D20 aggregation to the new candidate list.
+  `matched` includes absent candidates, value-operator absence contributes to `skipped`,
+  and all-`SKIP` remains distinct from `onEmpty`.
+- Added concrete `EACH` issue paths for missing child fields, nested-array and impassable
+  path vectors, terminal-wildcard vectors, exact-token type boundaries, numeric ordering,
+  and aggregate fault preservation.
+- No operator, DSL field, snapshot shape, result field, or `formatVersion` was added.
+- Fixtures: 281 → **305** (216 evaluation, 89 rejection).
+
 ## [1.0.0-rc.5] — 2026-07-21
 
 Final executable-format simplification, portable operator invocation boundary, and

@@ -8,7 +8,7 @@ normative result for the same snapshot and payload. Each decision below is a poi
 where, without explicit pinning, implementations would diverge. Format per decision:
 context → options → resolution → cost relative to the prototype (Node) behavior.
 
-Status: all 30 decisions (D1–D30) and addenda [DR-I]–[DR-X] are **APPROVED** by the
+Status: all 31 decisions (D1–D31) and addenda [DR-I]–[DR-X] are **APPROVED** by the
 owner. This register is the input for the
 specification text (`SPEC.md`) and the conformance fixtures. The closing criterion for
 D4, D10, D11 was *minimal total compromise across mainstream backend platforms*
@@ -129,22 +129,23 @@ written in the `^\\d{6}$` style with a risk of silently changing pattern semanti
 The production pack confirmed the decision on live data: both escaping styles coexist
 (17 rules single-escaped, 3 double-escaped relying on the pass).
 
-## D5. Wildcard traversal and total `issues[]` order — APPROVED; legacy wording superseded by D26/D29
+## D5. Wildcard traversal and total `issues[]` order — APPROVED; match-set definition superseded by D31, ordering retained
 
 **Context.** "Same result" includes the same order of `issues[]`. Step order is fixed
 by `flow`, but `accounts[*].balance` enumerates payload keys — JS preserves insertion
 order, Go randomizes maps; without a normative order, conformance comparison is
 impossible in principle.
 
-**Resolution (three rules):** (1) `[*]` matches only non-negative-integer index
-segments; (2) enumeration ascends numerically, multiple `[*]` order lexicographically
+**Historical resolution (three rules):** (1) `[*]` matched only non-negative-integer
+index segments in the flat projection; D31 replaces this match-set rule with structural
+candidates derived from real nested arrays. (2) Enumeration ascends numerically, multiple `[*]` order lexicographically
 by index tuple, leftmost most significant ("odometer"); (3) `issues[]` order = document
 order of steps (DFS through flow, including condition steps and sub-pipelines at their
 call site) → wildcard element order within a rule → strict-escalation summaries after
 all issues of their pipeline.
 
-**Cost:** zero for arrays (matches observed prototype behavior, including sparse flat
-keys like `a[0], a[2], a[5]` — verified empirically); fixtures cover the gap case.
+**Historical cost:** zero for arrays under the original flat-key behavior. D31 changes
+the population but retains the numeric tuple ordering established here.
 
 ## D6. Canonical serialization for `sourceHash` — APPROVED; hash input superseded by D28
 
@@ -380,10 +381,11 @@ precedence: dangerous payload → dangerous context → invalid payload → inva
 context; within a class the lexicographically smallest `(parentPath, key)` pair) →
 depth.
 
-**Consequences:** sparse wildcard matches REMAIN (a gap arises from an absent child
-field: `{"x":[{"v":1},{},{"v":2}]}` → `x[0].v`, `x[2].v`) — the D5 ordering rule does
-not simplify; all fixtures with flat payloads were rewritten to nested form;
-flat-payload integrations migrate through an adapter / the Node v3 CLI.
+**Consequences:** all fixtures with flat payloads were rewritten to nested form;
+flat-payload integrations migrate through an adapter. The rc.2 consequence that
+wildcard populations remain sparse when a child field is absent is superseded by D31:
+real array elements now create structural candidates even when their terminal field is
+absent.
 
 ## D16. Regex linearity — a property of the language, not of execution — APPROVED
 
@@ -475,7 +477,7 @@ analyst ownership of levels. Any value outside `PASS|FAIL|SKIP`, including
 `EXCEPTION`, causes `OPERATOR_CONTRACT_VIOLATION`; a thrown technical failure causes
 `OPERATOR_FAULT`. This supersedes the role-specific portions of D10/D13/D17.
 
-## D20. Unified wildcard aggregation and effective population — APPROVED; MIN/MAX removed by D29
+## D20. Unified wildcard aggregation and effective population — APPROVED; population refined by D31, MIN/MAX removed by D29
 
 **Approved for rc.3.** Logical aggregation is separate from reporting:
 The rc.3 model had `mode = ALL|ANY|COUNT|MIN|MAX`; D29 removes `MIN`/`MAX` from
@@ -486,9 +488,10 @@ and `summaryIssue` are removed.
 
 A wildcard requires explicit `aggregate`, and aggregate is forbidden without one.
 `value_field` contains no wildcard. `onEmpty = PASS|FAIL|SKIP`, default `SKIP`, and
-applies only to zero structural matches. `SKIP` elements are excluded from the
-effective population; structural matches that all skip produce aggregate `SKIP`
-regardless of `onEmpty`.
+applies only to an empty structural population. D31 defines that population as
+structural candidates derived from real array indices, including candidates whose
+terminal field is absent. `SKIP` elements are excluded from the effective population;
+structural candidates that all skip produce aggregate `SKIP` regardless of `onEmpty`.
 
 Group details distinguish `matched`, `evaluated`, `skipped`, `passed`, and `failed`.
 The COUNT change is acknowledged as semantic: skipped check elements could previously
@@ -659,6 +662,45 @@ comparison primitive without replacing readable operators by `compare + params`.
 derived from `status`; constant issue `kind` is removed; `stepId` disappears with object
 steps. Trace and engine version are implementation API concerns, not fields of the core
 result. `ruleset` contains only normative `specVersion` and `sourceHash`.
+
+## D31. Structural wildcard candidates for required child fields — APPROVED
+
+**Context.** Under the rc.5 flat-map match rule, `items[*].sku` enumerated only leaves
+that already existed. For `{"items":[{}, {"sku":"A"}]}`, the first element vanished
+from the population, so `not_empty + ALL` incorrectly passed. `onEmpty` could not help
+because the population was not globally empty. This prevented an ordinary rule from
+expressing that every real array element must contain a child field.
+
+**Options considered:** (a) keep sparse matching and require validation outside the
+rules layer; (b) add a dedicated operator such as `each_has`, a new wildcard form, or a
+new aggregate field; (c) keep the DSL unchanged and derive the wildcard population from
+real nested-array structure before resolving each concrete terminal path.
+
+**Approved for rc.6: option (c).** Every `[*]` enumerates only real indices of the
+corresponding array in the normative nested payload. Exact key tokens address only own
+JSON-object members; exact index tokens address only in-range JSON-array elements. A
+numeric string key of an object is never an array index.
+
+An absent or impassable exact segment before a later wildcard ends that branch because
+the next real index cannot be synthesized. Once all wildcard indices are known, an
+absent or impassable exact suffix preserves one absent structural candidate with its
+fully synthesized concrete path. The terminal candidate is classified through the
+existing §2.7 leaf projection: scalars, `null`, and empty containers are present;
+non-empty containers at the terminal path are absent. Candidate formation is independent
+of the operator, and D13 then determines how absence becomes `PASS`, `FAIL`, or `SKIP`.
+
+D31 supersedes the flat-map match-set portion of D5 and the sparse-child consequence of
+D15. D5's numeric odometer ordering remains. D20's structural population is now the D31
+candidate list; `onEmpty`, all-`SKIP`, counters, exhaustive evaluation, and issue modes
+are unchanged and apply to that list. Wildcards in `$context.*` remain forbidden.
+
+**Cost and migration.** This is an intentional breaking semantic change without a new
+DSL field, operator, snapshot shape, or `formatVersion`. Snapshots rebuild with
+`specVersion: "1.0.0-rc.6"`, which also changes `sourceHash`; the Node implementation
+moves to its next major version. Required-child rules use ordinary absence-observing
+operators such as `not_empty` with `EACH`. A terminal `items[*]` still does not expose
+non-empty object or array values to operators, so it is not a general collection-size
+check.
 
 ## [DR-VII] Addendum: final format review rc.4 → rc.5 — APPROVED
 

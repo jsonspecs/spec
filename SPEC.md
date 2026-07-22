@@ -1,6 +1,6 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0-rc.5 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
+**Version:** 1.0.0-rc.6 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
 
 This specification is the canon of runtime behavior for a given version. It states only
@@ -8,7 +8,7 @@ expected behavior. The reasoning behind every decision lives in a separate docum
 `DECISIONS.md` / `DECISIONS_RU.md` — which in turn refers to the prototype
 implementation (`source/`) whose practical experience produced these decisions.
 
-**Notation.** `[D1]`…`[D30]` refer to numbered decisions in `DECISIONS.md`;
+**Notation.** `[D1]`…`[D31]` refer to numbered decisions in `DECISIONS.md`;
 `[DR-I]`…`[DR-X]` refer to its addenda. MUST/MUST NOT/SHOULD/MAY per RFC 2119.
 
 ---
@@ -211,6 +211,12 @@ contain `.`, `[` or `]` — such keys are unaddressable, and the input is reject
 **Resolution.** Resolving path `f` against the flat map yields either
 *(present, value)* or *absent*. There is no partial resolution and no prototype-chain
 or default-value fallback.
+
+A wildcard `field` is the sole exception to using flat-map membership as the source of
+enumeration. Section 3.6 enumerates real array indices from the normative nested payload,
+forms concrete structural candidates, and only then uses this projection to classify each
+candidate's terminal value as present or absent. Intermediate containers traversed to
+reach a wildcard need not themselves be leaves. `[D31]`
 
 **Path grammar.** `[DR-IV]` A field reference MUST match:
 
@@ -535,15 +541,52 @@ belong to authoring metadata, not the executable format. `[D26]`
 
 ### 3.6 Wildcards and aggregation
 
-#### 3.6.1 Wildcard resolution and enumeration order `[D5]`
+#### 3.6.1 Structural wildcard candidates and enumeration order `[D5][D31]`
 
-A `field` path may contain `[*]` segments. Each segment matches non-negative integer
-indices at that position in the internal flat map. Resolution returns concrete paths
-present after flattening the normative nested JSON input.
+A `field` path may contain `[*]` segments. Wildcard expansion operates on the normative
+nested payload after §5.1 input validation; it does not infer array structure from the
+keys present in the internal flat map.
 
-Indices are ordered numerically ascending; gaps are allowed. Multiple wildcard
-segments are ordered lexicographically by their index tuple, left segment first
-(odometer order). This order controls per-element issues.
+A *branch* is one choice of concrete indices for the wildcard segments already traversed.
+A *structural candidate* is a fully concrete path in which every `[*]` has been replaced
+by a real index of the corresponding payload array. Its terminal value may be present or
+absent under §2.7. Candidate formation is independent of the operator.
+
+Expansion traverses path tokens from left to right:
+
+1. Traversal starts at the payload root with one branch.
+2. A key token resolves only against an own member of a JSON object. An exact index token
+   resolves only against a JSON array and only when `0 <= index < length`. A key never
+   addresses a host property of an array, and an exact index never addresses a numeric
+   string key of an object. Every other combination is impassable.
+3. If an exact token is absent or impassable before a later `[*]`, that branch ends and
+   creates no candidates: the next real array index cannot be determined.
+4. At `[*]`, the value to which the wildcard is applied MUST be an array. That array
+   creates one branch for each actual index from `0` through `length - 1`, regardless of
+   the type or value of the selected elements. If the value to which `[*]` is applied is
+   absent, `null`, a scalar, or an object, it creates zero branches.
+5. After all wildcard indices have been chosen, the remaining exact suffix creates
+   exactly one concrete candidate for each surviving branch. If that suffix is absent or
+   impassable, the candidate remains and its full path is synthesized from the known keys
+   and exact indices.
+6. The fully formed concrete path is classified as present or absent by §2.7. Thus a
+   scalar, `null`, empty object, or empty array is present; a non-empty object or array at
+   the terminal path is absent.
+
+For example, `items[*].sku` over `[null, 42, {}, {"sku":"A"}]` produces four
+candidates: the first three concrete paths are absent and `items[3].sku` is present with
+value `"A"`. For `a[*].b[*].sku`, an absent or non-array `b` creates no inner branch,
+while an existing `b[j]` whose `sku` is absent creates the absent candidate
+`a[i].b[j].sku`.
+
+An I-JSON array is dense: every index from `0` through `length - 1` denotes an element.
+A sparse host-language array is not an I-JSON document and is outside the normative input
+model; an external adapter may reject or transform it before the evaluation tuple exists.
+
+Indices of each wildcard are ordered numerically ascending. Multiple wildcard segments
+are ordered lexicographically by their index tuple, left segment first (odometer order);
+missing inner branches do not change the relative order of the remaining candidates.
+This order controls evaluation and per-element issues.
 
 #### 3.6.2 Aggregation `[D20]`
 
@@ -564,18 +607,22 @@ Legacy `EACH`, `MIN`, and `MAX` are not `mode` values in version 1. `[D29]`
 **Population and `SKIP` for `ALL`/`ANY`/`COUNT`.** These three modes evaluate as
 follows:
 
-1. Resolve the wildcard to a structural match list.
+1. Resolve the wildcard to the ordered structural candidate list from §3.6.1.
 2. If the list is empty, take the outcome from `onEmpty`.
-3. Evaluate **every** structural match sequentially in wildcard enumeration order.
+3. Evaluate **every** structural candidate sequentially in wildcard enumeration order,
+   applying the absent-field behavior of §3.1 to each candidate before operator
+   invocation.
    `ALL`, `ANY`, and `COUNT` never short-circuit, even after their logical result is
-   already determined. An operator fault or contract violation at any match aborts the
+   already determined. An operator fault or contract violation at any candidate aborts the
    whole evaluation. Exclude `SKIP` from the effective population. `matched` is
-   structural size, `evaluated` is `PASS`+`FAIL`, and `skipped` is `SKIP` count.
-4. If structural matches existed but all outcomes were `SKIP`, the whole rule is
+   candidate-list size, `evaluated` is `PASS`+`FAIL`, and `skipped` is `SKIP` count.
+4. If structural candidates existed but all outcomes were `SKIP`, the whole rule is
    `SKIP`, regardless of `onEmpty`.
 5. Otherwise evaluate the aggregate over the effective population.
 
-Thus `onEmpty` means no structural matches, not no computable outcomes.
+Thus `onEmpty` means no structural candidates, not no computable outcomes. An absent
+candidate still contributes to `matched`; for a value operator it contributes to
+`skipped`, while absence-observing operators determine their ordinary `PASS` or `FAIL`.
 
 | mode | PASS when |
 | --- | --- |
@@ -752,7 +799,7 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0-rc.5",
+  "specVersion": "1.0.0-rc.6",
   "sourceHash": "<64 lowercase hex chars>",
   "exports": ["credit.application"],
   "artifacts": {
@@ -1021,7 +1068,7 @@ allowed:
 | `level` | `WARNING \| ERROR \| EXCEPTION` | always |
 | `code` | string | always — authored in `rule.issue.code` |
 | `message` | string | always — authored in `rule.issue.message`; normative as data passthrough `[D7]` |
-| `field` | string or `null` | always; the concrete resolved path for field-scoped issues (for wildcard elements, such as `x[2].v`); the pattern (`x[*].v`) for aggregate summary issues; `null` for every issue without a primary `field` operand, including `any_filled` and custom operators configured only with `inputs` or `params` |
+| `field` | string or `null` | always; the concrete path for field-scoped issues (for wildcard elements, such as `x[2].v`, including a synthesized path of an absent structural candidate); the pattern (`x[*].v`) for aggregate summary issues; `null` for every issue without a primary `field` operand, including `any_filled` and custom operators configured only with `inputs` or `params` |
 | `ruleId` | string | always; the rule's artifact id (the `artifacts` member name) |
 | `pipelineId` | string | always; the immediately enclosing pipeline (§5.5) |
 | `expected` | value | per §6.4 |
@@ -1066,7 +1113,7 @@ A summary issue is created on final `FAIL` for `ALL/ANY + SUMMARY`, `COUNT`, or
 | `COUNT` failure | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
 | `onEmpty: "FAIL"` | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}` | omitted / omitted |
 
-`matched` is structural wildcard match count, `evaluated` is `PASS`+`FAIL`,
+`matched` is the §3.6.1 structural candidate count, `evaluated` is `PASS`+`FAIL`,
 `skipped` is `SKIP`, and `passed`/`failed` partition the effective population.
 Always `matched = evaluated + skipped` and `evaluated = passed + failed`.
 
@@ -1125,7 +1172,7 @@ exercised portably through the reserved conformance operators of §7.3.
 
 ```json
 "ruleset": {
-  "specVersion": "1.0.0-rc.5",
+  "specVersion": "1.0.0-rc.6",
   "sourceHash": "…"
 }
 ```
@@ -1243,7 +1290,7 @@ condition** of a conformance claim for X — not a sufficient one: the suite sam
 behavior space, the text defines it. `[DR-IV]` If a fixture contradicts the text, the
 text prevails; the fixture is corrected through an erratum and a new suite version —
 fixtures never silently redefine the text. Fixtures are organized by the decision or
-section they pin; every decision D1–D30 MUST be covered by at least one fixture.
+section they pin; every decision D1–D31 MUST be covered by at least one fixture.
 
 **Reserved conformance operators.** `[DR-IV]` The following operator names are
 reserved. They are registered **only by conformance runners** as part of the test
@@ -1254,7 +1301,7 @@ own registration API. Their pinned behavior when invoked:
 | --- | --- | --- |
 | `conformance.rule.throw` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; throws a host exception | `ABORT OPERATOR_FAULT` at either site |
 | `conformance.rule.invalid_result` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; returns `EXCEPTION`, outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site |
-| `conformance.rule.tri` | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; every other present value returns `FAIL`; absent `field` receives core-level `SKIP` | pins mixed aggregate populations and exhaustive aggregate evaluation |
+| `conformance.rule.tri` | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; for `"INVALID"`, returns that string outside the outcome enum; every other present value returns `FAIL`; absent `field` receives core-level `SKIP` | pins mixed aggregate populations, exhaustive aggregate evaluation, and late contract violations |
 | `conformance.rule.params` | accepts no standard operands or `inputs`; requires the closed params object `{ "outcome": "PASS" | "FAIL" | "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation, verbatim delivery, and no-field issue attribution |
 | `conformance.rule.inputs` | accepts no standard operands or `params`; requires the artifact's closed `inputs` object to contain exactly configured names `missing` and `nullValue`; it is invoked even when either path is absent and returns `PASS` only when the resolved invocation omits `missing` and contains `nullValue: null`; otherwise `FAIL` | pins core path resolution and absent-vs-null representation |
 

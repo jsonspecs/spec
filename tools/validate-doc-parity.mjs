@@ -7,6 +7,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = name => readFileSync(join(root, name), 'utf8');
 const en = read('SPEC.md');
 const ru = read('SPEC_RU.md');
+const migrationEn = read('MIGRATION_RC6.md');
+const migrationRu = read('MIGRATION_RC6_RU.md');
 
 function outline(text) {
   return [...text.matchAll(/^(#{2,4})\s+([0-9]+(?:\.[0-9]+)*)\.?\s+/gm)]
@@ -39,8 +41,34 @@ for (const [label, pattern] of [
   if (enCount !== ruCount) errors.push(`${label} count differs: EN=${enCount} RU=${ruCount}`);
 }
 
-for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-X']) {
+for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-X', 'D31']) {
   if (!ru.includes(token)) errors.push(`SPEC_RU.md does not contain required token ${token}`);
+}
+
+function headingLevels(text) {
+  return [...text.matchAll(/^(#{1,6})\s+/gm)].map(([, marks]) => marks.length);
+}
+
+if (JSON.stringify(headingLevels(migrationEn)) !== JSON.stringify(headingLevels(migrationRu))) {
+  errors.push('RC.6 migration guide heading structure differs');
+}
+
+for (const [label, pattern] of [
+  ['fenced code delimiters', /^```/gm],
+  ['numbered list items', /^[0-9]+\./gm],
+  ['bullet list items', /^- /gm],
+]) {
+  const enCount = count(migrationEn, pattern);
+  const ruCount = count(migrationRu, pattern);
+  if (enCount !== ruCount) {
+    errors.push(`RC.6 migration guide ${label} count differs: EN=${enCount} RU=${ruCount}`);
+  }
+}
+
+for (const token of ['1.0.0-rc.5', '1.0.0-rc.6', 'D31', 'sourceHash', 'items[*]',
+  'conformance.rule.tri', '"INVALID"']) {
+  if (!migrationEn.includes(token)) errors.push(`MIGRATION_RC6.md does not contain ${token}`);
+  if (!migrationRu.includes(token)) errors.push(`MIGRATION_RC6_RU.md does not contain ${token}`);
 }
 
 if (errors.length) {
@@ -49,4 +77,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`OK: SPEC_RU.md matches ${enOutline.length} numbered sections of SPEC.md (${enVersion})`);
+console.log(`OK: SPEC_RU.md matches ${enOutline.length} numbered sections of SPEC.md (${enVersion}); RC.6 migration guide structure matches`);

@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 final class JcsUtf16Check {
   private static final String EXPECTED_HASH =
-      "adb8a3f491ed3fe60ffb07d2cb0e0abb50e20d13dec7a04b3617ac44f9235f6b";
+      "d1da92d8438b6b692da38fdf3c6572bf8f1be136bb854927231714996b7da49a";
 
   public static void main(String[] args) throws Exception {
     String astral = "\uD800\uDC00"; // U+10000
@@ -25,7 +25,7 @@ final class JcsUtf16Check {
     Map<String, Object> snapshotWithoutHash = new LinkedHashMap<>();
     snapshotWithoutHash.put("format", "jsonspecs-snapshot");
     snapshotWithoutHash.put("formatVersion", 2);
-    snapshotWithoutHash.put("specVersion", "1.0.0-rc.5");
+    snapshotWithoutHash.put("specVersion", "1.0.0-rc.6");
     snapshotWithoutHash.put("exports", List.of(astral, bmp));
     snapshotWithoutHash.put("artifacts", artifacts);
 

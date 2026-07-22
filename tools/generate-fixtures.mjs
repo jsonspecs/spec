@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SPEC = '1.0.0-rc.5';
+const SPEC = '1.0.0-rc.6';
 const deep = n => n <= 1 ? 1 : { n: deep(n - 1) };
 const jsonDepth = value => {
   if (value === null || typeof value !== 'object') return 1;
@@ -1106,6 +1106,212 @@ rejFx('d02-length', 'd02/reject-fractional-length',
     code: 'D28.X3', field: 'a', message: '\uD800'
   })));
   rawSnapshotFx('d28-hash', 'd28/reject-lone-surrogate', JSON.stringify(validExceptUnicode));
+}
+
+/* ---------------- rc.6: structural wildcard candidates (D31) ---------------- */
+{
+  const required = (id, aggregate, code = 'D31.REQUIRED') => chk(id, 'not_empty', {
+    code, field: 'items[*].sku', aggregate,
+  });
+  const zeroDetails = mode => ({ mode, matched: 0, evaluated: 0, skipped: 0, passed: 0, failed: 0 });
+
+  {
+    const r = required('library.d31.required.each', { mode: 'ALL', onEmpty: 'SKIP', issueMode: 'EACH' });
+    evalFx('d31-wildcard', 'd31/required-child-all-each-reports-absent', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{ sku: 'A' }, {}] } },
+      ERR([issue('ERROR', 'D31.REQUIRED', M, 'items[1].sku', r.id, 'checks.main')]));
+  }
+
+  {
+    const r = required('library.d31.required.summary', { mode: 'ALL', issueMode: 'SUMMARY' }, 'D31.SUMMARY');
+    evalFx('d31-wildcard', 'd31/required-child-all-summary-counts-absent', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{ sku: 'A' }, {}] } },
+      ERR([issue('ERROR', 'D31.SUMMARY', M, 'items[*].sku', r.id, 'checks.main', {
+        details: { mode: 'ALL', matched: 2, evaluated: 2, skipped: 0, passed: 1, failed: 1 },
+      })]));
+  }
+
+  {
+    const r = required('library.d31.any.mixed', { mode: 'ANY', issueMode: 'EACH' }, 'D31.ANY.PASS');
+    evalFx('d31-wildcard', 'd31/any-pass-emits-no-absent-partial-issue', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{ sku: 'A' }, {}] } }, OKR);
+  }
+
+  {
+    const r = required('library.d31.any.fail', { mode: 'ANY', issueMode: 'EACH' }, 'D31.ANY.FAIL');
+    evalFx('d31-wildcard', 'd31/any-all-fail-reports-absent-and-null-in-order', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{}, { sku: null }] } },
+      ERR([
+        issue('ERROR', 'D31.ANY.FAIL', M, 'items[0].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.ANY.FAIL', M, 'items[1].sku', r.id, 'checks.main', { actual: null }),
+      ]));
+  }
+
+  {
+    const op = 'conformance.rule.tri';
+    const r = chk('library.d31.count.mixed', op, { code: 'D31.COUNT', field: 'items[*].result',
+      aggregate: { mode: 'COUNT', op: '>=', value: 2 } });
+    evalFx('d31-wildcard', 'd31/count-mixes-pass-fail-and-two-kinds-of-skip', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [
+        { result: 'PASS' }, {}, { result: 'FAIL' }, { result: 'SKIP' },
+      ] } },
+      ERR([issue('ERROR', 'D31.COUNT', M, 'items[*].result', r.id, 'checks.main', {
+        details: { mode: 'COUNT', op: '>=', value: 2, matched: 4, evaluated: 2, skipped: 2, passed: 1, failed: 1 },
+      })]), [op]);
+  }
+
+  {
+    const r = chk('library.d31.value.mixed', 'greater_than', { code: 'D31.VALUE.MIXED',
+      field: 'items[*].qty', value: 0, aggregate: { mode: 'COUNT', op: '>=', value: 2 } });
+    evalFx('d31-wildcard', 'd31/value-operator-absent-candidate-counts-as-skip', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{ qty: 1 }, {}] } },
+      ERR([issue('ERROR', 'D31.VALUE.MIXED', M, 'items[*].qty', r.id, 'checks.main', {
+        details: { mode: 'COUNT', op: '>=', value: 2, matched: 2, evaluated: 1, skipped: 1, passed: 1, failed: 0 },
+      })]));
+  }
+
+  {
+    const r = chk('library.d31.value.all-absent', 'greater_than', { code: 'D31.VALUE.SKIP',
+      field: 'items[*].qty', value: 0,
+      aggregate: { mode: 'ALL', issueMode: 'SUMMARY', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/value-operator-all-absent-is-all-skip-not-on-empty', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{}, {}] } }, OKR);
+  }
+
+  const onEmptyCases = [
+    ['empty-parent-array', { items: [] }],
+    ['missing-prefix-before-first-wildcard', {}],
+    ['null-parent-before-wildcard', { items: null }],
+    ['scalar-parent-before-wildcard', { items: 7 }],
+    ['object-parent-before-wildcard', { items: { sku: 'A' } }],
+  ];
+  for (const [name, payload] of onEmptyCases) {
+    const r = required(`library.d31.empty.${name}`, { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' },
+      `D31.EMPTY.${name}`);
+    evalFx('d31-wildcard', `d31/${name}-uses-on-empty`, snap(one(r)),
+      { pipelineId: 'checks.main', payload },
+      ERR([issue('ERROR', `D31.EMPTY.${name}`, M, 'items[*].sku', r.id, 'checks.main', {
+        details: zeroDetails('ALL'),
+      })]));
+  }
+
+  {
+    const r = chk('library.d31.nested.empty', 'not_empty', { code: 'D31.NESTED.EMPTY',
+      field: 'a[*].b[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/missing-segment-between-wildcards-creates-no-inner-branch', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: [{}] } },
+      ERR([issue('ERROR', 'D31.NESTED.EMPTY', M, 'a[*].b[*].sku', r.id, 'checks.main', {
+        details: zeroDetails('ALL'),
+      })]));
+  }
+
+  {
+    const r = chk('library.d31.nested.mixed', 'not_empty', { code: 'D31.NESTED.MIXED',
+      field: 'a[*].b[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/missing-inner-array-does-not-hide-other-branches', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: [{}, { b: [{ sku: 'A' }, {}] }] } },
+      ERR([issue('ERROR', 'D31.NESTED.MIXED', M, 'a[1].b[1].sku', r.id, 'checks.main')]));
+  }
+
+  {
+    const r = chk('library.d31.suffix', 'not_empty', { code: 'D31.SUFFIX',
+      field: 'items[*].details.sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/missing-suffix-after-final-wildcard-preserves-candidate', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{}] } },
+      ERR([issue('ERROR', 'D31.SUFFIX', M, 'items[0].details.sku', r.id, 'checks.main')]));
+  }
+
+  {
+    const r = required('library.d31.impassable.elements', { mode: 'ALL', issueMode: 'EACH' }, 'D31.IMPASSABLE');
+    evalFx('d31-wildcard', 'd31/null-scalar-and-empty-object-elements-preserve-absent-suffix', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [null, 42, {}] } },
+      ERR([
+        issue('ERROR', 'D31.IMPASSABLE', M, 'items[0].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.IMPASSABLE', M, 'items[1].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.IMPASSABLE', M, 'items[2].sku', r.id, 'checks.main'),
+      ]));
+  }
+
+  {
+    const r = chk('library.d31.terminal', 'not_empty', { code: 'D31.TERMINAL', field: 'items[*]',
+      aggregate: { mode: 'ALL', issueMode: 'SUMMARY' } });
+    evalFx('d31-wildcard', 'd31/terminal-wildcard-keeps-flat-leaf-model', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [null, 42, {}, [], { sku: 'A' }, [1]] } },
+      ERR([issue('ERROR', 'D31.TERMINAL', M, 'items[*]', r.id, 'checks.main', {
+        details: { mode: 'ALL', matched: 6, evaluated: 6, skipped: 0, passed: 3, failed: 3 },
+      })]));
+  }
+
+  {
+    const r = required('library.d31.numeric.order', { mode: 'ALL', issueMode: 'EACH' }, 'D31.ORDER');
+    const items = Array.from({ length: 11 }, () => ({ sku: 'A' }));
+    items[2] = {};
+    items[10] = {};
+    evalFx('d31-wildcard', 'd31/absent-candidate-order-is-numeric-two-before-ten', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items } },
+      ERR([
+        issue('ERROR', 'D31.ORDER', M, 'items[2].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.ORDER', M, 'items[10].sku', r.id, 'checks.main'),
+      ]));
+  }
+
+  {
+    const r = chk('library.d31.odometer', 'not_empty', { code: 'D31.ODOMETER',
+      field: 'a[*].b[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/nested-absent-candidates-follow-index-tuple-order', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: [
+        { b: [{}, { sku: 'A' }] },
+        { b: [{}, {}] },
+      ] } },
+      ERR([
+        issue('ERROR', 'D31.ODOMETER', M, 'a[0].b[0].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.ODOMETER', M, 'a[1].b[0].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.ODOMETER', M, 'a[1].b[1].sku', r.id, 'checks.main'),
+      ]));
+  }
+
+  {
+    const r = chk('library.d31.object-index', 'not_empty', { code: 'D31.OBJECT.INDEX',
+      field: 'a[0].b[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/numeric-object-key-is-not-an-exact-array-index', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: { '0': { b: [{}] } } } },
+      ERR([issue('ERROR', 'D31.OBJECT.INDEX', M, 'a[0].b[*].sku', r.id, 'checks.main', {
+        details: zeroDetails('ALL'),
+      })]));
+  }
+
+  {
+    const r = chk('library.d31.index-before', 'not_empty', { code: 'D31.INDEX.BEFORE',
+      field: 'a[*].b[1].c[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/out-of-range-exact-index-before-wildcard-ends-branch', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: [{ b: [{ c: [{}] }] }] } },
+      ERR([issue('ERROR', 'D31.INDEX.BEFORE', M, 'a[*].b[1].c[*].sku', r.id, 'checks.main', {
+        details: zeroDetails('ALL'),
+      })]));
+  }
+
+  {
+    const r = chk('library.d31.index-after', 'not_empty', { code: 'D31.INDEX.AFTER',
+      field: 'a[*].b[1].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/out-of-range-exact-index-after-final-wildcard-is-absent', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { a: [{ b: [{}] }] } },
+      ERR([issue('ERROR', 'D31.INDEX.AFTER', M, 'a[0].b[1].sku', r.id, 'checks.main')]));
+  }
+
+  rejFx('d31-wildcard', 'd31/reject-wildcard-in-context-field',
+    snap(one(chk('library.d31.context', 'not_empty', { code: 'D31.CONTEXT',
+      field: '$context.items[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } }))));
+
+  {
+    const op = 'conformance.rule.tri';
+    const r = chk('library.d31.late-invalid', op, { code: 'D31.LATE.INVALID',
+      field: 'items[*].result', aggregate: { mode: 'ANY', issueMode: 'SUMMARY' } });
+    evalFx('d31-wildcard', 'd31/any-pass-still-evaluates-late-invalid-result', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{ result: 'PASS' }, { result: 'INVALID' }] } },
+      { status: 'ABORT', issues: [], error: {
+        code: 'OPERATOR_CONTRACT_VIOLATION', details: { ruleId: r.id, operator: op },
+      } }, [op]);
+  }
 }
 
 /* ---------------- complete built-in operator outcome matrix ---------------- */
