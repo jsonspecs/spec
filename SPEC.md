@@ -1,6 +1,8 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0-rc.6 · **Status:** Release Candidate — the `v1.0.0` tag is applied after
+**Version:** 1.0.0-rc.6
+
+**Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
 
 This specification is the canon of runtime behavior for a given version. It states only
@@ -48,7 +50,7 @@ in §7.1. `[D10][D27]`
 
 ### 2.1 Values
 
-A *value* is a JSON value: `null`, boolean, number, string, array, or object. There is no
+A _value_ is a JSON value: `null`, boolean, number, string, array, or object. There is no
 `undefined` in the data model. Where an implementation's host language distinguishes
 "absent" from "null", only the JSON-visible distinction is normative: a key that is not
 present versus a key whose value is `null`.
@@ -72,7 +74,7 @@ boundary (§4.10, §5.1).
 depth 1; a non-empty container has depth 1 + the maximum depth of its members. Every
 input document — the complete snapshot, the payload, and the context — MUST NOT exceed depth
 **256**: depth 256 is accepted, 257 is rejected (Part II). `[D9][DR-IV]` The limit is an
-*input guard*, not a constraint on the result: a result built from bounded inputs is
+_input guard_, not a constraint on the result: a result built from bounded inputs is
 bounded by construction plus fixed envelope overhead, and no normative depth limit
 applies to it: moving accepted `issue.meta` into the result envelope must not make the
 result invalid.
@@ -106,7 +108,7 @@ The number domain is exactly the finite values of **IEEE 754 binary64**. `[D1][D
 - Integers in ±(2^53 − 1) are represented exactly. `1` and `1.0` denote the same value.
   `is_integer` accepts any finite binary64 value with zero fractional part.
 
-**Numeric strings.** In ordered comparisons (§2.5) a string is *numeric* if and only if it
+**Numeric strings.** In ordered comparisons (§2.5) a string is _numeric_ if and only if it
 matches:
 
 ```
@@ -132,7 +134,7 @@ would make results release-dependent.
 
 ### 2.4 Equality
 
-Two values are *equal* when:
+Two values are _equal_ when:
 
 - both are `null`; or
 - both are booleans with the same value; or
@@ -149,28 +151,28 @@ part of the operator model).
 Ordered comparison (`greater_than`, `less_than`, `field_*_field`) operates on two operands
 classified independently:
 
-| Operand | Classification |
-| --- | --- |
-| JSON number | **number** |
-| string matching the numeric grammar (§2.2) | **number** (converted to binary64) |
-| string matching `^[0-9]{4}-[0-9]{2}-[0-9]{2}$` that is a valid proleptic Gregorian calendar date | **date** |
-| anything else (booleans, `null`, arrays, objects, other strings) | **unclassified** |
+| Operand                                                                                          | Classification                     |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| JSON number                                                                                      | **number**                         |
+| string matching the numeric grammar (§2.2)                                                       | **number** (converted to binary64) |
+| string matching `^[0-9]{4}-[0-9]{2}-[0-9]{2}$` that is a valid proleptic Gregorian calendar date | **date**                           |
+| anything else (booleans, `null`, arrays, objects, other strings)                                 | **unclassified**                   |
 
 Calendar validity includes month range 01–12, day range valid for the month, and leap-year
 rules for February; `2026-02-30` and `2026-13-01` are not dates. The year range is
 0000–9999. Date ordering is chronological (equivalently: lexicographic over the canonical
 `YYYY-MM-DD` string).
 
-A comparison is *determined* only when both operands classify to the **same** kind
+A comparison is _determined_ only when both operands classify to the **same** kind
 (both numbers or both dates). If either operand is unclassified, or the kinds differ, the
-comparison is *undetermined*, and the operator returns `FAIL` for present operands.
+comparison is _undetermined_, and the operator returns `FAIL` for present operands.
 
 Note the classification is disjoint by construction: no string is simultaneously numeric
 and a date.
 
 ### 2.6 Emptiness
 
-A field is *empty* when it is:
+A field is _empty_ when it is:
 
 - **absent** — its path does not resolve in the flattened payload (§2.7); or
 - `null`; or
@@ -205,11 +207,11 @@ contain `.`, `[` or `]` — such keys are unaddressable, and the input is reject
   the empty array `[]`. A leaf's path maps to its value.
 - A **non-empty container does not itself appear** in the flat map — only its
   descendants' paths do. Given `{"a": [1]}`, the flat map is `{"a[0]": 1}`; the path `a`
-  is *absent*. Given `{"a": []}`, the flat map is `{"a": []}` and `a` resolves to the
+  is _absent_. Given `{"a": []}`, the flat map is `{"a": []}` and `a` resolves to the
   value `[]` (which is non-empty per §2.6).
 
 **Resolution.** Resolving path `f` against the flat map yields either
-*(present, value)* or *absent*. There is no partial resolution and no prototype-chain
+_(present, value)_ or _absent_. There is no partial resolution and no prototype-chain
 or default-value fallback.
 
 A wildcard `field` is the sole exception to using flat-map membership as the source of
@@ -251,7 +253,7 @@ special semantics. `[D11]`
 
 ### 3.1 Operator model
 
-A *rule* applies one operator to payload and, possibly, context. A rule has no
+A _rule_ applies one operator to payload and, possibly, context. A rule has no
 `check` or `predicate` role: it is one business condition whose consequences are
 determined by its use site (§5.3–§5.4). `[D19]`
 
@@ -305,14 +307,14 @@ Every operator registers a closed compile-time contract declaring:
 1. which standard operands (`field`, `value`, `value_field`, `dictionary`) it accepts,
    the JSON type constraints on their authored configuration, and which combinations
    are required;
-2. the allowed and required *configured names* in `inputs`; every name is a non-empty
+2. the allowed and required _configured names_ in `inputs`; every name is a non-empty
    I-JSON string, and every configured input value is a path checked by the core path
    grammar (§2.7) and MUST NOT contain `[*]`;
 3. a closed schema for constant `params`.
 
 At the three levels controlled by an operator contract — the operator-specific
 configuration members of a rule, the `inputs` object, and the immediate `params` object
-— *closed* means a finite, explicitly enumerated set of property names. Dynamic name
+— _closed_ means a finite, explicitly enumerated set of property names. Dynamic name
 families (`patternProperties`, arbitrary additional members, or an equivalent facility
 in another schema language) do not satisfy this contract. Schemas may constrain values
 below those enumerated names in any portable way. The registration API and schema
@@ -367,33 +369,33 @@ No row permits both `value` and `value_field`. The
 "Absent" column gives the rule outcome when the path does not resolve. All
 comparisons use §2.4 and §2.5 without other coercion.
 
-| Operator | Parameters | PASS when | Absent |
-| --- | --- | --- | --- |
-| `not_empty` | — | field is not empty (§2.6) | FAIL |
-| `is_empty` | — | field is empty (§2.6) | PASS |
-| `not_true` | — | value is anything except boolean `true` | PASS |
-| `any_filled` | `fields: path[]` | at least one listed field is not empty; `field` is unused | absence = empty; FAIL when all are empty |
-| `is_boolean` | — | value is a boolean | SKIP |
-| `is_string` | — | value is a string | SKIP |
-| `is_number` | — | value is a number | SKIP |
-| `is_integer` | — | value is a number with zero fractional part | SKIP |
-| `equals` | `value` | value equals `value` (§2.4) | SKIP |
-| `not_equals` | `value` | value does not equal `value` | SKIP |
-| `contains` | `value: string` | value contains `value` as a substring | SKIP |
-| `matches_regex` | `value: pattern` | string contains a pattern match (§3.4) | SKIP |
-| `not_matches_regex` | `value: pattern` | string contains no pattern match | SKIP |
-| `greater_than` | `value: number \| numeric-string \| date-string` | comparison is determined and field > value | SKIP |
-| `less_than` | `value: number \| numeric-string \| date-string` | comparison is determined and field < value | SKIP |
-| `length_equals` | `value: non-negative integer` | string has exactly `value` code points; non-string → FAIL | SKIP |
-| `length_max` | `value: non-negative integer` | string has at most `value` code points; non-string → FAIL | SKIP |
-| `field_equals_field` | `value_field: path` | both fields are present and equal | SKIP if either is absent |
-| `field_not_equals_field` | `value_field: path` | both are present and unequal | SKIP if either is absent |
-| `field_greater_than_field` | `value_field: path` | both present, determined, field > value_field | SKIP if either is absent |
-| `field_less_than_field` | `value_field: path` | both present, determined, field < value_field | SKIP if either is absent |
-| `field_greater_or_equal_than_field` | `value_field: path` | both present, determined, field ≥ value_field | SKIP if either is absent |
-| `field_less_or_equal_than_field` | `value_field: path` | both present, determined, field ≤ value_field | SKIP if either is absent |
-| `in_dictionary` | `dictionary: id` | value matches an entry (§3.5) | SKIP |
-| `not_in_dictionary` | `dictionary: id` | value matches no entry (§3.5) | SKIP |
+| Operator                            | Parameters                                       | PASS when                                                 | Absent                                   |
+| ----------------------------------- | ------------------------------------------------ | --------------------------------------------------------- | ---------------------------------------- |
+| `not_empty`                         | —                                                | field is not empty (§2.6)                                 | FAIL                                     |
+| `is_empty`                          | —                                                | field is empty (§2.6)                                     | PASS                                     |
+| `not_true`                          | —                                                | value is anything except boolean `true`                   | PASS                                     |
+| `any_filled`                        | `fields: path[]`                                 | at least one listed field is not empty; `field` is unused | absence = empty; FAIL when all are empty |
+| `is_boolean`                        | —                                                | value is a boolean                                        | SKIP                                     |
+| `is_string`                         | —                                                | value is a string                                         | SKIP                                     |
+| `is_number`                         | —                                                | value is a number                                         | SKIP                                     |
+| `is_integer`                        | —                                                | value is a number with zero fractional part               | SKIP                                     |
+| `equals`                            | `value`                                          | value equals `value` (§2.4)                               | SKIP                                     |
+| `not_equals`                        | `value`                                          | value does not equal `value`                              | SKIP                                     |
+| `contains`                          | `value: string`                                  | value contains `value` as a substring                     | SKIP                                     |
+| `matches_regex`                     | `value: pattern`                                 | string contains a pattern match (§3.4)                    | SKIP                                     |
+| `not_matches_regex`                 | `value: pattern`                                 | string contains no pattern match                          | SKIP                                     |
+| `greater_than`                      | `value: number \| numeric-string \| date-string` | comparison is determined and field > value                | SKIP                                     |
+| `less_than`                         | `value: number \| numeric-string \| date-string` | comparison is determined and field < value                | SKIP                                     |
+| `length_equals`                     | `value: non-negative integer`                    | string has exactly `value` code points; non-string → FAIL | SKIP                                     |
+| `length_max`                        | `value: non-negative integer`                    | string has at most `value` code points; non-string → FAIL | SKIP                                     |
+| `field_equals_field`                | `value_field: path`                              | both fields are present and equal                         | SKIP if either is absent                 |
+| `field_not_equals_field`            | `value_field: path`                              | both are present and unequal                              | SKIP if either is absent                 |
+| `field_greater_than_field`          | `value_field: path`                              | both present, determined, field > value_field             | SKIP if either is absent                 |
+| `field_less_than_field`             | `value_field: path`                              | both present, determined, field < value_field             | SKIP if either is absent                 |
+| `field_greater_or_equal_than_field` | `value_field: path`                              | both present, determined, field ≥ value_field             | SKIP if either is absent                 |
+| `field_less_or_equal_than_field`    | `value_field: path`                              | both present, determined, field ≤ value_field             | SKIP if either is absent                 |
+| `in_dictionary`                     | `dictionary: id`                                 | value matches an entry (§3.5)                             | SKIP                                     |
+| `not_in_dictionary`                 | `dictionary: id`                                 | value matches no entry (§3.5)                             | SKIP                                     |
 
 `any_filled` accepts only `fields[]`; the legacy `paths[]` alias does not exist.
 The "required and satisfies X" idiom remains two rules: one presence rule and one
@@ -401,11 +403,11 @@ value rule. `[D11][D13]`
 
 ### 3.3 Outcome interpretation
 
-| Outcome | Rule step | `when` leaf |
-| --- | --- | --- |
-| `PASS` | produces nothing | `true` |
-| `FAIL` | creates an issue from `rule.issue` | `false`, no issue |
-| `SKIP` | produces nothing | `false` |
+| Outcome | Rule step                          | `when` leaf       |
+| ------- | ---------------------------------- | ----------------- |
+| `PASS`  | produces nothing                   | `true`            |
+| `FAIL`  | creates an issue from `rule.issue` | `false`, no issue |
+| `SKIP`  | produces nothing                   | `false`           |
 
 The `issue` object does not participate in logical evaluation. A rule with
 `issue.level: "EXCEPTION"` MAY therefore be used in `when`; it remains an ordinary,
@@ -417,9 +419,9 @@ side-effect-free condition at that site. `[D19]`
 so that every mainstream backend platform can execute it with its standard regex engine
 (it is a strict subset of RE2, of ECMAScript-with-`u`, of `java.util.regex`, and of .NET
 non-backtracking mode). The language is implementable by a linear-time
-automaton (it is a subset of RE2) — a property of the *language*, not of every
+automaton (it is a subset of RE2) — a property of the _language_, not of every
 execution: backtracking engines may execute some subset patterns (e.g. `(a+)+$`)
-super-linearly. `[D16]` *Security note (informative):* implementations SHOULD execute
+super-linearly. `[D16]` _Security note (informative):_ implementations SHOULD execute
 patterns with an automaton-based engine or apply equivalent mitigations; the choice is
 out of contract scope `[D12]`.
 
@@ -476,15 +478,15 @@ classes, octal escapes, and any escape not listed in the grammar.
 quantifier MUST be ≤ 1000; the decoded pattern MUST be ≤ 1024 code points. Two
 additional limits are computed over the parsed grammar tree. `[DR-IX]`
 
-For a quantifier `q`, define its *bounded repeat factor* `F(q)` and *expansion copies*
+For a quantifier `q`, define its _bounded repeat factor_ `F(q)` and _expansion copies_
 `K(q)`:
 
-| `q` | `F(q)` | `K(q)` |
-| --- | ---: | ---: |
-| absent, `*`, `+`, `?` | 1 | 1 |
-| `{n}` | `max(n, 1)` | `max(n, 1)` |
-| `{n,m}` | `max(m, 1)` | `max(m, 1)` |
-| `{n,}` | `max(n, 1)` | `n + 1` |
+| `q`                   |      `F(q)` |      `K(q)` |
+| --------------------- | ----------: | ----------: |
+| absent, `*`, `+`, `?` |           1 |           1 |
+| `{n}`                 | `max(n, 1)` | `max(n, 1)` |
+| `{n,m}`               | `max(m, 1)` | `max(m, 1)` |
+| `{n,}`                | `max(n, 1)` |     `n + 1` |
 
 The floor of 1 prevents a zero-count wrapper from erasing the compilation cost of its
 contained syntax.
@@ -494,7 +496,7 @@ quantifiers (`{n}`, `{n,m}`, `{n,}`) enclosing that atom. The product MUST be �
 **1000**. This catches backend repeat-expansion limits without banning nested unbounded
 loops such as `(a+)+`.
 
-The *expanded atom count* `C` is defined recursively:
+The _expanded atom count_ `C` is defined recursively:
 
 - `C(literal) = C(".") = C(escape) = C(class) = 1`; an anchor contributes 0;
 - `C(concat)` and `C(alternation)` are the sums of their child counts;
@@ -547,8 +549,8 @@ A `field` path may contain `[*]` segments. Wildcard expansion operates on the no
 nested payload after §5.1 input validation; it does not infer array structure from the
 keys present in the internal flat map.
 
-A *branch* is one choice of concrete indices for the wildcard segments already traversed.
-A *structural candidate* is a fully concrete path in which every `[*]` has been replaced
+A _branch_ is one choice of concrete indices for the wildcard segments already traversed.
+A _structural candidate_ is a fully concrete path in which every `[*]` has been replaced
 by a real index of the corresponding payload array. Its terminal value may be present or
 absent under §2.7. Candidate formation is independent of the operator.
 
@@ -594,12 +596,12 @@ A rule whose `field` contains `[*]` MUST have `aggregate` with an explicit `mode
 `aggregate` on a non-wildcard field is invalid. `value_field` MUST NOT contain a
 wildcard; aligned comparison of two wildcard paths is not defined in version 1.
 
-| Field | Constraint |
-| --- | --- |
-| `mode` | required: `ALL`, `ANY`, or `COUNT` |
-| `onEmpty` | `PASS`, `FAIL`, or `SKIP`; default `SKIP` |
-| `issueMode` | `EACH` or `SUMMARY`; only for `ALL`/`ANY`; required when the rule has `issue`, forbidden otherwise |
-| `op`, `value` | `COUNT` only; `op` ∈ `== != > >= < <=`, default `>=`; non-negative integer `value` required |
+| Field         | Constraint                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| `mode`        | required: `ALL`, `ANY`, or `COUNT`                                                                 |
+| `onEmpty`     | `PASS`, `FAIL`, or `SKIP`; default `SKIP`                                                          |
+| `issueMode`   | `EACH` or `SUMMARY`; only for `ALL`/`ANY`; required when the rule has `issue`, forbidden otherwise |
+| `op`, `value` | `COUNT` only; `op` ∈ `== != > >= < <=`, default `>=`; non-negative integer `value` required        |
 
 `issueMode` is forbidden for `COUNT`: its failure always creates one summary issue.
 Legacy `EACH`, `MIN`, and `MAX` are not `mode` values in version 1. `[D29]`
@@ -624,10 +626,10 @@ Thus `onEmpty` means no structural candidates, not no computable outcomes. An ab
 candidate still contributes to `matched`; for a value operator it contributes to
 `skipped`, while absence-observing operators determine their ordinary `PASS` or `FAIL`.
 
-| mode | PASS when |
-| --- | --- |
-| `ALL` | every evaluated element is `PASS` |
-| `ANY` | at least one evaluated element is `PASS` |
+| mode    | PASS when                                          |
+| ------- | -------------------------------------------------- |
+| `ALL`   | every evaluated element is `PASS`                  |
+| `ANY`   | at least one evaluated element is `PASS`           |
 | `COUNT` | the number of `PASS` outcomes satisfies `op value` |
 
 Issues are possible only for final aggregate `FAIL`: `ALL + EACH` reports each
@@ -646,8 +648,8 @@ then execution stops before the next step.
 `snapshot.artifacts` is an object whose member name is the artifact id and whose value
 is the artifact object. Every artifact value MUST have:
 
-| Field | Type | Constraint |
-| --- | --- | --- |
+| Field  | Type   | Constraint                                                   |
+| ------ | ------ | ------------------------------------------------------------ |
 | `type` | string | one of `"rule"`, `"condition"`, `"pipeline"`, `"dictionary"` |
 
 A snapshot containing an artifact violating these rules is **invalid** (§4.10). An
@@ -685,16 +687,16 @@ creation. The normative snapshot already contains a closed graph of exact refere
 
 Fields in addition to §4.1:
 
-| Field | Required | Constraint |
-| --- | --- | --- |
-| `operator` | yes | non-empty string naming a built-in (§3.2) or registered custom operator (§4.9) |
-| `field` | per operator | §2.7 path; unused by `any_filled` |
-| `fields` | `any_filled` only | non-empty path array; forbidden for custom operators |
-| `inputs` | per operator | closed object of non-empty operator-declared names to non-wildcard §2.7 paths `[D27][DR-IX]` |
-| `value`, `value_field`, `dictionary` | per operator | Part I; `value` and `value_field` are mutually exclusive; `value_field` contains no `[*]`; `dictionary` is an exact dictionary id |
-| `params` | per operator | constant JSON object valid under the operator's closed schema `[D24][D27]` |
-| `aggregate` | when `field` contains `[*]` | §3.6; forbidden without wildcard |
-| `issue` | optional | issue description for `FAIL` at a rule step |
+| Field                                | Required                    | Constraint                                                                                                                        |
+| ------------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `operator`                           | yes                         | non-empty string naming a built-in (§3.2) or registered custom operator (§4.9)                                                    |
+| `field`                              | per operator                | §2.7 path; unused by `any_filled`                                                                                                 |
+| `fields`                             | `any_filled` only           | non-empty path array; forbidden for custom operators                                                                              |
+| `inputs`                             | per operator                | closed object of non-empty operator-declared names to non-wildcard §2.7 paths `[D27][DR-IX]`                                      |
+| `value`, `value_field`, `dictionary` | per operator                | Part I; `value` and `value_field` are mutually exclusive; `value_field` contains no `[*]`; `dictionary` is an exact dictionary id |
+| `params`                             | per operator                | constant JSON object valid under the operator's closed schema `[D24][D27]`                                                        |
+| `aggregate`                          | when `field` contains `[*]` | §3.6; forbidden without wildcard                                                                                                  |
+| `issue`                              | optional                    | issue description for `FAIL` at a rule step                                                                                       |
 
 The closed `issue` object has this shape:
 
@@ -732,10 +734,10 @@ graph edges. All runtime dependencies use `field`, `fields`, `value_field`, `inp
 
 ### 4.5 Artifact: `condition`
 
-| Field | Required | Constraint |
-| --- | --- | --- |
-| `when` | yes | when expression |
-| `steps` | yes | non-empty array of exact artifact ids (§4.8) |
+| Field   | Required | Constraint                                   |
+| ------- | -------- | -------------------------------------------- |
+| `when`  | yes      | when expression                              |
+| `steps` | yes      | non-empty array of exact artifact ids (§4.8) |
 
 A when expression is one of:
 
@@ -753,9 +755,9 @@ pipeline, or dictionary makes the snapshot invalid. Semantics are in §5.4. `[D1
 
 ### 4.6 Artifact: `pipeline`
 
-| Field | Required | Constraint |
-| --- | --- | --- |
-| `steps` | yes | non-empty array of exact artifact ids (§4.8) |
+| Field   | Required | Constraint                                   |
+| ------- | -------- | -------------------------------------------- |
+| `steps` | yes      | non-empty array of exact artifact ids (§4.8) |
 
 Public entry points are listed centrally in `exports` (§4.9). Pipeline fields
 `flow`, `strict`, `message`, `strictCode`, and `entrypoint` do not exist. `[D26][D29]`
@@ -777,9 +779,9 @@ condition → condition and mixed pipeline → condition → pipeline cycles. Ru
 
 ### 4.7 Artifact: `dictionary`
 
-| Field | Required | Constraint |
-| --- | --- | --- |
-| `entries` | yes | non-empty array of unique scalar strings, numbers, or booleans |
+| Field     | Required | Constraint                                                     |
+| --------- | -------- | -------------------------------------------------------------- |
+| `entries` | yes      | non-empty array of unique scalar strings, numbers, or booleans |
 
 `null`, arrays, objects, and duplicates under §2.4 equality are invalid. Matching
 semantics are defined in §3.5.
@@ -811,20 +813,24 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
       "type": "rule",
       "operator": "not_empty",
       "field": "customer.name",
-      "issue": { "level": "ERROR", "code": "NAME.REQUIRED", "message": "Name is required" }
+      "issue": {
+        "level": "ERROR",
+        "code": "NAME.REQUIRED",
+        "message": "Name is required"
+      }
     }
   }
 }
 ```
 
-| Field | Required | Constraint |
-| --- | --- | --- |
-| `format` | yes | exactly `"jsonspecs-snapshot"` |
-| `formatVersion` | yes | exactly `2` (integer) |
-| `specVersion` | yes | full SemVer 2.0.0 version of this specification the snapshot targets (prereleases included: an rc-suite pins rc versions) |
-| `sourceHash` | yes | SHA-256, lowercase hex, over the snapshot with this field omitted, using RFC 8785 (JCS) `[D6][D28]` |
-| `exports` | yes | non-empty array of unique exact pipeline ids, strictly sorted by unsigned UTF-16 code units; bundle public API and closure roots `[D21][D28]` |
-| `artifacts` | yes | non-empty object from globally unique id to artifact value `[D26]` |
+| Field           | Required | Constraint                                                                                                                                    |
+| --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`        | yes      | exactly `"jsonspecs-snapshot"`                                                                                                                |
+| `formatVersion` | yes      | exactly `2` (integer)                                                                                                                         |
+| `specVersion`   | yes      | full SemVer 2.0.0 version of this specification the snapshot targets (prereleases included: an rc-suite pins rc versions)                     |
+| `sourceHash`    | yes      | SHA-256, lowercase hex, over the snapshot with this field omitted, using RFC 8785 (JCS) `[D6][D28]`                                           |
+| `exports`       | yes      | non-empty array of unique exact pipeline ids, strictly sorted by unsigned UTF-16 code units; bundle public API and closure roots `[D21][D28]` |
+| `artifacts`     | yes      | non-empty object from globally unique id to artifact value `[D26]`                                                                            |
 
 The snapshot envelope is closed: no other top-level fields exist. In particular,
 `requires` and snapshot-level `meta` do not exist. `rule.issue.meta` remains allowed by
@@ -865,8 +871,8 @@ retain unused files; a production snapshot does not.
 ### 4.10 The rejection set
 
 A conformant implementation MUST reject — refuse to evaluate any pipeline of — a
-snapshot exhibiting any of the following. *When* rejection happens (load, prepare,
-first call) is unobservable and unconstrained `[D12]`; *that* it happens before any
+snapshot exhibiting any of the following. _When_ rejection happens (load, prepare,
+first call) is unobservable and unconstrained `[D12]`; _that_ it happens before any
 evaluation is normative.
 
 1. Violations of the closed snapshot envelope or `exports` schema:
@@ -897,7 +903,7 @@ evaluation is normative.
 8. Any artifact unreachable from `exports` under the complete closure in §4.9.
 
 Two conformant implementations MUST agree on membership in this set for every input.
-Diagnostic *texts* and *granularity* for rejected snapshots are informative; the verdict
+Diagnostic _texts_ and _granularity_ for rejected snapshots are informative; the verdict
 is normative. `[D7]`
 
 ---
@@ -913,7 +919,7 @@ Evaluation is a pure function of the tuple:
 ```
 
 Input validation proceeds in the following normative order; the first failure determines
-the outcome (an `ABORT` result, Part III), so implementations agree on *which* error is
+the outcome (an `ABORT` result, Part III), so implementations agree on _which_ error is
 reported when several apply:
 
 1. **Pipeline selection.** `pipelineId` MUST be a non-empty I-JSON string (a sequence of
@@ -928,10 +934,10 @@ reported when several apply:
    scalars). An omitted `context` is exactly equivalent to `{}`. When supplied,
    `context` MUST be a JSON object — otherwise `INVALID_CONTEXT`, same details.
    Payload is checked before context. `[D27]`
-3. **Key scan.** `[D15]` A key is *dangerous* if it is a reserved key (§2.1); a key is
-   *invalid* if it is empty (`""`) or contains `.`, `[` or `]`. The scan is top-down
+3. **Key scan.** `[D15]` A key is _dangerous_ if it is a reserved key (§2.1); a key is
+   _invalid_ if it is empty (`""`) or contains `.`, `[` or `]`. The scan is top-down
    and does not enter the subtree under a dangerous or invalid key — a violation is
-   *visible* only when all its ancestor keys are clean, so its `parentPath` is always
+   _visible_ only when all its ancestor keys are clean, so its `parentPath` is always
    a well-formed dot path (root = `""`). Among visible violations the precedence is:
    dangerous in payload, dangerous in context, invalid in payload, invalid in
    context; within a class, the lexicographically smallest `(parentPath, key)` pair
@@ -956,7 +962,7 @@ a validation step: any JSON object is flattenable.
 The selected pipeline's `steps` execute sequentially. A condition target whose guard is
 true executes its `steps` sequentially in place; a `pipeline` step executes the
 referenced pipeline's `steps` in place. The resulting order of rule evaluations is the
-depth-first, left-to-right traversal of the step tree — *document order*. Issues appear
+depth-first, left-to-right traversal of the step tree — _document order_. Issues appear
 in the result in document order; within one rule evaluation, per-element issues follow
 wildcard enumeration order (§3.6.1). `[D5]`
 
@@ -996,16 +1002,16 @@ When the guard is true, its steps execute in place; otherwise the condition is a
 ### 5.5 Pipeline steps
 
 A pipeline target executes its `steps` in place. Issues produced inside it carry the
-*inner* pipeline's id as `pipelineId`. Whether that inner pipeline is also listed in
+_inner_ pipeline's id as `pipelineId`. Whether that inner pipeline is also listed in
 `exports` has no effect when it is invoked as a step.
 
 ### 5.6 Levels
 
-| `level` | Issue | Effect on flow | Contribution to `status` |
-| --- | --- | --- | --- |
-| `WARNING` | created | none | `OK_WITH_WARNINGS` if nothing stronger |
-| `ERROR` | created | none — evaluation continues | `ERROR` |
-| `EXCEPTION` | created | **entire evaluation stops immediately** — including all outer pipelines' remaining steps | `EXCEPTION` |
+| `level`     | Issue   | Effect on flow                                                                           | Contribution to `status`               |
+| ----------- | ------- | ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| `WARNING`   | created | none                                                                                     | `OK_WITH_WARNINGS` if nothing stronger |
+| `ERROR`     | created | none — evaluation continues                                                              | `ERROR`                                |
+| `EXCEPTION` | created | **entire evaluation stops immediately** — including all outer pipelines' remaining steps | `EXCEPTION`                            |
 
 Accumulated issues are preserved when evaluation completes normally or stops on an
 `EXCEPTION` issue. If evaluation instead reaches technical `ABORT`, all business issues
@@ -1045,13 +1051,13 @@ of conformance.
 
 ### 6.2 Status
 
-| `status` | Meaning |
-| --- | --- |
-| `OK` | no issues |
-| `OK_WITH_WARNINGS` | only `WARNING` issues |
-| `ERROR` | at least one `ERROR` issue, no `EXCEPTION` |
-| `EXCEPTION` | at least one `EXCEPTION` issue (§5.6) |
-| `ABORT` | evaluation could not be performed (§6.7) |
+| `status`           | Meaning                                    |
+| ------------------ | ------------------------------------------ |
+| `OK`               | no issues                                  |
+| `OK_WITH_WARNINGS` | only `WARNING` issues                      |
+| `ERROR`            | at least one `ERROR` issue, no `EXCEPTION` |
+| `EXCEPTION`        | at least one `EXCEPTION` issue (§5.6)      |
+| `ABORT`            | evaluation could not be performed (§6.7)   |
 
 `status` is fully determined by the strongest issue level present or by abortion.
 Applications derive any go/no-go decision from it; a duplicate `control` field does not
@@ -1063,18 +1069,18 @@ Every issue is a closed object with the following fields; the "When present" col
 normative — a field that the column excludes MUST be omitted, and no other field is
 allowed:
 
-| Field | Type | When present |
-| --- | --- | --- |
-| `level` | `WARNING \| ERROR \| EXCEPTION` | always |
-| `code` | string | always — authored in `rule.issue.code` |
-| `message` | string | always — authored in `rule.issue.message`; normative as data passthrough `[D7]` |
-| `field` | string or `null` | always; the concrete path for field-scoped issues (for wildcard elements, such as `x[2].v`, including a synthesized path of an absent structural candidate); the pattern (`x[*].v`) for aggregate summary issues; `null` for every issue without a primary `field` operand, including `any_filled` and custom operators configured only with `inputs` or `params` |
-| `ruleId` | string | always; the rule's artifact id (the `artifacts` member name) |
-| `pipelineId` | string | always; the immediately enclosing pipeline (§5.5) |
-| `expected` | value | per §6.4 |
-| `actual` | value | per §6.4; omitted when there is no single actual value |
-| `details` | object | group-verdict summary issues only (§6.5); normative machine-readable facts of the issue, mirroring `error.details` on `ABORT` (§6.7) — one contract-wide pattern: `code` identifies the class, `details` carries the class-specific facts |
-| `meta` | object | when `rule.issue` declares `meta` (§6.6) |
+| Field        | Type                            | When present                                                                                                                                                                                                                                                                                                                                                      |
+| ------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `level`      | `WARNING \| ERROR \| EXCEPTION` | always                                                                                                                                                                                                                                                                                                                                                            |
+| `code`       | string                          | always — authored in `rule.issue.code`                                                                                                                                                                                                                                                                                                                            |
+| `message`    | string                          | always — authored in `rule.issue.message`; normative as data passthrough `[D7]`                                                                                                                                                                                                                                                                                   |
+| `field`      | string or `null`                | always; the concrete path for field-scoped issues (for wildcard elements, such as `x[2].v`, including a synthesized path of an absent structural candidate); the pattern (`x[*].v`) for aggregate summary issues; `null` for every issue without a primary `field` operand, including `any_filled` and custom operators configured only with `inputs` or `params` |
+| `ruleId`     | string                          | always; the rule's artifact id (the `artifacts` member name)                                                                                                                                                                                                                                                                                                      |
+| `pipelineId` | string                          | always; the immediately enclosing pipeline (§5.5)                                                                                                                                                                                                                                                                                                                 |
+| `expected`   | value                           | per §6.4                                                                                                                                                                                                                                                                                                                                                          |
+| `actual`     | value                           | per §6.4; omitted when there is no single actual value                                                                                                                                                                                                                                                                                                            |
+| `details`    | object                          | group-verdict summary issues only (§6.5); normative machine-readable facts of the issue, mirroring `error.details` on `ABORT` (§6.7) — one contract-wide pattern: `code` identifies the class, `details` carries the class-specific facts                                                                                                                         |
+| `meta`       | object                          | when `rule.issue` declares `meta` (§6.6)                                                                                                                                                                                                                                                                                                                          |
 
 Issue order in `issues[]` is normative: document order of rule evaluations (§5.2), then
 wildcard enumeration order within a rule (§3.6.1).
@@ -1086,16 +1092,16 @@ the mandatory recursive §2.2 binary64 conversion. Thus the authored numeric tok
 `9007199254740993` is represented in `expected` as `9007199254740992`; non-number
 content and structure are unchanged. `[DR-X]`
 
-| Operator class | `expected` | `actual` |
-| --- | --- | --- |
-| value comparisons (`equals`, `not_equals`, `contains`, `matches_regex`, `not_matches_regex`, `greater_than`, `less_than`, `length_*`) | the rule's converted `value` | the resolved field value |
-| type checks (`is_boolean`, `is_string`, `is_number`, `is_integer`) | omitted | the resolved field value |
-| `not_empty` | omitted | omitted when absent; the value (`null` or `""`) when present-but-empty — represented as the JSON value, i.e. `"actual": null` is legal here as an actual *value*, distinct from key omission |
-| `is_empty`, `not_true` | omitted | the resolved field value |
-| dictionary operators | the rule's dictionary id string | the resolved field value |
-| `field_*_field` | the resolved **value** of `value_field` `[DR-III]` | the resolved `field` value |
-| `any_filled` | omitted | omitted |
-| custom operator | converted literal `value`, or resolved `value_field`, when present; otherwise omitted | resolved primary `field` when present; otherwise omitted |
+| Operator class                                                                                                                        | `expected`                                                                            | `actual`                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| value comparisons (`equals`, `not_equals`, `contains`, `matches_regex`, `not_matches_regex`, `greater_than`, `less_than`, `length_*`) | the rule's converted `value`                                                          | the resolved field value                                                                                                                                                                     |
+| type checks (`is_boolean`, `is_string`, `is_number`, `is_integer`)                                                                    | omitted                                                                               | the resolved field value                                                                                                                                                                     |
+| `not_empty`                                                                                                                           | omitted                                                                               | omitted when absent; the value (`null` or `""`) when present-but-empty — represented as the JSON value, i.e. `"actual": null` is legal here as an actual _value_, distinct from key omission |
+| `is_empty`, `not_true`                                                                                                                | omitted                                                                               | the resolved field value                                                                                                                                                                     |
+| dictionary operators                                                                                                                  | the rule's dictionary id string                                                       | the resolved field value                                                                                                                                                                     |
+| `field_*_field`                                                                                                                       | the resolved **value** of `value_field` `[DR-III]`                                    | the resolved `field` value                                                                                                                                                                   |
+| `any_filled`                                                                                                                          | omitted                                                                               | omitted                                                                                                                                                                                      |
+| custom operator                                                                                                                       | converted literal `value`, or resolved `value_field`, when present; otherwise omitted | resolved primary `field` when present; otherwise omitted                                                                                                                                     |
 
 Resolved `field` and `value_field` operands are scalar or empty-container leaves because
 of payload flattening (§2.7). A literal `value`, and therefore `expected`, MAY be any
@@ -1107,11 +1113,11 @@ of `expected` or `actual` after the conversions required by §2.2 is defined or 
 A summary issue is created on final `FAIL` for `ALL/ANY + SUMMARY`, `COUNT`, or
 `onEmpty: "FAIL"`. `[D20]`
 
-| Producer | `details` | `expected` / `actual` |
-| --- | --- | --- |
-| `ALL`/`ANY`, `issueMode: "SUMMARY"` | `{"mode":"ALL|ANY","matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
-| `COUNT` failure | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
-| `onEmpty: "FAIL"` | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}` | omitted / omitted |
+| Producer                            | `details`                                                                                                     | `expected` / `actual`                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------- |
+| `ALL`/`ANY`, `issueMode: "SUMMARY"` | `{"mode":"ALL                                                                                                 | ANY","matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
+| `COUNT` failure                     | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted                                                            |
+| `onEmpty: "FAIL"`                   | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}`                               | omitted / omitted                                                            |
 
 `matched` is the §3.6.1 structural candidate count, `evaluated` is `PASS`+`FAIL`,
 `skipped` is `SKIP`, and `passed`/`failed` partition the effective population.
@@ -1134,7 +1140,7 @@ removed snapshot-level `meta`. `[DR-III][D19][D28]`
 There are two distinct failure channels; conflating them is a conformance error:
 
 **Channel A — snapshot rejection (§4.10).** The snapshot is refused before any
-evaluation. The *verdict* is normative; the reporting form (diagnostics list, thrown
+evaluation. The _verdict_ is normative; the reporting form (diagnostics list, thrown
 error, exit code) is implementation-defined. One rejection cause has a normative
 identifier because it is environment-dependent: `OPERATOR_NOT_FOUND` — a derived custom
 operator name is not registered by the implementation. `[D10][D26]`
@@ -1151,18 +1157,18 @@ informative string `message`, and no other members. `code` and `details` are nor
 `message` is informative free text. `[D7]`
 The normative code enum and the exact `details` shape per code:
 
-| `code` | When | `details` |
-| --- | --- | --- |
-| `INVALID_PIPELINE_ID` | §5.1 step 1 | `{"expected":"non-empty string"}` |
-| `PIPELINE_NOT_FOUND` | §5.1 step 1 | `{"pipelineId": "<requested>"}` |
-| `INVALID_PAYLOAD` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
-| `INVALID_CONTEXT` | §5.1 step 2 | `{"expected": "object"}` `[DR-IV]` |
-| `DANGEROUS_PAYLOAD_KEY` / `DANGEROUS_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — the smallest visible `(parentPath, key)` per §5.1; determinism under any traversal order `[DR-III][D15]` |
-| `INVALID_PAYLOAD_KEY` / `INVALID_CONTEXT_KEY` | §5.1 step 3 | `{"parentPath": "…", "key": "…"}` — same selection rule `[D15]` |
-| `INVALID_PAYLOAD_NUMBER` / `INVALID_CONTEXT_NUMBER` | §5.1 step 4 | `{"path":"…"}` — lexicographically smallest overflowing path `[D23]` |
-| `PAYLOAD_TOO_DEEP` / `CONTEXT_TOO_DEEP` | §5.1 step 5 | `{"maxDepth": 256}` — and nothing else: *which* path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
-| `OPERATOR_FAULT` | an operator implementation threw/panicked during evaluation | `{"ruleId": "…", "operator": "…"}` |
-| `OPERATOR_CONTRACT_VIOLATION` | an operator returned a value outside its declared result shape (Part I §3.1) | `{"ruleId": "…", "operator": "…"}` |
+| `code`                                              | When                                                                         | `details`                                                                                                                                                                                                 |
+| --------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INVALID_PIPELINE_ID`                               | §5.1 step 1                                                                  | `{"expected":"non-empty string"}`                                                                                                                                                                         |
+| `PIPELINE_NOT_FOUND`                                | §5.1 step 1                                                                  | `{"pipelineId": "<requested>"}`                                                                                                                                                                           |
+| `INVALID_PAYLOAD`                                   | §5.1 step 2                                                                  | `{"expected": "object"}` `[DR-IV]`                                                                                                                                                                        |
+| `INVALID_CONTEXT`                                   | §5.1 step 2                                                                  | `{"expected": "object"}` `[DR-IV]`                                                                                                                                                                        |
+| `DANGEROUS_PAYLOAD_KEY` / `DANGEROUS_CONTEXT_KEY`   | §5.1 step 3                                                                  | `{"parentPath": "…", "key": "…"}` — the smallest visible `(parentPath, key)` per §5.1; determinism under any traversal order `[DR-III][D15]`                                                              |
+| `INVALID_PAYLOAD_KEY` / `INVALID_CONTEXT_KEY`       | §5.1 step 3                                                                  | `{"parentPath": "…", "key": "…"}` — same selection rule `[D15]`                                                                                                                                           |
+| `INVALID_PAYLOAD_NUMBER` / `INVALID_CONTEXT_NUMBER` | §5.1 step 4                                                                  | `{"path":"…"}` — lexicographically smallest overflowing path `[D23]`                                                                                                                                      |
+| `PAYLOAD_TOO_DEEP` / `CONTEXT_TOO_DEEP`             | §5.1 step 5                                                                  | `{"maxDepth": 256}` — and nothing else: _which_ path first exceeds the limit depends on traversal order, so no path appears in any normative surface (the informative `message` MAY carry one) `[DR-III]` |
+| `OPERATOR_FAULT`                                    | an operator implementation threw/panicked during evaluation                  | `{"ruleId": "…", "operator": "…"}`                                                                                                                                                                        |
+| `OPERATOR_CONTRACT_VIOLATION`                       | an operator returned a value outside its declared result shape (Part I §3.1) | `{"ruleId": "…", "operator": "…"}`                                                                                                                                                                        |
 
 The enum is closed for this spec version: implementations MUST NOT emit other codes in
 Channel B. Built-in operators never trigger the two `OPERATOR_*` codes; they are
@@ -1179,10 +1185,10 @@ exercised portably through the reserved conformance operators of §7.3.
 
 `ruleset` is closed and contains exactly the two members below.
 
-| Field | Presence | Surface |
-| --- | --- | --- |
+| Field         | Presence                          | Surface              |
+| ------------- | --------------------------------- | -------------------- |
 | `specVersion` | always — echoed from the snapshot | normative `[DR-III]` |
-| `sourceHash` | always — echoed from the snapshot | normative |
+| `sourceHash`  | always — echoed from the snapshot | normative            |
 
 No project metadata or implementation version is part of the core result. A runtime MAY
 expose engine version and tracing through its own API, but neither is a field of the
@@ -1198,8 +1204,8 @@ A core conformance claim names: the implementation and version; the supported
 `specVersion` range (§4.9); and the set of non-built-in operator names the deployment
 provides.
 Cross-implementation equality of the normative result is guaranteed **only for
-snapshots that use built-in operators exclusively**. `[D17]` Equal operator *names* do
-not imply equal *semantics*: for snapshots with custom operators, what is common
+snapshots that use built-in operators exclusively**. `[D17]` Equal operator _names_ do
+not imply equal _semantics_: for snapshots with custom operators, what is common
 across implementations is only the extension contract (§3.1 outcome contract, §6.7
 `OPERATOR_*` reactions — both portably testable via the §7.3 conformance operators)
 and the parametrization of the rejection set (§4.10) through the custom names derived
@@ -1230,7 +1236,7 @@ process using custom operators needs both for end-to-end cross-runtime equivalen
 
 ### 7.2 The normative projection
 
-Conformance compares the *normative projection* of behavior:
+Conformance compares the _normative projection_ of behavior:
 
 1. the snapshot verdict: accepted or rejected (§4.10), plus the `OPERATOR_NOT_FOUND`
    identifier where applicable;
@@ -1297,13 +1303,13 @@ reserved. They are registered **only by conformance runners** as part of the tes
 harness — never by production runtimes — and each implementation adapts them to its
 own registration API. Their pinned behavior when invoked:
 
-| Name | Behavior | Expected reaction |
-| --- | --- | --- |
-| `conformance.rule.throw` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; throws a host exception | `ABORT OPERATOR_FAULT` at either site |
-| `conformance.rule.invalid_result` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; returns `EXCEPTION`, outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site |
-| `conformance.rule.tri` | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; for `"INVALID"`, returns that string outside the outcome enum; every other present value returns `FAIL`; absent `field` receives core-level `SKIP` | pins mixed aggregate populations, exhaustive aggregate evaluation, and late contract violations |
-| `conformance.rule.params` | accepts no standard operands or `inputs`; requires the closed params object `{ "outcome": "PASS" | "FAIL" | "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation, verbatim delivery, and no-field issue attribution |
-| `conformance.rule.inputs` | accepts no standard operands or `params`; requires the artifact's closed `inputs` object to contain exactly configured names `missing` and `nullValue`; it is invoked even when either path is absent and returns `PASS` only when the resolved invocation omits `missing` and contains `nullValue: null`; otherwise `FAIL` | pins core path resolution and absent-vs-null representation |
+| Name                              | Behavior                                                                                                                                                                                                                                                                                                                    | Expected reaction                                                                               |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `conformance.rule.throw`          | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; throws a host exception                                                                                                                                                                                                                        | `ABORT OPERATOR_FAULT` at either site                                                           |
+| `conformance.rule.invalid_result` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; returns `EXCEPTION`, outside the enum                                                                                                                                                                                                          | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site                                              |
+| `conformance.rule.tri`            | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; for `"INVALID"`, returns that string outside the outcome enum; every other present value returns `FAIL`; absent `field` receives core-level `SKIP`                      | pins mixed aggregate populations, exhaustive aggregate evaluation, and late contract violations |
+| `conformance.rule.params`         | accepts no standard operands or `inputs`; requires the closed params object `{ "outcome": "PASS"                                                                                                                                                                                                                            | "FAIL"                                                                                          | "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation, verbatim delivery, and no-field issue attribution |
+| `conformance.rule.inputs`         | accepts no standard operands or `params`; requires the artifact's closed `inputs` object to contain exactly configured names `missing` and `nullValue`; it is invoked even when either path is absent and returns `PASS` only when the resolved invocation omits `missing` and contains `nullValue: null`; otherwise `FAIL` | pins core path resolution and absent-vs-null representation                                     |
 
 ### 7.4 Requirements summary
 
