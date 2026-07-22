@@ -702,13 +702,18 @@ operators such as `not_empty` with `EACH`. A terminal `items[*]` still does not 
 non-empty object or array values to operators, so it is not a general collection-size
 check.
 
+D31 is the sole owner-approved exception to the pre-1.0 design moratorium. Its scope is
+limited to wildcard candidate resolution and the direct normative consequences stated
+in this decision; it does not reopen any other DSL, operator, snapshot, or result design.
+
 ## [DR-VII] Addendum: final format review rc.4 → rc.5 — APPROVED
 
 rc.5 is an intentional final format redesign, not rc.4 polishing. Its release gate MUST
 cover the map artifact shape, string steps, derived custom operators, core-resolved
 inputs, absent-vs-null invocation semantics, I-JSON pre-parse rejection, unsigned UTF-16
 JCS ordering across Node and Java, whole-snapshot hashing, removed legacy fields, and
-the retained hashed `rule.issue.meta`. After rc.5, pre-1.0 changes are errata only.
+the retained hashed `rule.issue.meta`. After rc.5, pre-1.0 changes are errata only,
+except for the single scope-limited D31 exception recorded above.
 
 ## [DR-VIII] Addendum: RC.5 semantic closure errata — APPROVED
 

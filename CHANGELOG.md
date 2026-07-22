@@ -22,8 +22,13 @@ Structural wildcard candidates for required child fields (D31).
 - Added concrete `EACH` issue paths for missing child fields, nested-array and impassable
   path vectors, terminal-wildcard vectors, exact-token type boundaries, numeric ordering,
   and aggregate fault preservation.
+- Added wildcard-absence vectors for `is_empty` and `not_true`, plus adjacent
+  `matrix[*][*]` traversal.
+- Made `SPEC.md` the single suite-version source for generation, validation, the Java
+  hash vector, and release-tag verification.
+- Recorded D31 as the sole scope-limited exception to the pre-1.0 design moratorium.
 - No operator, DSL field, snapshot shape, result field, or `formatVersion` was added.
-- Fixtures: 281 → **305** (216 evaluation, 89 rejection).
+- Fixtures: 281 → **308** (219 evaluation, 89 rejection).
 
 ## [1.0.0-rc.5] — 2026-07-21
 

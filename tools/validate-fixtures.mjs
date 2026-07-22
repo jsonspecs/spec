@@ -5,10 +5,15 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SPEC_VERSION } from './spec-version.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIX = join(ROOT, 'fixtures');
-const SPEC = '1.0.0-rc.6';
+const SPEC = SPEC_VERSION;
+const SNAPSHOT_VERSION_OVERRIDES = new Map([
+  ['d11/reject-unsupported-spec-version', '999.0.0'],
+  ['d11/reject-unsupported-minor-version', '1.999.0'],
+]);
 
 function jcs(v) {
   if (v === null || typeof v === 'boolean') return JSON.stringify(v);
@@ -96,6 +101,14 @@ for (const p of files) {
   }
   if (!fx.snapshot || typeof fx.snapshot !== 'object') { err('missing snapshot'); continue; }
 
+  const expectedSnapshotVersion = SNAPSHOT_VERSION_OVERRIDES.get(fx.name) ?? SPEC;
+  if (fx.snapshot.specVersion !== expectedSnapshotVersion) {
+    err(`snapshot.specVersion must be ${expectedSnapshotVersion}`);
+  }
+  if (SNAPSHOT_VERSION_OVERRIDES.has(fx.name) && !rejection) {
+    err('snapshot version override is permitted only for a rejection fixture');
+  }
+
   // sourceHash integrity holds for ALL fixtures except the one that tests hash mismatch itself:
   // otherwise a rejection fixture could pass for the wrong reason (accidentally broken hash).
   const hashExempt = new Set([
@@ -118,7 +131,6 @@ for (const p of files) {
   const s = fx.snapshot;
   if (s.format !== 'jsonspecs-snapshot') err('bad snapshot.format');
   if (s.formatVersion !== 2) err('bad snapshot.formatVersion');
-  if (s.specVersion !== SPEC) err(`evaluation fixture specVersion must be ${SPEC}`);
   if (!s.artifacts || typeof s.artifacts !== 'object' || Array.isArray(s.artifacts)) err('snapshot.artifacts must be an object');
   if (!Array.isArray(s.exports) || s.exports.length === 0) err('snapshot.exports must be a non-empty array');
   else {
@@ -222,6 +234,8 @@ for (const name of [
 for (const name of [
   'd31/required-child-all-each-reports-absent',
   'd31/required-child-all-summary-counts-absent',
+  'd31/is-empty-passes-on-absent-candidate',
+  'd31/not-true-passes-on-absent-candidate',
   'd31/any-pass-emits-no-absent-partial-issue',
   'd31/any-all-fail-reports-absent-and-null-in-order',
   'd31/count-mixes-pass-fail-and-two-kinds-of-skip',
@@ -239,12 +253,17 @@ for (const name of [
   'd31/terminal-wildcard-keeps-flat-leaf-model',
   'd31/absent-candidate-order-is-numeric-two-before-ten',
   'd31/nested-absent-candidates-follow-index-tuple-order',
+  'd31/adjacent-wildcards-preserve-candidates-and-order',
   'd31/numeric-object-key-is-not-an-exact-array-index',
   'd31/out-of-range-exact-index-before-wildcard-ends-branch',
   'd31/out-of-range-exact-index-after-final-wildcard-is-absent',
   'd31/reject-wildcard-in-context-field',
   'd31/any-pass-still-evaluates-late-invalid-result',
 ]) if (!names.has(name)) errors.push(`missing RC.6 D31 fixture ${name}`);
+
+for (const name of SNAPSHOT_VERSION_OVERRIDES.keys()) {
+  if (!names.has(name)) errors.push(`missing explicit snapshot-version rejection fixture ${name}`);
+}
 
 if (errors.length) {
   console.error(`FAIL: ${errors.length} problem(s)`);

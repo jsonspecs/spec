@@ -1,16 +1,21 @@
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 final class JcsUtf16Check {
   private static final String EXPECTED_HASH =
       "d1da92d8438b6b692da38fdf3c6572bf8f1be136bb854927231714996b7da49a";
 
   public static void main(String[] args) throws Exception {
+    String specVersion = readSpecVersion();
     String astral = "\uD800\uDC00"; // U+10000
     String bmp = "\uE000";
     Map<String, Object> artifacts = new LinkedHashMap<>();
@@ -25,7 +30,7 @@ final class JcsUtf16Check {
     Map<String, Object> snapshotWithoutHash = new LinkedHashMap<>();
     snapshotWithoutHash.put("format", "jsonspecs-snapshot");
     snapshotWithoutHash.put("formatVersion", 2);
-    snapshotWithoutHash.put("specVersion", "1.0.0-rc.6");
+    snapshotWithoutHash.put("specVersion", specVersion);
     snapshotWithoutHash.put("exports", List.of(astral, bmp));
     snapshotWithoutHash.put("artifacts", artifacts);
 
@@ -43,7 +48,17 @@ final class JcsUtf16Check {
     if (!EXPECTED_HASH.equals(actual)) {
       throw new AssertionError("JCS UTF-16 vector hash mismatch: " + actual);
     }
-    System.out.println("OK: Java JCS UTF-16 vector " + actual);
+    System.out.println("OK: Java JCS UTF-16 vector " + actual + " (" + specVersion + ")");
+  }
+
+  private static String readSpecVersion() throws Exception {
+    String spec = Files.readString(Path.of("SPEC.md"), StandardCharsets.UTF_8);
+    Matcher matcher = Pattern.compile("^\\*\\*Version:\\*\\*\\s+([^\\s·]+)\\s+·", Pattern.MULTILINE)
+        .matcher(spec);
+    if (!matcher.find()) throw new AssertionError("SPEC.md has no canonical Version line");
+    String version = matcher.group(1);
+    if (matcher.find()) throw new AssertionError("SPEC.md has more than one canonical Version line");
+    return version;
   }
 
   private static String jcs(Object value) {

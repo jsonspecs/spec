@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SPEC_VERSION } from './spec-version.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = name => readFileSync(join(root, name), 'utf8');
@@ -25,6 +26,7 @@ if (JSON.stringify(enOutline) !== JSON.stringify(ruOutline)) {
 const enVersion = en.match(/^\*\*Version:\*\*\s+([^\s·]+)/m)?.[1];
 const ruVersion = ru.match(/^\*\*Версия:\*\*\s+([^\s·]+)/m)?.[1];
 if (!enVersion || enVersion !== ruVersion) errors.push(`version differs: EN=${enVersion} RU=${ruVersion}`);
+if (enVersion !== SPEC_VERSION) errors.push(`canonical version differs: parser=${SPEC_VERSION} SPEC=${enVersion}`);
 
 const count = (text, pattern) => [...text.matchAll(pattern)].length;
 for (const [label, pattern] of [

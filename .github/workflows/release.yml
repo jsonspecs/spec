@@ -22,11 +22,12 @@ jobs:
         run: |
           git fetch origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::tag is not on main"; exit 1; }
-      - name: Tag version must be present in CHANGELOG
+      - name: Tag, specification, and suite versions must match
         run: |
-          V="${GITHUB_REF_NAME#v}"
-          grep -q "\[$V\]" CHANGELOG.md || { echo "::error::CHANGELOG has no entry [$V]"; exit 1; }
-          grep -q "\*\*Version:\*\* $V" SPEC.md || { echo "::error::SPEC.md version does not match $V"; exit 1; }
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          SPEC_VERSION="$(node tools/spec-version.mjs)"
+          test "$TAG_VERSION" = "$SPEC_VERSION" || { echo "::error::tag $TAG_VERSION does not match SPEC $SPEC_VERSION"; exit 1; }
+          grep -Fq "## [$SPEC_VERSION]" CHANGELOG.md || { echo "::error::CHANGELOG has no entry [$SPEC_VERSION]"; exit 1; }
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
       - name: Validate full Russian SPEC translation parity
@@ -35,10 +36,12 @@ jobs:
         run: java tools/JcsUtf16Check.java
       - name: Fixtures exactly match the generator
         run: |
-          rm -rf /tmp/fixgen && mkdir -p /tmp/fixgen/fixtures
-          cp -r tools /tmp/fixgen/
-          node /tmp/fixgen/tools/generate-fixtures.mjs
-          diff -ru --exclude=README.md /tmp/fixgen/fixtures fixtures
+          FIXGEN="$(mktemp -d)"
+          mkdir -p "$FIXGEN/fixtures"
+          cp -r tools "$FIXGEN/"
+          cp SPEC.md "$FIXGEN/"
+          node "$FIXGEN/tools/generate-fixtures.mjs"
+          diff -ru --exclude=README.md "$FIXGEN/fixtures" fixtures
       - name: Build release archive
         run: git archive --format=tar.gz --prefix="jsonspecs-spec-${GITHUB_REF_NAME}/" -o "jsonspecs-spec-${GITHUB_REF_NAME}.tar.gz" "${GITHUB_REF_NAME}"
       - name: Create GitHub Release

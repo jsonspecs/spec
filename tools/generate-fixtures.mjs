@@ -4,9 +4,10 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SPEC_VERSION } from './spec-version.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SPEC = '1.0.0-rc.6';
+const SPEC = SPEC_VERSION;
 const deep = n => n <= 1 ? 1 : { n: deep(n - 1) };
 const jsonDepth = value => {
   if (value === null || typeof value !== 'object') return 1;
@@ -1132,6 +1133,20 @@ rejFx('d02-length', 'd02/reject-fractional-length',
   }
 
   {
+    const r = chk('library.d31.is-empty.absent', 'is_empty', { code: 'D31.IS_EMPTY.ABSENT',
+      field: 'items[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/is-empty-passes-on-absent-candidate', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{}] } }, OKR);
+  }
+
+  {
+    const r = chk('library.d31.not-true.absent', 'not_true', { code: 'D31.NOT_TRUE.ABSENT',
+      field: 'items[*].blocked', aggregate: { mode: 'ALL', issueMode: 'EACH', onEmpty: 'FAIL' } });
+    evalFx('d31-wildcard', 'd31/not-true-passes-on-absent-candidate', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [{}] } }, OKR);
+  }
+
+  {
     const r = required('library.d31.any.mixed', { mode: 'ANY', issueMode: 'EACH' }, 'D31.ANY.PASS');
     evalFx('d31-wildcard', 'd31/any-pass-emits-no-absent-partial-issue', snap(one(r)),
       { pipelineId: 'checks.main', payload: { items: [{ sku: 'A' }, {}] } }, OKR);
@@ -1267,6 +1282,20 @@ rejFx('d02-length', 'd02/reject-fractional-length',
         issue('ERROR', 'D31.ODOMETER', M, 'a[0].b[0].sku', r.id, 'checks.main'),
         issue('ERROR', 'D31.ODOMETER', M, 'a[1].b[0].sku', r.id, 'checks.main'),
         issue('ERROR', 'D31.ODOMETER', M, 'a[1].b[1].sku', r.id, 'checks.main'),
+      ]));
+  }
+
+  {
+    const r = chk('library.d31.adjacent', 'not_empty', { code: 'D31.ADJACENT',
+      field: 'matrix[*][*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/adjacent-wildcards-preserve-candidates-and-order', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { matrix: [
+        [{ sku: 'A' }, {}],
+        [null, { sku: 'B' }],
+      ] } },
+      ERR([
+        issue('ERROR', 'D31.ADJACENT', M, 'matrix[0][1].sku', r.id, 'checks.main'),
+        issue('ERROR', 'D31.ADJACENT', M, 'matrix[1][0].sku', r.id, 'checks.main'),
       ]));
   }
 

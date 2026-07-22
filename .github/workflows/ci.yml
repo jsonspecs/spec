@@ -21,9 +21,11 @@ jobs:
         run: node tools/validate-doc-parity.mjs
       - name: Fixtures exactly match the generator (full tree diff, sees untracked/stale files)
         run: |
-          rm -rf /tmp/fixgen && mkdir -p /tmp/fixgen/fixtures
-          cp -r tools /tmp/fixgen/
-          node /tmp/fixgen/tools/generate-fixtures.mjs
-          diff -ru --exclude=README.md /tmp/fixgen/fixtures fixtures
+          FIXGEN="$(mktemp -d)"
+          mkdir -p "$FIXGEN/fixtures"
+          cp -r tools "$FIXGEN/"
+          cp SPEC.md "$FIXGEN/"
+          node "$FIXGEN/tools/generate-fixtures.mjs"
+          diff -ru --exclude=README.md "$FIXGEN/fixtures" fixtures
       - name: Cross-check JCS UTF-16 ordering on Java
         run: java tools/JcsUtf16Check.java

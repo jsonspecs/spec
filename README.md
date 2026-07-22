@@ -47,8 +47,11 @@ implementation.
   **Minor**: backward-compatible behavior additions (new operators, new fields with
   defined absence semantics). **Major**: anything that changes a verdict on an
   existing valid input.
+- The canonical `**Version:**` line in `SPEC.md` is the single suite-version source.
+  The generator, validator, Java hash vector, and release-tag check all read it; the
+  unsupported-version rejection fixtures are explicit, validated exceptions.
 - Current status: **1.0.0-rc.6**. The `v1.0.0` tag is applied after the
-  cross-implementation stand comparison (Node v3 vs Java) confirms the suite:
+  cross-implementation stand comparison (`@jsonspecs/rules` v4 vs Java) confirms the suite:
 
 ```
 git tag v1.0.0-rc.6 && git push origin v1.0.0-rc.6   # release candidate (prerelease)
