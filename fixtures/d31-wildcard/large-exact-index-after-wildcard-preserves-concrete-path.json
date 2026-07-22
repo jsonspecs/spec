@@ -1,0 +1,60 @@
+{
+  "name": "d31/large-exact-index-after-wildcard-preserves-concrete-path",
+  "snapshot": {
+    "format": "jsonspecs-snapshot",
+    "formatVersion": 2,
+    "specVersion": "1.0.0-rc.6",
+    "exports": [
+      "checks.main"
+    ],
+    "artifacts": {
+      "checks.main": {
+        "type": "pipeline",
+        "steps": [
+          "library.d31.large-index"
+        ]
+      },
+      "library.d31.large-index": {
+        "type": "rule",
+        "operator": "not_empty",
+        "field": "items[*][9007199254740993].sku",
+        "aggregate": {
+          "mode": "ALL",
+          "issueMode": "EACH"
+        },
+        "issue": {
+          "level": "ERROR",
+          "code": "D31.INDEX.LARGE",
+          "message": "failed"
+        }
+      }
+    },
+    "sourceHash": "fab944854f7943aaac58b5797982911b2f03d0461b1f48671d8598c12facd167"
+  },
+  "operators": [],
+  "input": {
+    "pipelineId": "checks.main",
+    "payload": {
+      "items": [
+        []
+      ]
+    }
+  },
+  "expected": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "level": "ERROR",
+        "code": "D31.INDEX.LARGE",
+        "message": "failed",
+        "field": "items[0][9007199254740993].sku",
+        "ruleId": "library.d31.large-index",
+        "pipelineId": "checks.main"
+      }
+    ],
+    "ruleset": {
+      "specVersion": "1.0.0-rc.6",
+      "sourceHash": "fab944854f7943aaac58b5797982911b2f03d0461b1f48671d8598c12facd167"
+    }
+  }
+}

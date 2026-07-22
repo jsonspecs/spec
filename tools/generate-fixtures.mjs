@@ -1327,6 +1327,15 @@ rejFx('d02-length', 'd02/reject-fractional-length',
       ERR([issue('ERROR', 'D31.INDEX.AFTER', M, 'a[0].b[1].sku', r.id, 'checks.main')]));
   }
 
+  {
+    const r = chk('library.d31.large-index', 'not_empty', { code: 'D31.INDEX.LARGE',
+      field: 'items[*][9007199254740993].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } });
+    evalFx('d31-wildcard', 'd31/large-exact-index-after-wildcard-preserves-concrete-path', snap(one(r)),
+      { pipelineId: 'checks.main', payload: { items: [[]] } },
+      ERR([issue('ERROR', 'D31.INDEX.LARGE', M,
+        'items[0][9007199254740993].sku', r.id, 'checks.main')]));
+  }
+
   rejFx('d31-wildcard', 'd31/reject-wildcard-in-context-field',
     snap(one(chk('library.d31.context', 'not_empty', { code: 'D31.CONTEXT',
       field: '$context.items[*].sku', aggregate: { mode: 'ALL', issueMode: 'EACH' } }))));
