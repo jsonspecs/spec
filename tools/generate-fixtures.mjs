@@ -1109,7 +1109,7 @@ rejFx('d02-length', 'd02/reject-fractional-length',
   rawSnapshotFx('d28-hash', 'd28/reject-lone-surrogate', JSON.stringify(validExceptUnicode));
 }
 
-/* ---------------- rc.6: structural wildcard candidates (D31) ---------------- */
+/* ---------------- rc.6/rc.7: structural wildcard candidates (D31/DR-XI) ---------------- */
 {
   const required = (id, aggregate, code = 'D31.REQUIRED') => chk(id, 'not_empty', {
     code, field: 'items[*].sku', aggregate,

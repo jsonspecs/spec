@@ -1,6 +1,6 @@
 # JSONSpecs Behavior Specification
 
-**Version:** 1.0.0-rc.6
+**Version:** 1.0.0-rc.7
 
 **Status:** Release Candidate — the `v1.0.0` tag is applied after
 cross-implementation comparison on a live stand (see repository README, Release process).
@@ -236,6 +236,13 @@ nz-digit  = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 Paths violating the grammar (empty segments, `a..b`, leading-zero indexes like
 `a[01]`) make the artifact invalid. `[*]` is permitted only where §3.6 allows it;
 `value_field` and `$context.*` paths MUST NOT contain `[*]`.
+
+An exact index token has no implementation-sized upper bound. Its decimal digits are
+path syntax, not a JSON number, so §2.2 binary64 conversion does not apply. To determine
+whether the index is in range, an implementation MUST compare its value exactly and
+MUST NOT round it through binary64 or a bounded host integer. A synthesized concrete
+path preserves the token's decimal digits unchanged. The grammar's leading-zero ban
+makes that decimal representation unique. `[DR-XI]`
 
 **Context access.** Paths with the reserved prefix `$context.` resolve against the
 `context` input instead of the payload, with the same resolution semantics. Wildcards are
@@ -801,7 +808,7 @@ A snapshot is the unit of distribution and the unit of conformance. `[D11]`
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0-rc.6",
+  "specVersion": "1.0.0-rc.7",
   "sourceHash": "<64 lowercase hex chars>",
   "exports": ["credit.application"],
   "artifacts": {
@@ -1178,7 +1185,7 @@ exercised portably through the reserved conformance operators of §7.3.
 
 ```json
 "ruleset": {
-  "specVersion": "1.0.0-rc.6",
+  "specVersion": "1.0.0-rc.7",
   "sourceHash": "…"
 }
 ```

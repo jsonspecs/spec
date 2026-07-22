@@ -791,3 +791,22 @@ snapshot or result format:
 The aggregate rule is unchanged. §3.6.2 already requires exhaustive aggregate
 evaluation and makes any later operator fault abort the evaluation; §5.4 separately
 defines short-circuiting guards. Existing vectors cover both boundaries.
+
+## [DR-XI] Addendum: exact index token portability and immutable RC.6 — APPROVED
+
+Implementation of D31 exposed one remaining cross-runtime ambiguity. An exact index
+segment is path syntax, not a JSON number. The grammar places no upper bound on its
+decimal value, but an implementation that first converts the token to binary64 or a
+bounded host integer may round `9007199254740993` to `9007199254740992`, traverse the
+wrong element, or report a different concrete issue path.
+
+This edition makes the existing boundary explicit: range checks use the exact decimal
+integer value, and synthesized concrete paths preserve the authored token unchanged.
+Implementations may use arbitrary-precision integers or an equivalent exact decimal
+comparison. No DSL field, operator, snapshot shape, result field, or business verdict
+is changed for a conforming implementation. A dedicated D31 fixture pins the behavior.
+
+The `v1.0.0-rc.6` tag already identifies the immutable 308-fixture corpus. It is not
+moved. This erratum is published as rc.7 with 309 fixtures; changing `specVersion`
+requires rebuilding every snapshot and therefore changes `sourceHash` even when its
+authoring inputs are otherwise unchanged.

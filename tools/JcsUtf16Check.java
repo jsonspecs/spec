@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 final class JcsUtf16Check {
   private static final String EXPECTED_HASH =
-      "d1da92d8438b6b692da38fdf3c6572bf8f1be136bb854927231714996b7da49a";
+      "272ee817325ef78e70211cb998933413262f376bb006ba1b6fa30e2cb330bce9";
 
   public static void main(String[] args) throws Exception {
     String specVersion = readSpecVersion();

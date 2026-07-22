@@ -3,6 +3,20 @@
 All notable changes to the specification are documented here.
 The specification follows SemVer 2.0.0 (see README, Versioning).
 
+## [1.0.0-rc.7] — 2026-07-22
+
+Exact-index portability erratum following the immutable RC.6 release (DR-XI).
+
+- Clarified that exact path index tokens have no implementation-sized upper bound,
+  are not binary64 numbers, and must be range-checked without rounding.
+- Required synthesized concrete issue paths to preserve the exact authored decimal
+  index token.
+- Added the D31 vector for `items[*][9007199254740993].sku` and made it mandatory in
+  the fixture validator.
+- Kept `v1.0.0-rc.6` fixed on its original 308-fixture corpus. RC.7 changes
+  `specVersion`, so every snapshot and `sourceHash` must be rebuilt.
+- Fixtures: 308 → **309** (220 evaluation, 89 rejection).
+
 ## [1.0.0-rc.6] — 2026-07-22
 
 Structural wildcard candidates for required child fields (D31).

@@ -257,9 +257,10 @@ for (const name of [
   'd31/numeric-object-key-is-not-an-exact-array-index',
   'd31/out-of-range-exact-index-before-wildcard-ends-branch',
   'd31/out-of-range-exact-index-after-final-wildcard-is-absent',
+  'd31/large-exact-index-after-wildcard-preserves-concrete-path',
   'd31/reject-wildcard-in-context-field',
   'd31/any-pass-still-evaluates-late-invalid-result',
-]) if (!names.has(name)) errors.push(`missing RC.6 D31 fixture ${name}`);
+]) if (!names.has(name)) errors.push(`missing mandatory D31 fixture ${name}`);
 
 for (const name of SNAPSHOT_VERSION_OVERRIDES.keys()) {
   if (!names.has(name)) errors.push(`missing explicit snapshot-version rejection fixture ${name}`);

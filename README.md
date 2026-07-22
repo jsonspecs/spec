@@ -17,6 +17,7 @@ internal representations, and performance are explicitly out of scope.
 | [`SPEC_RU.md`](SPEC_RU.md)                                            | Full Russian translation with matching structure; `SPEC.md` prevails if the texts diverge.                                                                     |
 | [`DECISIONS.md`](DECISIONS.md) / [`DECISIONS_RU.md`](DECISIONS_RU.md) | Decision register D1–D31 + addenda: every design decision with its reasoning, alternatives, and migration cost, referenced from the spec as `[D#]` / `[DR-*]`. |
 | [`MIGRATION_RC6.md`](MIGRATION_RC6.md) / [`MIGRATION_RC6_RU.md`](MIGRATION_RC6_RU.md) | Required package changes and semantic differences when moving from RC.5 to RC.6. |
+| [`MIGRATION_RC7.md`](MIGRATION_RC7.md) / [`MIGRATION_RC7_RU.md`](MIGRATION_RC7_RU.md) | Required rebuild and exact-index portability check when moving from RC.6 to RC.7. |
 | [`fixtures/`](fixtures/)                                              | **Normative appendix.** Conformance fixtures; passing all of them is necessary but not sufficient for conformance. See `fixtures/README.md`.                   |
 | [`source/`](source/)                                                  | Historical, non-normative: the prototype's specification (`jsonspecs/rules`) and the production-pack audit the decisions refer to.                             |
 | [`tools/`](tools/)                                                    | Fixture generator and validator (Node ≥ 20, no dependencies).                                                                                                  |
@@ -50,11 +51,11 @@ implementation.
 - The canonical `**Version:**` line in `SPEC.md` is the single suite-version source.
   The generator, validator, Java hash vector, and release-tag check all read it; the
   unsupported-version rejection fixtures are explicit, validated exceptions.
-- Current status: **1.0.0-rc.6**. The `v1.0.0` tag is applied after the
+- Current status: **1.0.0-rc.7**. The `v1.0.0` tag is applied after the
   cross-implementation stand comparison (`@jsonspecs/rules` v4 vs Java) confirms the suite:
 
 ```
-git tag v1.0.0-rc.6 && git push origin v1.0.0-rc.6   # release candidate (prerelease)
+git tag v1.0.0-rc.7 && git push origin v1.0.0-rc.7   # release candidate (prerelease)
 git tag v1.0.0      && git push origin v1.0.0        # after stand confirmation
 ```
 
@@ -78,4 +79,4 @@ java tools/JcsUtf16Check.java       # independent Java hash/order vector
 documents are preserved verbatim in `source/`. Starting with `@jsonspecs/rules` v3,
 the Node implementation claims conformance to this specification like any other
 implementation — it holds no special status. Rules v3 targets RC.5; Rules v4 is the
-first Node release intended to target RC.6.
+first Node release intended to target RC.7.

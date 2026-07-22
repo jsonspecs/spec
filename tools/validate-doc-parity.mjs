@@ -8,17 +8,28 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const read = name => readFileSync(join(root, name), 'utf8');
 const en = read('SPEC.md');
 const ru = read('SPEC_RU.md');
-const migrationEn = read('MIGRATION_RC6.md');
-const migrationRu = read('MIGRATION_RC6_RU.md');
+const decisionsEn = read('DECISIONS.md');
+const decisionsRu = read('DECISIONS_RU.md');
+const migrationPairs = [
+  {
+    label: 'RC.6', enName: 'MIGRATION_RC6.md', ruName: 'MIGRATION_RC6_RU.md',
+    tokens: ['1.0.0-rc.5', '1.0.0-rc.6', 'D31', 'sourceHash', 'items[*]',
+      'conformance.rule.tri', '"INVALID"'],
+  },
+  {
+    label: 'RC.7', enName: 'MIGRATION_RC7.md', ruName: 'MIGRATION_RC7_RU.md',
+    tokens: ['1.0.0-rc.6', '1.0.0-rc.7', 'sourceHash', '9007199254740993',
+      'd31/large-exact-index-after-wildcard-preserves-concrete-path'],
+  },
+].map(pair => ({ ...pair, en: read(pair.enName), ru: read(pair.ruName) }));
 const markdownDocs = new Map([
   ['SPEC.md', en],
   ['SPEC_RU.md', ru],
-  ['DECISIONS.md', read('DECISIONS.md')],
-  ['DECISIONS_RU.md', read('DECISIONS_RU.md')],
+  ['DECISIONS.md', decisionsEn],
+  ['DECISIONS_RU.md', decisionsRu],
   ['README.md', read('README.md')],
   ['README_RU.md', read('README_RU.md')],
-  ['MIGRATION_RC6.md', migrationEn],
-  ['MIGRATION_RC6_RU.md', migrationRu],
+  ...migrationPairs.flatMap(pair => [[pair.enName, pair.en], [pair.ruName, pair.ru]]),
   ['CHANGELOG.md', read('CHANGELOG.md')],
   ['fixtures/README.md', read('fixtures/README.md')],
 ]);
@@ -116,6 +127,14 @@ if (JSON.stringify(enOutline) !== JSON.stringify(ruOutline)) {
   errors.push(`section outline differs\nEN: ${enOutline.join(' ')}\nRU: ${ruOutline.join(' ')}`);
 }
 
+const decisionIds = text => [...text.matchAll(/^## (D[0-9]+|\[DR-[IVX]+\])/gm)]
+  .map(([, id]) => id);
+const enDecisionIds = decisionIds(decisionsEn);
+const ruDecisionIds = decisionIds(decisionsRu);
+if (JSON.stringify(enDecisionIds) !== JSON.stringify(ruDecisionIds)) {
+  errors.push(`decision register differs\nEN: ${enDecisionIds.join(' ')}\nRU: ${ruDecisionIds.join(' ')}`);
+}
+
 const enVersion = en.match(/^\*\*Version:\*\*\s+([^\s·]+)/m)?.[1];
 const ruVersion = ru.match(/^\*\*Версия:\*\*\s+([^\s·]+)/m)?.[1];
 if (!enVersion || enVersion !== ruVersion) errors.push(`version differs: EN=${enVersion} RU=${ruVersion}`);
@@ -136,7 +155,7 @@ for (const [label, pattern] of [
   if (enCount !== ruCount) errors.push(`${label} count differs: EN=${enCount} RU=${ruCount}`);
 }
 
-for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-X', 'D31']) {
+for (const token of ['OPERATOR_NOT_FOUND', 'conformance.rule.tri', 'sourceHash', 'DR-X', 'DR-XI', 'D31']) {
   if (!ru.includes(token)) errors.push(`SPEC_RU.md does not contain required token ${token}`);
 }
 
@@ -144,26 +163,27 @@ function headingLevels(text) {
   return [...text.matchAll(/^(#{1,6})\s+/gm)].map(([, marks]) => marks.length);
 }
 
-if (JSON.stringify(headingLevels(migrationEn)) !== JSON.stringify(headingLevels(migrationRu))) {
-  errors.push('RC.6 migration guide heading structure differs');
-}
-
-for (const [label, pattern] of [
-  ['fenced code delimiters', /^```/gm],
-  ['numbered list items', /^[0-9]+\./gm],
-  ['bullet list items', /^- /gm],
-]) {
-  const enCount = count(migrationEn, pattern);
-  const ruCount = count(migrationRu, pattern);
-  if (enCount !== ruCount) {
-    errors.push(`RC.6 migration guide ${label} count differs: EN=${enCount} RU=${ruCount}`);
+for (const migration of migrationPairs) {
+  if (JSON.stringify(headingLevels(migration.en)) !== JSON.stringify(headingLevels(migration.ru))) {
+    errors.push(`${migration.label} migration guide heading structure differs`);
   }
-}
 
-for (const token of ['1.0.0-rc.5', '1.0.0-rc.6', 'D31', 'sourceHash', 'items[*]',
-  'conformance.rule.tri', '"INVALID"']) {
-  if (!migrationEn.includes(token)) errors.push(`MIGRATION_RC6.md does not contain ${token}`);
-  if (!migrationRu.includes(token)) errors.push(`MIGRATION_RC6_RU.md does not contain ${token}`);
+  for (const [label, pattern] of [
+    ['fenced code delimiters', /^```/gm],
+    ['numbered list items', /^[0-9]+\./gm],
+    ['bullet list items', /^- /gm],
+  ]) {
+    const enCount = count(migration.en, pattern);
+    const ruCount = count(migration.ru, pattern);
+    if (enCount !== ruCount) {
+      errors.push(`${migration.label} migration guide ${label} count differs: EN=${enCount} RU=${ruCount}`);
+    }
+  }
+
+  for (const token of migration.tokens) {
+    if (!migration.en.includes(token)) errors.push(`${migration.enName} does not contain ${token}`);
+    if (!migration.ru.includes(token)) errors.push(`${migration.ruName} does not contain ${token}`);
+  }
 }
 
 if (errors.length) {
@@ -172,4 +192,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`OK: SPEC_RU.md matches ${enOutline.length} numbered sections of SPEC.md (${enVersion}); RC.6 migration guide structure matches`);
+console.log(`OK: SPEC_RU.md matches ${enOutline.length} numbered sections of SPEC.md (${enVersion}); migration guide structures match`);
