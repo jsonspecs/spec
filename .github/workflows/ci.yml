@@ -17,7 +17,7 @@ jobs:
           java-version: '17'
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
-      - name: Validate full Russian SPEC translation parity
+      - name: Validate documentation structure and Russian SPEC parity
         run: node tools/validate-doc-parity.mjs
       - name: Fixtures exactly match the generator (full tree diff, sees untracked/stale files)
         run: |

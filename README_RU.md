@@ -67,7 +67,7 @@ git tag v1.0.0      && git push origin v1.0.0        # после подтвер
 
 ```
 node tools/validate-fixtures.mjs    # структурная валидность + целостность sourceHash
-node tools/validate-doc-parity.mjs  # паритет структуры английской и русской SPEC
+node tools/validate-doc-parity.mjs  # целостность таблиц + паритет английской и русской SPEC
 node tools/generate-fixtures.mjs    # перегенерация фикстур (правьте генератор, не JSON)
 java tools/JcsUtf16Check.java       # независимый Java-вектор hash/order
 ```

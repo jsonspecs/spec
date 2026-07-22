@@ -1113,11 +1113,11 @@ of `expected` or `actual` after the conversions required by §2.2 is defined or 
 A summary issue is created on final `FAIL` for `ALL/ANY + SUMMARY`, `COUNT`, or
 `onEmpty: "FAIL"`. `[D20]`
 
-| Producer                            | `details`                                                                                                     | `expected` / `actual`                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------- |
-| `ALL`/`ANY`, `issueMode: "SUMMARY"` | `{"mode":"ALL                                                                                                 | ANY","matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
-| `COUNT` failure                     | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted                                                            |
-| `onEmpty: "FAIL"`                   | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}`                               | omitted / omitted                                                            |
+| Producer | `details` | `expected` / `actual` |
+| --- | --- | --- |
+| `ALL`/`ANY`, `issueMode: "SUMMARY"` | `{"mode":"ALL\|ANY","matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
+| `COUNT` failure | `{"mode":"COUNT","op":"…","value":<v>,"matched":<m>,"evaluated":<e>,"skipped":<s>,"passed":<p>,"failed":<f>}` | omitted / omitted |
+| `onEmpty: "FAIL"` | `{"mode":"<mode>","matched":0,"evaluated":0,"skipped":0,"passed":0,"failed":0}` | omitted / omitted |
 
 `matched` is the §3.6.1 structural candidate count, `evaluated` is `PASS`+`FAIL`,
 `skipped` is `SKIP`, and `passed`/`failed` partition the effective population.
@@ -1303,13 +1303,13 @@ reserved. They are registered **only by conformance runners** as part of the tes
 harness — never by production runtimes — and each implementation adapts them to its
 own registration API. Their pinned behavior when invoked:
 
-| Name                              | Behavior                                                                                                                                                                                                                                                                                                                    | Expected reaction                                                                               |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `conformance.rule.throw`          | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; throws a host exception                                                                                                                                                                                                                        | `ABORT OPERATOR_FAULT` at either site                                                           |
-| `conformance.rule.invalid_result` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; returns `EXCEPTION`, outside the enum                                                                                                                                                                                                          | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site                                              |
-| `conformance.rule.tri`            | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; for `"INVALID"`, returns that string outside the outcome enum; every other present value returns `FAIL`; absent `field` receives core-level `SKIP`                      | pins mixed aggregate populations, exhaustive aggregate evaluation, and late contract violations |
-| `conformance.rule.params`         | accepts no standard operands or `inputs`; requires the closed params object `{ "outcome": "PASS"                                                                                                                                                                                                                            | "FAIL"                                                                                          | "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation, verbatim delivery, and no-field issue attribution |
-| `conformance.rule.inputs`         | accepts no standard operands or `params`; requires the artifact's closed `inputs` object to contain exactly configured names `missing` and `nullValue`; it is invoked even when either path is absent and returns `PASS` only when the resolved invocation omits `missing` and contains `nullValue: null`; otherwise `FAIL` | pins core path resolution and absent-vs-null representation                                     |
+| Name | Behavior | Expected reaction |
+| --- | --- | --- |
+| `conformance.rule.throw` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; throws a host exception | `ABORT OPERATOR_FAULT` at either site |
+| `conformance.rule.invalid_result` | accepts no standard operands, `inputs`, or `params`; its invocation is `{}`; returns `EXCEPTION`, outside the enum | `ABORT OPERATOR_CONTRACT_VIOLATION` at either site |
+| `conformance.rule.tri` | requires only `field`; for present values `"PASS"`, `"SKIP"`, and `"FAIL"`, returns the same-named outcome; for `"THROW"`, throws a host exception; for `"INVALID"`, returns that string outside the outcome enum; every other present value returns `FAIL`; absent `field` receives core-level `SKIP` | pins mixed aggregate populations, exhaustive aggregate evaluation, and late contract violations |
+| `conformance.rule.params` | accepts no standard operands or `inputs`; requires the closed params object `{ "outcome": "PASS" \| "FAIL" \| "SKIP" }` and returns that outcome | pins compile-time custom-parameter schema validation, verbatim delivery, and no-field issue attribution |
+| `conformance.rule.inputs` | accepts no standard operands or `params`; requires the artifact's closed `inputs` object to contain exactly configured names `missing` and `nullValue`; it is invoked even when either path is absent and returns `PASS` only when the resolved invocation omits `missing` and contains `nullValue: null`; otherwise `FAIL` | pins core path resolution and absent-vs-null representation |
 
 ### 7.4 Requirements summary
 

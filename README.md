@@ -67,7 +67,7 @@ a source archive is built, and a GitHub Release is created with generated notes
 
 ```
 node tools/validate-fixtures.mjs    # structural validity + sourceHash integrity
-node tools/validate-doc-parity.mjs  # English/Russian SPEC structure parity
+node tools/validate-doc-parity.mjs  # Markdown table integrity + English/Russian SPEC parity
 node tools/generate-fixtures.mjs    # regenerate fixtures (edit the generator, not the JSONs)
 java tools/JcsUtf16Check.java       # independent Java hash/order vector
 ```

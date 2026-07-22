@@ -53,7 +53,7 @@ final class JcsUtf16Check {
 
   private static String readSpecVersion() throws Exception {
     String spec = Files.readString(Path.of("SPEC.md"), StandardCharsets.UTF_8);
-    Matcher matcher = Pattern.compile("^\\*\\*Version:\\*\\*\\s+([^\\s·]+)\\s+·", Pattern.MULTILINE)
+    Matcher matcher = Pattern.compile("^\\*\\*Version:\\*\\*\\s+([^\\s]+)\\s*$", Pattern.MULTILINE)
         .matcher(spec);
     if (!matcher.find()) throw new AssertionError("SPEC.md has no canonical Version line");
     String version = matcher.group(1);

@@ -8,7 +8,7 @@ const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A
 
 export function readSpecVersion(root = ROOT) {
   const text = readFileSync(join(root, 'SPEC.md'), 'utf8');
-  const matches = [...text.matchAll(/^\*\*Version:\*\*\s+([^\s·]+)\s+·/gm)];
+  const matches = [...text.matchAll(/^\*\*Version:\*\*\s+([^\s]+)\s*$/gm)];
   if (matches.length !== 1) {
     throw new Error(`SPEC.md must contain exactly one canonical Version line; found ${matches.length}`);
   }

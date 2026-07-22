@@ -30,7 +30,7 @@ jobs:
           grep -Fq "## [$SPEC_VERSION]" CHANGELOG.md || { echo "::error::CHANGELOG has no entry [$SPEC_VERSION]"; exit 1; }
       - name: Validate fixtures
         run: node tools/validate-fixtures.mjs
-      - name: Validate full Russian SPEC translation parity
+      - name: Validate documentation structure and Russian SPEC parity
         run: node tools/validate-doc-parity.mjs
       - name: Cross-check JCS UTF-16 ordering on Java
         run: java tools/JcsUtf16Check.java
